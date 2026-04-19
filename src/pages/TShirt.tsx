@@ -63,7 +63,7 @@ export default function TShirt() {
 
   const checkIfRequested = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/check-request?tshirtId=${tshirtId}`);
+      const response = await fetch(`https://xrostao-site.onrender.com/api/check-request?tshirtId=${tshirtId}`);
       const data = await response.json();
       setHasRequested(data.requested);
     } catch (err) {
@@ -73,7 +73,7 @@ export default function TShirt() {
 
   const handleRequestSubmit = async (email: string) => {
     try {
-      const response = await fetch('http://localhost:5000/api/request', {
+      const response = await fetch('https://xrostao-site.onrender.com/api/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, tshirtId })
