@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import Preloader from '../components/Preloader';
+import RequestModal from '../components/RequestModal';
 
 function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImageLoad }: { tshirtId: number, imgNum: number, onZoom: (src: string) => void, mobileTopClass: string, onImageLoad: () => void }) {
   // Use a timestamp to prevent the browser from showing old cached images
@@ -45,6 +46,8 @@ export default function TShirt() {
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadedImagesCount, setLoadedImagesCount] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [hasRequested, setHasRequested] = useState(false);
 
   // All t-shirts now have exactly 5 images total (4 t-shirts + 1 button).
   const imageCount = 5;
@@ -55,7 +58,34 @@ export default function TShirt() {
     setIsLoading(true);
     setLoadedImagesCount(0);
     window.scrollTo(0, 0);
+    checkIfRequested();
   }, [id]);
+
+  const checkIfRequested = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/check-request?tshirtId=${tshirtId}`);
+      const data = await response.json();
+      setHasRequested(data.requested);
+    } catch (err) {
+      console.error('Failed to check request status', err);
+    }
+  };
+
+  const handleRequestSubmit = async (email: string) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, tshirtId })
+      });
+      const data = await response.json();
+      if (data.status === 'success' || data.status === 'already_requested') {
+        setHasRequested(true);
+      }
+    } catch (err) {
+      alert('Κάτι πήγε στραβά, προσπάθησε ξανά!');
+    }
+  };
 
   useEffect(() => {
     // Once all tshirt images are loaded, hide the preloader
@@ -80,6 +110,11 @@ export default function TShirt() {
   return (
     <div key={tshirtId} className="relative w-full bg-black flex flex-col">
       <Preloader isLoading={isLoading} />
+      <RequestModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSubmit={handleRequestSubmit}
+      />
       {images.map((imgNum, index) => {
         // Determine the background image based on the index
         let desktopBgImage = '/images/tshirt-bg-mid.jpg'; // Default for middle images
@@ -119,14 +154,19 @@ export default function TShirt() {
             {/* Request Button (Only on the last image) - Positioned exactly in the center */}
             {isLastImage && (
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
-                <Link to="/how-it-works" className="bg-blue-400 text-white font-sans font-bold italic text-xl md:text-3xl py-4 px-12 md:px-24 rounded-md shadow-lg hover:bg-blue-500 transition-colors">
-                  αίτημα
-                </Link>
+                <button 
+                  onClick={() => setIsModalOpen(true)}
+                  disabled={hasRequested}
+                  className={`${hasRequested ? 'bg-green-500 hover:bg-green-500 cursor-default' : 'bg-blue-400 hover:bg-blue-500'} text-white font-sans font-bold italic text-xl md:text-3xl py-4 px-12 md:px-24 rounded-md shadow-lg transition-colors`}
+                >
+                  {hasRequested ? 'αιτημα εληφθη' : 'αίτημα'}
+                </button>
               </div>
             )}
           </div>
         );
       })}
+
 
       {/* Zoom Modal */}
       {zoomedImage && (
