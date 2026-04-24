@@ -51,10 +51,27 @@ app.get('/api/check-request', async (req, res) => {
 
   try {
     const result = await pool.query(
-      'SELECT * FROM requests WHERE ip_address = $1 AND tshirt_id = $2',
+      'SELECT *, created_at FROM requests WHERE ip_address = $1 AND tshirt_id = $2',
       [ip, parseInt(tshirtId as string, 10)]
     );
-    res.json({ requested: result.rows.length > 0 });
+    
+    if (result.rows.length === 0) {
+      return res.json({ requested: false, canPurchase: false });
+    }
+
+    const requestDate = new Date(result.rows[0].created_at);
+    const now = new Date();
+    const hoursPassed = (now.getTime() - requestDate.getTime()) / (1000 * 60 * 60);
+    
+    // Purchase is enabled if env is true AND 24 hours have passed
+    const isPurchaseEnabled = process.env.ENABLE_PURCHASE === 'true';
+    const canPurchase = isPurchaseEnabled && hoursPassed >= 24;
+
+    res.json({ 
+      requested: true, 
+      canPurchase,
+      hoursRemaining: Math.max(0, 24 - hoursPassed)
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Database error' });

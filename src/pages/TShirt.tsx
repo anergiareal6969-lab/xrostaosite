@@ -48,15 +48,19 @@ export default function TShirt() {
   const [loadedImagesCount, setLoadedImagesCount] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasRequested, setHasRequested] = useState(false);
+  const [canPurchase, setCanPurchase] = useState(false);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
 
   // All t-shirts now have exactly 5 images total (4 t-shirts + 1 button).
   const imageCount = 5;
   const tshirtsCount = 4; // Number of tshirt images (page-1 to page-4)
+  const sizes = ['S', 'M', 'L', 'XL'];
 
   useEffect(() => {
     // Reset state on ID change
     setIsLoading(true);
     setLoadedImagesCount(0);
+    setSelectedSize(null);
     window.scrollTo(0, 0);
     checkIfRequested();
   }, [id]);
@@ -66,6 +70,7 @@ export default function TShirt() {
       const response = await fetch(`https://xrostao-site.onrender.com/api/check-request?tshirtId=${tshirtId}`);
       const data = await response.json();
       setHasRequested(data.requested);
+      setCanPurchase(data.canPurchase);
     } catch (err) {
       console.error('Failed to check request status', err);
     }
@@ -114,6 +119,8 @@ export default function TShirt() {
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         onSubmit={handleRequestSubmit}
+        mode={canPurchase ? 'purchase' : 'request'}
+        selectedSize={selectedSize}
       />
       {images.map((imgNum, index) => {
         // Determine the background image based on the index
@@ -153,13 +160,35 @@ export default function TShirt() {
 
             {/* Request Button (Only on the last image) - Positioned exactly in the center */}
             {isLastImage && (
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-6 w-full">
+                {canPurchase && (
+                  <div className="flex gap-4 mb-4">
+                    {sizes.map((size) => (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className={`w-12 h-12 md:w-16 md:h-16 flex items-center justify-center border-2 border-white font-bold italic text-lg md:text-2xl transition-all ${
+                          selectedSize === size ? 'bg-white text-black' : 'bg-black/40 text-white hover:bg-white/20'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                
                 <button 
                   onClick={() => setIsModalOpen(true)}
-                  disabled={hasRequested}
-                  className={`${hasRequested ? 'bg-green-500 hover:bg-green-500 cursor-default' : 'bg-blue-400 hover:bg-blue-500'} text-white font-sans font-bold italic text-xl md:text-3xl py-4 px-12 md:px-24 rounded-md shadow-lg transition-colors`}
+                  disabled={hasRequested && !canPurchase}
+                  className={`${
+                    canPurchase 
+                      ? 'bg-blue-400 hover:bg-blue-500' 
+                      : hasRequested 
+                        ? 'bg-green-500 hover:bg-green-500 cursor-default' 
+                        : 'bg-blue-400 hover:bg-blue-500'
+                  } text-white font-sans font-bold italic text-xl md:text-3xl py-4 px-12 md:px-24 rounded-md shadow-lg transition-colors`}
                 >
-                  {hasRequested ? 'αιτημα εληφθη' : 'αίτημα'}
+                  {canPurchase ? 'ἀγόρασον' : hasRequested ? 'αιτημα εληφθη' : 'αίτημα'}
                 </button>
               </div>
             )}

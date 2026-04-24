@@ -5,15 +5,21 @@ interface RequestModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (email: string) => Promise<void>;
+  mode?: 'request' | 'purchase';
+  selectedSize?: string | null;
 }
 
-export default function RequestModal({ isOpen, onClose, onSubmit }: RequestModalProps) {
+export default function RequestModal({ isOpen, onClose, onSubmit, mode = 'request', selectedSize }: RequestModalProps) {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
+    if (mode === 'purchase' && !selectedSize) {
+      alert('Παρακαλώ επίλεξε μέγεθος!');
+      return;
+    }
     setIsSubmitting(true);
     await onSubmit(email);
     setIsSubmitting(false);
@@ -40,7 +46,7 @@ export default function RequestModal({ isOpen, onClose, onSubmit }: RequestModal
             <form onSubmit={handleSubmit} className="flex flex-col gap-6">
               <div className="flex flex-col gap-2">
                 <label className="text-white/60 text-sm font-bold italic ml-2">
-                  EMAIL
+                  {mode === 'purchase' ? `EMAIL (ΓΙΑ ΑΓΟΡΑ ΜΕΓΕΘΟΥΣ ${selectedSize})` : 'EMAIL'}
                 </label>
                 <input
                   type="email"
@@ -57,7 +63,11 @@ export default function RequestModal({ isOpen, onClose, onSubmit }: RequestModal
                 disabled={isSubmitting}
                 className="bg-white text-black font-bold italic py-3 px-6 rounded-xl hover:bg-white/90 transition-all active:scale-95 disabled:opacity-50"
               >
-                {isSubmitting ? 'ΑΠΟΣΤΟΛΗ...' : 'ΕΤΟΙΜΟΣ ΓΙΑ ΒΑΘΙΑ ΑΝΕΡΓΙΑ'}
+                {isSubmitting 
+                  ? 'ΑΠΟΣΤΟΛΗ...' 
+                  : mode === 'purchase' 
+                    ? 'ΟΛΟΚΛΗΡΩΣΗ ΑΓΟΡΑΣ' 
+                    : 'ΕΤΟΙΜΟΣ ΓΙΑ ΒΑΘΙΑ ΑΝΕΡΓΙΑ'}
               </button>
             </form>
           </motion.div>
