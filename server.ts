@@ -22,7 +22,8 @@ app.use(cors());
 app.use(express.json());
 
 // Serve static files from the React app build folder
-app.use(express.static(path.join(__dirname, 'dist')));
+const distPath = path.join(__dirname, 'dist');
+app.use(express.static(distPath));
 
 const pool = new pg.Pool({
   connectionString: "postgresql://anergia_user:gjyyxZaOaxiX9mUMLW9ZyMMmRrSuyMf9@dpg-d7hkrlcvikkc73ab76bg-a.frankfurt-postgres.render.com/anergia",
@@ -67,6 +68,7 @@ transporter.verify(function (error, success) {
   }
 });
 
+// API routes first
 app.get('/api/check-request', async (req, res) => {
   const { tshirtId } = req.query;
   const xForwardedFor = req.headers['x-forwarded-for'];
@@ -149,7 +151,7 @@ app.post('/api/request', async (req, res) => {
       from: 'anergiareal6969@gmail.com',
       to: email,
       subject: 'Επιβεβαίωση Αιτήματος - xrostao',
-      text: 'Μόλις τώρα καλέ μου φίλε άνεργε έχεις κάνει αίτημα. Αφού καταχωρήσουμε όλα τα αιτήματα μαζί από όλους τους χρήστες, μια μέρα μπορεί να κυκλοφορήσουν οι μπλούζες. Θα κυκλοφορήσουν εννοώ σίγουρα, απλά πότε δεν ξέρεις!!'
+      text: 'Μόλις τώρα καλέ μου φίλε άνεργε έχεις κάνει αίτημα. Αφού καταχωρήσουμε όλα τα αιτήματα μαζί από όλους τους χρήστες, μια μέρα μπορεί να κυκλοφορήσουν οι μπλούζες. Θα κυκλοφορήσουν εννοώ σίγουρα, απλά πότε δεν ξερέις!!'
     };
 
     // Send emails sequentially for better reliability
@@ -168,10 +170,9 @@ app.post('/api/request', async (req, res) => {
   }
 });
 
-// All other routes should serve the React app
+// All other routes should serve the React app index.html
 app.get('*', (req, res) => {
-  if (req.path.startsWith('/api')) return; // Don't serve index for API routes
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  res.sendFile(path.join(distPath, 'index.html'));
 });
 
 const PORT = process.env.PORT || 5000;
