@@ -74,6 +74,7 @@ export default function TShirt() {
         : 'https://xrostao-site.onrender.com/api/check-request';
         
       const response = await fetch(`${apiUrl}?tshirtId=${tshirtId}`);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setHasRequested(data.requested);
       setCanPurchase(data.canPurchase);
@@ -83,6 +84,7 @@ export default function TShirt() {
       try {
         const apiUrl = 'https://xrostao-site.onrender.com/api/check-request';
         const response = await fetch(`${apiUrl}?tshirtId=${tshirtId}`);
+        if (!response.ok) return; // Silent fail on fallback
         const data = await response.json();
         setHasRequested(data.requested);
         setCanPurchase(data.canPurchase);
@@ -104,6 +106,17 @@ export default function TShirt() {
         body: JSON.stringify({ email, tshirtId })
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch (e) {
+          throw new Error(errorText || `HTTP error! status: ${response.status}`);
+        }
+        throw new Error(errorData.details || errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
       if (data.status === 'success' || data.status === 'already_requested') {
         setHasRequested(true);
@@ -119,10 +132,12 @@ export default function TShirt() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, tshirtId })
         });
-        const data = await response.json();
-        if (data.status === 'success' || data.status === 'already_requested') {
-          setHasRequested(true);
-          return;
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status === 'success' || data.status === 'already_requested') {
+            setHasRequested(true);
+            return;
+          }
         }
       } catch (renderErr) {
         console.error('Final fallback failed');
