@@ -67,28 +67,67 @@ export default function TShirt() {
 
   const checkIfRequested = async () => {
     try {
-      const response = await fetch(`https://xrostao-site.onrender.com/api/check-request?tshirtId=${tshirtId}`);
+      // Use window.location.hostname to determine if we are local or on Render
+      const isLocal = window.location.hostname === 'localhost';
+      const apiUrl = isLocal 
+        ? 'http://localhost:5000/api/check-request' 
+        : 'https://xrostao-site.onrender.com/api/check-request';
+        
+      const response = await fetch(`${apiUrl}?tshirtId=${tshirtId}`);
       const data = await response.json();
       setHasRequested(data.requested);
       setCanPurchase(data.canPurchase);
     } catch (err) {
       console.error('Failed to check request status', err);
+      // Fallback to Render if local fails
+      try {
+        const apiUrl = 'https://xrostao-site.onrender.com/api/check-request';
+        const response = await fetch(`${apiUrl}?tshirtId=${tshirtId}`);
+        const data = await response.json();
+        setHasRequested(data.requested);
+        setCanPurchase(data.canPurchase);
+      } catch (renderErr) {
+        console.error('Render fallback failed too', renderErr);
+      }
     }
   };
 
   const handleRequestSubmit = async (email: string) => {
     try {
-      const response = await fetch('https://xrostao-site.onrender.com/api/request', {
+      const isLocal = window.location.hostname === 'localhost';
+      const localUrl = 'http://localhost:5000/api/request';
+      const renderUrl = 'https://xrostao-site.onrender.com/api/request';
+      
+      const response = await fetch(isLocal ? localUrl : renderUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, tshirtId })
       });
+
       const data = await response.json();
       if (data.status === 'success' || data.status === 'already_requested') {
         setHasRequested(true);
+      } else {
+        throw new Error(data.details || 'Unknown error');
       }
     } catch (err) {
-      alert('Κάτι πήγε στραβά, προσπάθησε ξανά!');
+      console.error('Submit error:', err);
+      // If local failed, try Render as last resort
+      try {
+        const response = await fetch('https://xrostao-site.onrender.com/api/request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, tshirtId })
+        });
+        const data = await response.json();
+        if (data.status === 'success' || data.status === 'already_requested') {
+          setHasRequested(true);
+          return;
+        }
+      } catch (renderErr) {
+        console.error('Final fallback failed');
+      }
+      alert(`Σφάλμα: ${err instanceof Error ? err.message : 'Κάτι πήγε στραβά!'}`);
     }
   };
 
