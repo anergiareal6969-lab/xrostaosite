@@ -11,19 +11,9 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
-if (!process.env.EMAIL_PASSWORD) {
-  console.error('FATAL ERROR: EMAIL_PASSWORD is not defined in .env file');
-} else {
-  console.log('EMAIL_PASSWORD loaded from .env');
-}
-
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-// Serve static files from the React app build folder
-const distPath = path.join(__dirname, 'dist');
-app.use(express.static(distPath));
 
 const pool = new pg.Pool({
   connectionString: "postgresql://anergia_user:gjyyxZaOaxiX9mUMLW9ZyMMmRrSuyMf9@dpg-d7hkrlcvikkc73ab76bg-a.frankfurt-postgres.render.com/anergia",
@@ -31,25 +21,6 @@ const pool = new pg.Pool({
     rejectUnauthorized: false
   }
 });
-
-// Create table if not exists
-const initDb = async () => {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS requests (
-        id SERIAL PRIMARY KEY,
-        email TEXT NOT NULL,
-        ip_address TEXT NOT NULL,
-        tshirt_id INTEGER NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('Database initialized');
-  } catch (err) {
-    console.error('Database init error:', err);
-  }
-};
-initDb();
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -59,16 +30,12 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// Verify connection configuration
-transporter.verify(function (error, success) {
-  if (error) {
-    console.error('SMTP Connection Error:', error);
-  } else {
-    console.log("Server is ready to take our messages");
-  }
+// Health Check API
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Server is running' });
 });
 
-// API routes first
+// API routes
 app.get('/api/check-request', async (req, res) => {
   const { tshirtId } = req.query;
   const xForwardedFor = req.headers['x-forwarded-for'];
@@ -88,7 +55,6 @@ app.get('/api/check-request', async (req, res) => {
     const now = new Date();
     const hoursPassed = (now.getTime() - requestDate.getTime()) / (1000 * 60 * 60);
     
-    // Purchase is enabled if env is true AND 24 hours have passed
     const isPurchaseEnabled = process.env.ENABLE_PURCHASE === 'true';
     const canPurchase = isPurchaseEnabled && hoursPassed >= 24;
 
@@ -98,7 +64,7 @@ app.get('/api/check-request', async (req, res) => {
       hoursRemaining: Math.max(0, 24 - hoursPassed)
     });
   } catch (err) {
-    console.error(err);
+    console.error('API Error:', err);
     res.status(500).json({ error: 'Database error' });
   }
 });
@@ -114,14 +80,12 @@ app.post('/api/request', async (req, res) => {
   }
 
   try {
-    // Check if already requested for this tshirt
     const check = await pool.query(
       'SELECT * FROM requests WHERE ip_address = $1 AND tshirt_id = $2',
       [ip, tid]
     );
 
     if (check.rows.length > 0) {
-      // Send the "Don't press the golden button" email
       const mailOptions = {
         from: 'anergiareal6969@gmail.com',
         to: email,
@@ -132,13 +96,11 @@ app.post('/api/request', async (req, res) => {
       return res.json({ status: 'already_requested' });
     }
 
-    // Save to DB
     await pool.query(
       'INSERT INTO requests (email, ip_address, tshirt_id) VALUES ($1, $2, $3)',
       [email, ip, tid]
     );
 
-    // Email to Admin
     const adminMail = {
       from: 'anergiareal6969@gmail.com',
       to: 'anergiareal6969@gmail.com',
@@ -146,7 +108,6 @@ app.post('/api/request', async (req, res) => {
       text: `Ο χρήστης με το email ${email} έχει στείλει αίτημα για το T-Shirt #${tshirtId}.`
     };
 
-    // Email to User
     const userMail = {
       from: 'anergiareal6969@gmail.com',
       to: email,
@@ -154,14 +115,8 @@ app.post('/api/request', async (req, res) => {
       text: 'Μόλις τώρα καλέ μου φίλε άνεργε έχεις κάνει αίτημα. Αφού καταχωρήσουμε όλα τα αιτήματα μαζί από όλους τους χρήστες, μια μέρα μπορεί να κυκλοφορήσουν οι μπλούζες. Θα κυκλοφορήσουν εννοώ σίγουρα, απλά πότε δεν ξερέις!!'
     };
 
-    // Send emails sequentially for better reliability
-    console.log('Attempting to send admin email...');
     await transporter.sendMail(adminMail);
-    console.log('Admin email sent.');
-
-    console.log('Attempting to send user email...');
     await transporter.sendMail(userMail);
-    console.log('User email sent.');
 
     res.json({ status: 'success' });
   } catch (err) {
@@ -170,10 +125,17 @@ app.post('/api/request', async (req, res) => {
   }
 });
 
-// All other routes should serve the React app index.html
+// Serve static files AFTER API routes
+const distPath = path.resolve(__dirname, 'dist');
+app.use(express.static(distPath));
+
+// All other routes serve index.html
 app.get('*', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Serving static files from: ${distPath}`);
+});
