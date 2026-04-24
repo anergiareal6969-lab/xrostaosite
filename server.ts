@@ -136,11 +136,17 @@ app.post('/api/request', async (req, res) => {
 });
 
 // Serve static files AFTER API routes
-const distPath = path.resolve(__dirname, 'dist');
+const distPath = path.resolve(process.cwd(), 'dist');
 app.use(express.static(distPath));
+
+console.log(`Checking dist folder at: ${distPath}`);
 
 // All other routes serve index.html
 app.get('*', (req, res) => {
+  if (req.path.startsWith('/api')) {
+    console.log(`404 on API route: ${req.path}`);
+    return res.status(404).json({ error: 'API route not found' });
+  }
   res.sendFile(path.join(distPath, 'index.html'));
 });
 

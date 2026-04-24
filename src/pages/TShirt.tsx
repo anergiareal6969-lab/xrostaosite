@@ -70,11 +70,14 @@ export default function TShirt() {
       const isLocal = window.location.hostname === 'localhost';
       // In production, we must use the full URL if we are not serving from the same domain
       // But here, since we serve from the same domain on Render, relative path /api is best.
+      const checkIfRequested = async () => {
+    try {
+      const isLocal = window.location.hostname === 'localhost';
       const apiUrl = isLocal 
         ? 'http://localhost:5000/api/check-request' 
-        : '/api/check-request';
+        : 'https://xrostao-site.onrender.com/api/check-request';
         
-      console.log(`Checking request at: ${apiUrl}`);
+      console.log(`Checking request status at: ${apiUrl}`);
       const response = await fetch(`${apiUrl}?tshirtId=${tshirtId}`);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
@@ -91,7 +94,7 @@ export default function TShirt() {
       const isLocal = window.location.hostname === 'localhost';
       const apiUrl = isLocal 
         ? 'http://localhost:5000/api/request' 
-        : '/api/request';
+        : 'https://xrostao-site.onrender.com/api/request';
         
       console.log(`Sending request to: ${apiUrl}`);
       const response = await fetch(apiUrl, {
