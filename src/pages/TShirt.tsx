@@ -67,11 +67,10 @@ export default function TShirt() {
 
   const checkIfRequested = async () => {
     try {
-      // Use window.location.hostname to determine if we are local or on Render
       const isLocal = window.location.hostname === 'localhost';
       const apiUrl = isLocal 
         ? 'http://localhost:5000/api/check-request' 
-        : 'https://xrostao-site.onrender.com/api/check-request';
+        : '/api/check-request';
         
       const response = await fetch(`${apiUrl}?tshirtId=${tshirtId}`);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -80,27 +79,17 @@ export default function TShirt() {
       setCanPurchase(data.canPurchase);
     } catch (err) {
       console.error('Failed to check request status', err);
-      // Fallback to Render if local fails
-      try {
-        const apiUrl = 'https://xrostao-site.onrender.com/api/check-request';
-        const response = await fetch(`${apiUrl}?tshirtId=${tshirtId}`);
-        if (!response.ok) return; // Silent fail on fallback
-        const data = await response.json();
-        setHasRequested(data.requested);
-        setCanPurchase(data.canPurchase);
-      } catch (renderErr) {
-        console.error('Render fallback failed too', renderErr);
-      }
     }
   };
 
   const handleRequestSubmit = async (email: string) => {
     try {
       const isLocal = window.location.hostname === 'localhost';
-      const localUrl = 'http://localhost:5000/api/request';
-      const renderUrl = 'https://xrostao-site.onrender.com/api/request';
-      
-      const response = await fetch(isLocal ? localUrl : renderUrl, {
+      const apiUrl = isLocal 
+        ? 'http://localhost:5000/api/request' 
+        : '/api/request';
+        
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, tshirtId })

@@ -3,6 +3,11 @@ import pg from 'pg';
 import nodemailer from 'nodemailer';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -15,6 +20,9 @@ if (!process.env.EMAIL_PASSWORD) {
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from the React app build folder
+app.use(express.static(path.join(__dirname, 'dist')));
 
 const pool = new pg.Pool({
   connectionString: "postgresql://anergia_user:gjyyxZaOaxiX9mUMLW9ZyMMmRrSuyMf9@dpg-d7hkrlcvikkc73ab76bg-a.frankfurt-postgres.render.com/anergia",
@@ -160,5 +168,11 @@ app.post('/api/request', async (req, res) => {
   }
 });
 
-const PORT = 5000;
+// All other routes should serve the React app
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api')) return; // Don't serve index for API routes
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
