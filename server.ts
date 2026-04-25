@@ -13,46 +13,34 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 
 const app = express();
-app.use(cors({
-  origin: ['http://localhost:3000', 'https://xrostao-site.onrender.com', 'https://xrostao.com', 'https://www.xrostao.com'],
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type']
-}));
-app.use(express.json());
 
-// Log all incoming requests
+// 1. Logging Middleware (MUST BE FIRST)
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  console.log(`[REQUEST] ${new Date().toISOString()} - ${req.method} ${req.url}`);
   next();
 });
 
-const pool = new pg.Pool({
-  connectionString: "postgresql://anergia_user:gjyyxZaOaxiX9mUMLW9ZyMMmRrSuyMf9@dpg-d7hkrlcvikkc73ab76bg-a.frankfurt-postgres.render.com/anergia",
-  ssl: {
-    rejectUnauthorized: false
-  }
+// 2. CORS and JSON
+app.use(cors({
+  origin: '*', // Back to '*' for now to rule out CORS issues during debug
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(express.json());
+
+// 3. API ROUTES (MUST BE BEFORE express.static)
+const apiRouter = express.Router();
+
+apiRouter.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'anergiareal6969@gmail.com',
-    pass: process.env.EMAIL_PASSWORD
-  }
-});
-
-// Health Check API
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Server is running' });
-});
-
-// API routes
-app.get('/api/check-request', async (req, res) => {
+apiRouter.get('/check-request', async (req, res) => {
   const { tshirtId } = req.query;
   const xForwardedFor = req.headers['x-forwarded-for'];
   const ip = Array.isArray(xForwardedFor) ? xForwardedFor[0] : (xForwardedFor || req.socket.remoteAddress || 'unknown');
 
-  console.log(`[API] GET /api/check-request - tshirtId: ${tshirtId}, IP: ${ip}`);
+  console.log(`[API] GET /check-request - tshirtId: ${tshirtId}, IP: ${ip}`);
 
   try {
     const result = await pool.query(
@@ -61,7 +49,6 @@ app.get('/api/check-request', async (req, res) => {
     );
     
     if (result.rows.length === 0) {
-      console.log(`[API] No request found for IP ${ip} and tshirtId ${tshirtId}`);
       return res.json({ requested: false, canPurchase: false });
     }
 
@@ -72,29 +59,26 @@ app.get('/api/check-request', async (req, res) => {
     const isPurchaseEnabled = process.env.ENABLE_PURCHASE === 'true';
     const canPurchase = isPurchaseEnabled && hoursPassed >= 24;
 
-    console.log(`[API] Request found for IP ${ip}. Hours passed: ${hoursPassed.toFixed(2)}. Can purchase: ${canPurchase}`);
-
     res.json({ 
       requested: true, 
       canPurchase,
       hoursRemaining: Math.max(0, 24 - hoursPassed)
     });
   } catch (err) {
-    console.error('[API ERROR] /api/check-request:', err);
+    console.error('[API ERROR] /check-request:', err);
     res.status(500).json({ error: 'Database error' });
   }
 });
 
-app.post('/api/request', async (req, res) => {
+apiRouter.post('/request', async (req, res) => {
   const { email, tshirtId } = req.body;
   const tid = parseInt(tshirtId, 10);
   const xForwardedFor = req.headers['x-forwarded-for'];
   const ip = Array.isArray(xForwardedFor) ? xForwardedFor[0] : (xForwardedFor || req.socket.remoteAddress || 'unknown');
 
-  console.log(`[API] POST /api/request - email: ${email}, tshirtId: ${tshirtId}, IP: ${ip}`);
+  console.log(`[API] POST /request - email: ${email}, tshirtId: ${tshirtId}, IP: ${ip}`);
 
   if (!email || isNaN(tid)) {
-    console.log(`[API] Validation failed: email=${email}, tid=${tid}`);
     return res.status(400).json({ error: 'Missing email or tshirtId' });
   }
 
@@ -105,7 +89,6 @@ app.post('/api/request', async (req, res) => {
     );
 
     if (check.rows.length > 0) {
-      console.log(`[API] Already requested by IP ${ip}. Sending reminder email.`);
       const mailOptions = {
         from: 'anergiareal6969@gmail.com',
         to: email,
@@ -116,7 +99,6 @@ app.post('/api/request', async (req, res) => {
       return res.json({ status: 'already_requested' });
     }
 
-    console.log(`[API] Creating new request for ${email} (T-Shirt #${tid})`);
     await pool.query(
       'INSERT INTO requests (email, ip_address, tshirt_id) VALUES ($1, $2, $3)',
       [email, ip, tid]
@@ -138,34 +120,32 @@ app.post('/api/request', async (req, res) => {
 
     await transporter.sendMail(adminMail);
     await transporter.sendMail(userMail);
-    console.log(`[API] Emails sent successfully for ${email}`);
 
     res.json({ status: 'success' });
   } catch (err) {
-    console.error('[SERVER ERROR] /api/request:', err);
+    console.error('[SERVER ERROR] /request:', err);
     res.status(500).json({ error: 'Server error', details: err instanceof Error ? err.message : String(err) });
   }
 });
 
-// Serve static files AFTER API routes
+app.use('/api', apiRouter);
+
+// 4. Static Files and SPA Routing
 const distPath = path.resolve(process.cwd(), 'dist');
 app.use(express.static(distPath));
 
-console.log(`Checking dist folder at: ${distPath}`);
-
-// All other routes serve index.html for GET, and 404 for others
-app.use((req, res, next) => {
-  if (req.method === 'GET' && !req.path.startsWith('/api')) {
-    const indexPath = path.join(distPath, 'index.html');
-    if (fs.existsSync(indexPath)) {
-      res.sendFile(indexPath);
-    } else {
-      console.error(`[ERROR] index.html not found at: ${indexPath}`);
-      res.status(500).send('Frontend build (dist/index.html) is missing. Please run "npm run build".');
-    }
+// SPA Catch-all: ONLY for GET requests that are NOT /api
+app.get('*', (req, res) => {
+  if (req.url.startsWith('/api')) {
+    console.log(`[404] API route not found: ${req.url}`);
+    return res.status(404).json({ error: 'API route not found' });
+  }
+  
+  const indexPath = path.join(distPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
   } else {
-    console.log(`[404] ${req.method} ${req.path}`);
-    res.status(404).json({ error: `Route ${req.method} ${req.path} not found` });
+    res.status(500).send('Frontend build is missing. Run "npm run build".');
   }
 });
 

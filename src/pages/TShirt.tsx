@@ -67,14 +67,16 @@ export default function TShirt() {
 
   const checkIfRequested = async () => {
     try {
-      const isLocal = window.location.hostname === 'localhost';
-      // Always use absolute URL for production to avoid issues with custom domains or routing
-      const apiUrl = isLocal 
-        ? 'http://localhost:5000/api/check-request'
-        : 'https://xrostao-site.onrender.com/api/check-request';
-        
+      const apiUrl = '/api/check-request';
       console.log(`Checking request status at: ${apiUrl}`);
       const response = await fetch(`${apiUrl}?tshirtId=${tshirtId}`);
+      
+      // If we get HTML instead of JSON, something is wrong with routing
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('text/html')) {
+        throw new Error('Server returned HTML instead of JSON. Check API routing.');
+      }
+
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setHasRequested(data.requested);
@@ -87,18 +89,18 @@ export default function TShirt() {
   const handleRequestSubmit = async (email: string) => {
     console.log('Submit button pressed for:', email);
     try {
-      const isLocal = window.location.hostname === 'localhost';
-      // Always use absolute URL for production to avoid issues with custom domains or routing
-      const apiUrl = isLocal 
-        ? 'http://localhost:5000/api/request'
-        : 'https://xrostao-site.onrender.com/api/request';
-        
+      const apiUrl = '/api/request';
       console.log(`Sending request to: ${apiUrl}`);
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, tshirtId })
       });
+
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('text/html')) {
+        throw new Error('Server returned HTML instead of JSON. Check API routing.');
+      }
 
       if (!response.ok) {
         const errorText = await response.text();
