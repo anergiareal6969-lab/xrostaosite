@@ -20,13 +20,26 @@ const pool = new pg.Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'anergiareal6969@gmail.com',
-    pass: process.env.EMAIL_PASSWORD
+const transporter = process.env.EMAIL_PASSWORD
+  ? nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'anergiareal6969@gmail.com',
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    })
+  : null;
+
+async function sendMailSafe(options: nodemailer.SendMailOptions) {
+  if (!transporter) return false;
+  try {
+    await transporter.sendMail(options);
+    return true;
+  } catch (err) {
+    console.error('[EMAIL ERROR]', err);
+    return false;
   }
-});
+}
 
 // 2. Middleware
 app.use(cors());
@@ -97,14 +110,13 @@ app.post('/api/request', async (req, res) => {
     );
 
     if (check.rows.length > 0) {
-      // Send reminder email
-      await transporter.sendMail({
+      const reminderMailSent = await sendMailSafe({
         from: 'anergiareal6969@gmail.com',
         to: email,
         subject: 'Μην πατάς το χρυσό κουμπί!',
-        text: 'Έχουμε ήδη λάβει το αίτημά σου! Σε ευχαριστούμε!'
+        text: 'Έχουμε ήδη λάβει το αίτημά σου! Σε ευχαριστούμε!',
       });
-      return res.json({ status: 'already_requested' });
+      return res.json({ status: 'already_requested', reminderMailSent });
     }
 
     // Save to DB
@@ -115,24 +127,25 @@ app.post('/api/request', async (req, res) => {
 
     // Send confirmation emails
     const mailText = `Νέο αίτημα από ${email} για το T-Shirt #${tshirtId}`;
-    await transporter.sendMail({
+    const adminMailSent = await sendMailSafe({
       from: 'anergiareal6969@gmail.com',
       to: 'anergiareal6969@gmail.com',
       subject: 'Νέο Αίτημα xrostao!',
       text: mailText
     });
 
-    await transporter.sendMail({
+    const userMailSent = await sendMailSafe({
       from: 'anergiareal6969@gmail.com',
       to: email,
       subject: 'Επιβεβαίωση Αιτήματος - xrostao',
       text: 'Λάβαμε το αίτημά σου! Θα ενημερωθείς μόλις κυκλοφορήσουν οι μπλούζες.'
     });
 
-    res.json({ status: 'success' });
+    res.json({ status: 'success', adminMailSent, userMailSent });
   } catch (err) {
     console.error('[SERVER ERROR]', err);
-    res.status(500).json({ error: 'Internal server error' });
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: 'Internal server error', details: message });
   }
 });
 
