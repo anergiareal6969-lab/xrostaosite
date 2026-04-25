@@ -30,6 +30,19 @@ const transporter = process.env.EMAIL_PASSWORD
     })
   : null;
 
+async function ensureRequestsTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS requests (
+      id SERIAL PRIMARY KEY,
+      email TEXT NOT NULL,
+      ip_address TEXT NOT NULL,
+      tshirt_id INTEGER NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE (ip_address, tshirt_id)
+    );
+  `);
+}
+
 async function sendMailSafe(options: nodemailer.SendMailOptions) {
   if (!transporter) return false;
   try {
@@ -218,7 +231,18 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Serving static files from: ${distPath}`);
-});
+
+async function start() {
+  try {
+    await ensureRequestsTable();
+  } catch (err) {
+    console.error('[DATABASE INIT ERROR]', err);
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Serving static files from: ${distPath}`);
+  });
+}
+
+start();
