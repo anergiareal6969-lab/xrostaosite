@@ -28,6 +28,7 @@ export default function App() {
 
   useEffect(() => {
     const criticalImages = [
+      // Main backgrounds
       '/images/main-bg-1.jpg',
       '/images/main-bg-2.jpg',
       '/images/main-bg-3.jpg',
@@ -36,26 +37,45 @@ export default function App() {
       '/images/mobile/main-bg-3.png',
       '/images/mobile/main-bg-4.png',
       '/images/mobile/main-bg-5.png',
+      
+      // Menu and UI elements
+      '/images/menu-bg.jpg',
+      '/images/mobile/menu-bg.png',
+      '/images/blue-bandana-bg.jpg',
+      '/images/mobile/blue-bandana-bg.png',
+      '/images/footer-bg.jpg',
+      '/images/mobile/footer-bg.png',
+
+      // Home page t-shirt thumbnails
+      '/images/tshirts/1/main.png',
+      '/images/tshirts/2/main.png',
+      '/images/tshirts/3/main.png',
+      '/images/tshirts/4/main.png',
+      '/images/tshirts/5/main.png',
+      '/images/tshirts/6/main.png',
+      '/images/tshirts/7/main.png',
     ];
 
     const preloadImage = (src: string) => {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         const img = new Image();
         img.src = src;
         img.onload = resolve;
-        img.onerror = reject;
+        img.onerror = resolve; // Don't block if an image fails
       });
     };
 
-    const timer = setTimeout(() => {
-      // Minimum loading time of 2 seconds for smooth transition
-      const loadAll = Promise.all(criticalImages.map(preloadImage));
-      loadAll.finally(() => {
-        setIsLoading(false);
-      });
-    }, 2000);
+    const startTime = Date.now();
+    const minLoadingTime = 2500; // Slightly increased for better feel
 
-    return () => clearTimeout(timer);
+    Promise.all(criticalImages.map(preloadImage)).then(() => {
+      const elapsedTime = Date.now() - startTime;
+      const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
+      
+      setTimeout(() => {
+        setIsLoading(false);
+      }, remainingTime);
+    });
   }, []);
 
   return (

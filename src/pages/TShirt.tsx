@@ -58,6 +58,8 @@ export default function TShirt() {
   // All t-shirts now have exactly 5 images total (4 t-shirts + 1 button).
   const imageCount = 5;
   const tshirtsCount = 4; // Number of tshirt images (page-1 to page-4)
+  const bgCount = 5; // Number of background images (one for each section)
+  const totalCriticalImages = tshirtsCount + bgCount;
   const sizes = ['S', 'M', 'L', 'XL'];
 
   useEffect(() => {
@@ -68,6 +70,13 @@ export default function TShirt() {
     setHoursRemaining(null);
     window.scrollTo(0, 0);
     checkIfRequested();
+
+    // Safety timeout: hide preloader after 10 seconds regardless
+    const safetyTimer = setTimeout(() => {
+      setIsLoading(false);
+    }, 10000);
+    
+    return () => clearTimeout(safetyTimer);
   }, [id]);
 
   const checkIfRequested = async () => {
@@ -140,14 +149,14 @@ export default function TShirt() {
   };
 
   useEffect(() => {
-    // Once all tshirt images are loaded, hide the preloader
-    if (loadedImagesCount >= tshirtsCount) {
+    // Once all critical images (overlays + backgrounds) are loaded, hide the preloader
+    if (loadedImagesCount >= totalCriticalImages) {
       const timer = setTimeout(() => {
         setIsLoading(false);
-      }, 500); // Small extra delay for smoothness
+      }, 800); // Small extra delay for smoothness
       return () => clearTimeout(timer);
     }
-  }, [loadedImagesCount]);
+  }, [loadedImagesCount, totalCriticalImages]);
 
   const handleImageLoad = () => {
     setLoadedImagesCount(prev => prev + 1);
@@ -227,8 +236,17 @@ export default function TShirt() {
         return (
           <div key={imgNum} className="relative w-full flex items-center justify-center overflow-hidden">
             {/* Split explicit images for accurate DOM height calculation, preventing absolute jump bugs */}
-            <img src={mobileBgImage} alt="" className="w-full h-auto block md:hidden pointer-events-none" />
-            <img src={desktopBgImage} alt="" className="w-full h-auto hidden md:block pointer-events-none" />
+            <picture className="w-full h-auto pointer-events-none">
+              <source media="(max-width: 767px)" srcSet={mobileBgImage} />
+              <source media="(min-width: 768px)" srcSet={desktopBgImage} />
+              <img 
+                src={desktopBgImage} 
+                alt="" 
+                className="w-full h-auto" 
+                onLoad={handleImageLoad}
+                onError={handleImageLoad}
+              />
+            </picture>
 
             {/* Logo Link (Only on the first image) */}
             {index === 0 && (
