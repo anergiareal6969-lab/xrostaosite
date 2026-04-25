@@ -136,6 +136,55 @@ app.post('/api/request', async (req, res) => {
   }
 });
 
+// Admin view (Simple verification page)
+app.get('/admin-dashboard-xrostao', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT email, ip_address, tshirt_id, created_at FROM requests ORDER BY created_at DESC');
+    let html = `
+      <html>
+        <head>
+          <title>Xrostao Admin</title>
+          <style>
+            body { font-family: sans-serif; background: #111; color: #eee; padding: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #444; padding: 12px; text-align: left; }
+            th { background: #222; }
+            tr:nth-child(even) { background: #1a1a1a; }
+            .status { color: #4ade80; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <h1>Aιτήματα Χρηστών (Database)</h1>
+          <p class="status">Σύνολο: ${result.rows.length}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>IP Address</th>
+                <th>T-Shirt ID</th>
+                <th>Ημερομηνία</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${result.rows.map(row => `
+                <tr>
+                  <td>${row.email}</td>
+                  <td>${row.ip_address}</td>
+                  <td>${row.tshirt_id}</td>
+                  <td>${new Date(row.created_at).toLocaleString('el-GR')}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+    res.send(html);
+  } catch (err) {
+    res.status(500).send('Error loading admin dashboard');
+  }
+});
+
 // 4. Static Files (ONLY AFTER API ROUTES)
 const distPath = path.join(__dirname, 'dist');
 app.use(express.static(distPath));

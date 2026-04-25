@@ -49,6 +49,7 @@ export default function TShirt() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasRequested, setHasRequested] = useState(false);
   const [canPurchase, setCanPurchase] = useState(false);
+  const [hoursRemaining, setHoursRemaining] = useState<number | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
 
   // All t-shirts now have exactly 5 images total (4 t-shirts + 1 button).
@@ -61,6 +62,7 @@ export default function TShirt() {
     setIsLoading(true);
     setLoadedImagesCount(0);
     setSelectedSize(null);
+    setHoursRemaining(null);
     window.scrollTo(0, 0);
     checkIfRequested();
   }, [id]);
@@ -71,7 +73,6 @@ export default function TShirt() {
       console.log(`Checking request status at: ${apiUrl}`);
       const response = await fetch(`${apiUrl}?tshirtId=${tshirtId}`);
       
-      // If we get HTML instead of JSON, something is wrong with routing
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('text/html')) {
         throw new Error('Server returned HTML instead of JSON. Check API routing.');
@@ -81,9 +82,19 @@ export default function TShirt() {
       const data = await response.json();
       setHasRequested(data.requested);
       setCanPurchase(data.canPurchase);
+      if (data.requested && data.hoursRemaining) {
+        setHoursRemaining(data.hoursRemaining);
+      }
     } catch (err) {
       console.error('Failed to check request status:', err);
     }
+  };
+
+  const formatTimeRemaining = (hours: number) => {
+    const totalMinutes = Math.floor(hours * 60);
+    const h = Math.floor(totalMinutes / 60);
+    const m = totalMinutes % 60;
+    return `${h}ώ ${m}λ`;
   };
 
   const handleRequestSubmit = async (email: string) => {
@@ -223,6 +234,12 @@ export default function TShirt() {
                 >
                   {canPurchase ? 'ἀγόρασον' : hasRequested ? 'αιτημα εληφθη' : 'αίτημα'}
                 </button>
+
+                {hasRequested && !canPurchase && hoursRemaining !== null && (
+                  <div className="text-white font-sans font-medium text-sm md:text-base opacity-80 mt-2">
+                    Διαθέσιμο για αγορά σε: <span className="font-bold">{formatTimeRemaining(hoursRemaining)}</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
