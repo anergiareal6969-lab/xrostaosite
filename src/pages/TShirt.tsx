@@ -68,8 +68,10 @@ export default function TShirt() {
   const checkIfRequested = async () => {
     try {
       const isLocal = window.location.hostname === 'localhost';
-      const baseUrl = isLocal ? 'http://localhost:5000' : '';
-      const apiUrl = `${baseUrl}/api/check-request`;
+      // Always use absolute URL for production to avoid issues with custom domains or routing
+      const apiUrl = isLocal 
+        ? 'http://localhost:5000/api/check-request'
+        : 'https://xrostao-site.onrender.com/api/check-request';
         
       console.log(`Checking request status at: ${apiUrl}`);
       const response = await fetch(`${apiUrl}?tshirtId=${tshirtId}`);
@@ -86,8 +88,10 @@ export default function TShirt() {
     console.log('Submit button pressed for:', email);
     try {
       const isLocal = window.location.hostname === 'localhost';
-      const baseUrl = isLocal ? 'http://localhost:5000' : '';
-      const apiUrl = `${baseUrl}/api/request`;
+      // Always use absolute URL for production to avoid issues with custom domains or routing
+      const apiUrl = isLocal 
+        ? 'http://localhost:5000/api/request'
+        : 'https://xrostao-site.onrender.com/api/request';
         
       console.log(`Sending request to: ${apiUrl}`);
       const response = await fetch(apiUrl, {

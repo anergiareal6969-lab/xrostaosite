@@ -14,7 +14,7 @@ dotenv.config();
 
 const app = express();
 app.use(cors({
-  origin: '*', // Allow all origins for debugging
+  origin: ['http://localhost:3000', 'https://xrostao-site.onrender.com', 'https://xrostao.com', 'https://www.xrostao.com'],
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type']
 }));
