@@ -14,6 +14,21 @@ dotenv.config();
 
 const app = express();
 
+const pool = new pg.Pool({
+  connectionString: "postgresql://anergia_user:gjyyxZaOaxiX9mUMLW9ZyMMmRrSuyMf9@dpg-d7hkrlcvikkc73ab76bg-a.frankfurt-postgres.render.com/anergia",
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'anergiareal6969@gmail.com',
+    pass: process.env.EMAIL_PASSWORD
+  }
+});
+
 // 1. Logging Middleware (MUST BE FIRST)
 app.use((req, res, next) => {
   console.log(`[REQUEST] ${new Date().toISOString()} - ${req.method} ${req.url}`);
