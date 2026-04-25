@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import Preloader from '../components/Preloader';
 import RequestModal from '../components/RequestModal';
+import Seo from '../components/Seo';
+import { getProductById } from '../data/products';
 
-function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImageLoad }: { tshirtId: number, imgNum: number, onZoom: (src: string) => void, mobileTopClass: string, onImageLoad: () => void }) {
+function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImageLoad, altBase }: { tshirtId: number, imgNum: number, onZoom: (src: string) => void, mobileTopClass: string, onImageLoad: () => void, altBase?: string }) {
   // Use a timestamp to prevent the browser from showing old cached images
   const [cacheBuster] = useState(Date.now());
   const paths = [
@@ -33,7 +35,7 @@ function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImage
             onImageLoad(); // Count failure as "loaded" so we don't block forever
           }
         }}
-        alt={`T-Shirt ${tshirtId} View ${imgNum}`}
+        alt={`${altBase || `T-Shirt ${tshirtId}`} — View ${imgNum}`}
         className="w-full h-auto object-contain drop-shadow-2xl"
       />
     </div>
@@ -43,6 +45,7 @@ function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImage
 export default function TShirt() {
   const { id } = useParams();
   const tshirtId = parseInt(id || '1', 10);
+  const product = getProductById(tshirtId);
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadedImagesCount, setLoadedImagesCount] = useState(0);
@@ -154,10 +157,39 @@ export default function TShirt() {
     return <Navigate to="/" />;
   }
 
+  const seoTitle = product ? `${product.name} | xrostao clothing` : 'xrostao clothing';
+  const seoDescription = product
+    ? product.description.replace(/\s+/g, ' ').trim()
+    : 'xrostao clothing — anergia season.';
+  const canonicalPath = product ? `/products/${product.slug}` : `/tshirt/${tshirtId}`;
+  const jsonLd = product
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: product.name,
+        description: product.description,
+        image: [product.primaryImage],
+        brand: {
+          '@type': 'Brand',
+          name: 'xrostao',
+        },
+        category: 'T-Shirts',
+        sku: `xrostao-tshirt-${product.id}`,
+        url: canonicalPath,
+      }
+    : undefined;
+
   const images = Array.from({ length: imageCount }, (_, i) => i + 1);
 
   return (
     <div key={tshirtId} className="relative w-full bg-black flex flex-col">
+      <Seo
+        title={seoTitle}
+        description={seoDescription}
+        canonicalPath={canonicalPath}
+        image={product?.primaryImage}
+        jsonLd={jsonLd}
+      />
       <Preloader isLoading={isLoading} />
       <RequestModal 
         isOpen={isModalOpen} 
@@ -166,6 +198,14 @@ export default function TShirt() {
         mode={canPurchase ? 'purchase' : 'request'}
         selectedSize={selectedSize}
       />
+
+      {product && (
+        <div className="sr-only">
+          <h1>{product.name}</h1>
+          <p>{product.description}</p>
+          <Link to={`/products/${product.slug}`}>Σελίδα προϊόντος</Link>
+        </div>
+      )}
       {images.map((imgNum, index) => {
         // Determine the background image based on the index
         let desktopBgImage = '/images/tshirt-bg-mid.jpg'; // Default for middle images

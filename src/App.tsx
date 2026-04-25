@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Home from './pages/Home';
 import InfoPage from './pages/InfoPage';
 import TShirt from './pages/TShirt';
+import Product from './pages/Product';
 import Menu from './components/Menu';
 import FooterLinks from './components/FooterLinks';
 import Preloader from './components/Preloader';
@@ -64,10 +65,51 @@ export default function App() {
         <Menu />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/who-we-are" element={<InfoPage text={INFO_PAGES.who.text} />} />
-          <Route path="/idea" element={<InfoPage text={INFO_PAGES.idea.text} />} />
-          <Route path="/how-it-works" element={<InfoPage text={INFO_PAGES.how.text} />} />
-          <Route path="/are-you-unemployed" element={<InfoPage text={INFO_PAGES.unemployed.text} />} />
+          <Route
+            path="/who-we-are"
+            element={
+              <InfoPage
+                title="Ποιοι είμαστε | xrostao clothing"
+                description="Μάθε ποιοι στον πούτσο είμαστε (aka η ομάδα του xrostao)."
+                canonicalPath="/who-we-are"
+                text={INFO_PAGES.who.text}
+              />
+            }
+          />
+          <Route
+            path="/idea"
+            element={
+              <InfoPage
+                title="Ιδέα | xrostao clothing"
+                description="Η ιδέα πίσω από το xrostao clothing και το drop anergia season."
+                canonicalPath="/idea"
+                text={INFO_PAGES.idea.text}
+              />
+            }
+          />
+          <Route
+            path="/how-it-works"
+            element={
+              <InfoPage
+                title="Πώς λειτουργεί το αίτημα | xrostao clothing"
+                description="Δες πώς λειτουργεί το αίτημα ενδιαφέροντος για τα t-shirts του xrostao."
+                canonicalPath="/how-it-works"
+                text={INFO_PAGES.how.text}
+              />
+            }
+          />
+          <Route
+            path="/are-you-unemployed"
+            element={
+              <InfoPage
+                title="Είσαι άνεργος; | xrostao clothing"
+                description="Είσαι άνεργος/η; Μια απολύτως σοβαρή ερώτηση από το xrostao clothing."
+                canonicalPath="/are-you-unemployed"
+                text={INFO_PAGES.unemployed.text}
+              />
+            }
+          />
+          <Route path="/products/:slug" element={<Product />} />
           <Route path="/tshirt/:id" element={<TShirt />} />
         </Routes>
         <FooterLinks />
