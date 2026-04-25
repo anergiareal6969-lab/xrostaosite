@@ -15,10 +15,19 @@ dotenv.config();
 const app = express();
 
 const pool = new pg.Pool({
-  connectionString: "postgresql://anergia_user:gjyyxZaOaxiX9mUMLW9ZyMMmRrSuyMf9@dpg-d7hkrlcvikkc73ab76bg-a.frankfurt-postgres.render.com/anergia",
+  connectionString: process.env.DATABASE_URL || "postgresql://anergia_user:gjyyxZaOaxiX9mUMLW9ZyMMmRrSuyMf9@dpg-d7hkrlcvikkc73ab76bg-a.frankfurt-postgres.render.com/anergia",
   ssl: {
     rejectUnauthorized: false
   }
+});
+
+// Test database connection
+pool.connect((err, client, release) => {
+  if (err) {
+    return console.error('[DATABASE ERROR] Error acquiring client', err.stack);
+  }
+  console.log('[DATABASE] Successfully connected to PostgreSQL');
+  release();
 });
 
 const transporter = nodemailer.createTransport({
@@ -31,31 +40,29 @@ const transporter = nodemailer.createTransport({
 
 // 1. Logging Middleware (MUST BE FIRST)
 app.use((req, res, next) => {
-  console.log(`[REQUEST] ${new Date().toISOString()} - ${req.method} ${req.url}`);
+  console.log(`[REQUEST] ${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
 });
 
 // 2. CORS and JSON
 app.use(cors({
-  origin: '*', // Back to '*' for now to rule out CORS issues during debug
+  origin: '*', 
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
-// 3. API ROUTES (MUST BE BEFORE express.static)
-const apiRouter = express.Router();
-
-apiRouter.get('/health', (req, res) => {
+// 3. API ROUTES (Directly on app for maximum reliability)
+app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-apiRouter.get('/check-request', async (req, res) => {
+app.get('/api/check-request', async (req, res) => {
   const { tshirtId } = req.query;
   const xForwardedFor = req.headers['x-forwarded-for'];
   const ip = Array.isArray(xForwardedFor) ? xForwardedFor[0] : (xForwardedFor || req.socket.remoteAddress || 'unknown');
 
-  console.log(`[API] GET /check-request - tshirtId: ${tshirtId}, IP: ${ip}`);
+  console.log(`[API] GET /api/check-request - tshirtId: ${tshirtId}, IP: ${ip}`);
 
   try {
     const result = await pool.query(
@@ -80,18 +87,18 @@ apiRouter.get('/check-request', async (req, res) => {
       hoursRemaining: Math.max(0, 24 - hoursPassed)
     });
   } catch (err) {
-    console.error('[API ERROR] /check-request:', err);
-    res.status(500).json({ error: 'Database error' });
+    console.error('[API ERROR] /api/check-request:', err);
+    res.status(500).json({ error: 'Database error', details: err instanceof Error ? err.message : String(err) });
   }
 });
 
-apiRouter.post('/request', async (req, res) => {
+app.post('/api/request', async (req, res) => {
   const { email, tshirtId } = req.body;
   const tid = parseInt(tshirtId, 10);
   const xForwardedFor = req.headers['x-forwarded-for'];
   const ip = Array.isArray(xForwardedFor) ? xForwardedFor[0] : (xForwardedFor || req.socket.remoteAddress || 'unknown');
 
-  console.log(`[API] POST /request - email: ${email}, tshirtId: ${tshirtId}, IP: ${ip}`);
+  console.log(`[API] POST /api/request - email: ${email}, tshirtId: ${tshirtId}, IP: ${ip}`);
 
   if (!email || isNaN(tid)) {
     return res.status(400).json({ error: 'Missing email or tshirtId' });
@@ -138,22 +145,20 @@ apiRouter.post('/request', async (req, res) => {
 
     res.json({ status: 'success' });
   } catch (err) {
-    console.error('[SERVER ERROR] /request:', err);
+    console.error('[SERVER ERROR] /api/request:', err);
     res.status(500).json({ error: 'Server error', details: err instanceof Error ? err.message : String(err) });
   }
 });
-
-app.use('/api', apiRouter);
 
 // 4. Static Files and SPA Routing
 const distPath = path.resolve(process.cwd(), 'dist');
 app.use(express.static(distPath));
 
-// SPA Catch-all: ONLY for GET requests that are NOT /api
+// SPA Catch-all: ONLY for requests that are NOT /api
 app.get('*', (req, res) => {
-  if (req.url.startsWith('/api')) {
-    console.log(`[404] API route not found: ${req.url}`);
-    return res.status(404).json({ error: 'API route not found' });
+  if (req.path.startsWith('/api')) {
+    console.log(`[404] API route not found: ${req.method} ${req.path}`);
+    return res.status(404).json({ error: `API route ${req.method} ${req.path} not found` });
   }
   
   const indexPath = path.join(distPath, 'index.html');
