@@ -37,6 +37,8 @@ export default function App() {
       '/images/mobile/main-bg-3.png',
       '/images/mobile/main-bg-4.png',
       '/images/mobile/main-bg-5.png',
+      '/images/mobile/main-bg-6.png',
+      '/images/mobile/main-bg-7.png',
       
       // Menu and UI elements
       '/images/menu-bg.jpg',
@@ -48,22 +50,56 @@ export default function App() {
 
       // Home page t-shirt thumbnails
       '/images/tshirts/1/main.png',
+      '/images/tshirts/1/main.jpg',
+      '/images/tshirts/1/main.jpeg',
+      '/images/tshirts/1/main.webp',
       '/images/tshirts/2/main.png',
+      '/images/tshirts/2/main.jpg',
+      '/images/tshirts/2/main.jpeg',
+      '/images/tshirts/2/main.webp',
       '/images/tshirts/3/main.png',
+      '/images/tshirts/3/main.jpg',
+      '/images/tshirts/3/main.jpeg',
+      '/images/tshirts/3/main.webp',
       '/images/tshirts/4/main.png',
+      '/images/tshirts/4/main.jpg',
+      '/images/tshirts/4/main.jpeg',
+      '/images/tshirts/4/main.webp',
       '/images/tshirts/5/main.png',
+      '/images/tshirts/5/main.jpg',
+      '/images/tshirts/5/main.jpeg',
+      '/images/tshirts/5/main.webp',
       '/images/tshirts/6/main.png',
+      '/images/tshirts/6/main.jpg',
+      '/images/tshirts/6/main.jpeg',
+      '/images/tshirts/6/main.webp',
       '/images/tshirts/7/main.png',
+      '/images/tshirts/7/main.jpg',
+      '/images/tshirts/7/main.jpeg',
+      '/images/tshirts/7/main.webp',
+      '/images/tshirts/8/main.png',
+      '/images/tshirts/8/main.jpg',
+      '/images/tshirts/8/main.jpeg',
+      '/images/tshirts/8/main.webp',
+      '/images/tshirts/9/main.png',
+      '/images/tshirts/9/main.jpg',
+      '/images/tshirts/9/main.jpeg',
+      '/images/tshirts/9/main.webp',
+      '/images/tshirts/10/main.png',
+      '/images/tshirts/10/main.jpg',
+      '/images/tshirts/10/main.jpeg',
+      '/images/tshirts/10/main.webp',
     ];
 
     const preloadImage = (src: string) => {
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.src = src;
-        img.onload = resolve;
-        img.onerror = resolve; // Don't block if an image fails
-      });
-    };
+            return new Promise((resolve) => {
+              const img = new Image();
+              // Add a cache buster to the preloading too
+              img.src = `${src}?v=${Date.now()}`;
+              img.onload = resolve;
+              img.onerror = resolve; // Don't block if an image fails
+            });
+          };
 
     const startTime = Date.now();
     const minLoadingTime = 2500; // Slightly increased for better feel

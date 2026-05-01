@@ -9,27 +9,31 @@ function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImage
   // Use a timestamp to prevent the browser from showing old cached images
   const [cacheBuster] = useState(Date.now());
   const paths = [
-    `/images/tshirts/${tshirtId}/page-${imgNum}.png?v=${cacheBuster}`,
-    `/images/tshirts/${tshirtId}/page-${imgNum}.jpeg?v=${cacheBuster}`,
-    `/images/tshirts/${tshirtId}/page-${imgNum}.jpg?v=${cacheBuster}`
+    `/images/tshirts/${tshirtId}/page-${imgNum}.png`,
+    `/images/tshirts/${tshirtId}/page-${imgNum}.jpeg`,
+    `/images/tshirts/${tshirtId}/page-${imgNum}.jpg`,
+    `/images/tshirts/${tshirtId}/page-${imgNum}.webp`
   ];
   const [pathIndex, setPathIndex] = useState(0);
   const [hasFailed, setHasFailed] = useState(false);
+
+  // Get current path with cache buster
+  const currentPath = `${paths[pathIndex]}?v=${cacheBuster}`;
 
   if (hasFailed) return null;
 
   return (
     <div 
       className={`absolute left-[50%] md:top-[47%] md:left-[48%] -translate-x-1/2 -translate-y-1/2 z-10 w-[90%] md:w-[35%] cursor-pointer transition-transform duration-300 hover:scale-105 ${mobileTopClass}`} 
-      onClick={() => onZoom(paths[pathIndex])}
+      onClick={() => onZoom(currentPath)}
     >
       <img 
         key={`${tshirtId}-${imgNum}-${pathIndex}`}
-        src={paths[pathIndex]} 
+        src={currentPath} 
         onLoad={onImageLoad}
         onError={() => {
           if (pathIndex < paths.length - 1) {
-            setPathIndex(pathIndex + 1);
+            setPathIndex(prev => prev + 1);
           } else {
             setHasFailed(true);
             onImageLoad(); // Count failure as "loaded" so we don't block forever
@@ -162,7 +166,7 @@ export default function TShirt() {
     setLoadedImagesCount(prev => prev + 1);
   };
 
-  if (isNaN(tshirtId) || tshirtId < 1 || tshirtId > 7) {
+  if (isNaN(tshirtId) || tshirtId < 1 || tshirtId > 10) {
     return <Navigate to="/" />;
   }
 

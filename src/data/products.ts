@@ -61,6 +61,27 @@ export const PRODUCTS: Product[] = [
       'Φόρα αυτή τη μπλούζα και πήγαινε και κάτσε σε ένα παγκάκι. Αυτό.',
     primaryImage: '/images/tshirts/7/main.png',
   },
+  {
+    id: 8,
+    slug: 'tshirt-8-anergia-season',
+    name: 'xrostao t-shirt 8 — anergia season',
+    description: 'Νέο t-shirt από τη συλλογή anergia season.',
+    primaryImage: '/images/tshirts/8/main.png',
+  },
+  {
+    id: 9,
+    slug: 'tshirt-9-anergia-season',
+    name: 'xrostao t-shirt 9 — anergia season',
+    description: 'Νέο t-shirt από τη συλλογή anergia season.',
+    primaryImage: '/images/tshirts/9/main.png',
+  },
+  {
+    id: 10,
+    slug: 'tshirt-10-anergia-season',
+    name: 'xrostao t-shirt 10 — anergia season',
+    description: 'Νέο t-shirt από τη συλλογή anergia season.',
+    primaryImage: '/images/tshirts/10/main.png',
+  },
 ];
 
 export function getProductById(id: number) {
