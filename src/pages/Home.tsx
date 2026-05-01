@@ -149,17 +149,17 @@ export default function Home() {
         {/* Section 6 */}
         <div className="relative w-full">
           <img src="/images/mobile/main-bg-6.png" alt="Mobile Background 6" className="w-full h-auto block" />
-          <Link to={`/products/${PRODUCTS[8].slug}`} className="absolute top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
+          <Link to={`/products/${PRODUCTS[8].slug}`} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
             <TshirtMainImageFallback tshirtId={9} name={PRODUCTS[8].name} />
+          </Link>
+          <Link to={`/products/${PRODUCTS[9].slug}`} className="absolute top-[75%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
+            <TshirtMainImageFallback tshirtId={10} name={PRODUCTS[9].name} />
           </Link>
         </div>
 
         {/* Section 7 */}
         <div className="relative w-full">
           <img src="/images/mobile/main-bg-7.png" alt="Mobile Background 7" className="w-full h-auto block" />
-          <Link to={`/products/${PRODUCTS[9].slug}`} className="absolute top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
-            <TshirtMainImageFallback tshirtId={10} name={PRODUCTS[9].name} />
-          </Link>
         </div>
       </div>
 
