@@ -45,7 +45,7 @@ export default function App() {
       '/images/mobile/menu-bg.png',
       '/images/blue-bandana-bg.jpg',
       '/images/mobile/blue-bandana-bg.png',
-      '/images/footer-bg.jpg',
+      '/images/footer-bg.png',
       '/images/mobile/footer-bg.png',
 
       // Home page t-shirt thumbnails
@@ -73,22 +73,10 @@ export default function App() {
       '/images/tshirts/6/main.jpg',
       '/images/tshirts/6/main.jpeg',
       '/images/tshirts/6/main.webp',
-      '/images/tshirts/7/main.png',
-      '/images/tshirts/7/main.jpg',
-      '/images/tshirts/7/main.jpeg',
-      '/images/tshirts/7/main.webp',
-      '/images/tshirts/8/main.png',
-      '/images/tshirts/8/main.jpg',
-      '/images/tshirts/8/main.jpeg',
-      '/images/tshirts/8/main.webp',
-      '/images/tshirts/9/main.png',
-      '/images/tshirts/9/main.jpg',
-      '/images/tshirts/9/main.jpeg',
-      '/images/tshirts/9/main.webp',
-      '/images/tshirts/10/main.png',
-      '/images/tshirts/10/main.jpg',
-      '/images/tshirts/10/main.jpeg',
-      '/images/tshirts/10/main.webp',
+      '/images/tshirts/7/page-1.png',
+      '/images/tshirts/8/page-1.png',
+      '/images/tshirts/9/page-1.png',
+      '/images/tshirts/10/page-1.png',
     ];
 
     const preloadImage = (src: string) => {

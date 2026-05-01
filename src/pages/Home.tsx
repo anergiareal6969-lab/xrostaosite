@@ -9,7 +9,11 @@ function TshirtMainImageFallback({ tshirtId, name }: { tshirtId: number, name: s
     `/images/tshirts/${tshirtId}/main.png`,
     `/images/tshirts/${tshirtId}/main.jpeg`,
     `/images/tshirts/${tshirtId}/main.jpg`,
-    `/images/tshirts/${tshirtId}/main.webp`
+    `/images/tshirts/${tshirtId}/main.webp`,
+    `/images/tshirts/${tshirtId}/page-1.png`,
+    `/images/tshirts/${tshirtId}/page-1.jpeg`,
+    `/images/tshirts/${tshirtId}/page-1.jpg`,
+    `/images/tshirts/${tshirtId}/page-1.webp`
   ];
   const [pathIndex, setPathIndex] = useState(0);
   const [hasFailed, setHasFailed] = useState(false);
@@ -34,6 +38,19 @@ function TshirtMainImageFallback({ tshirtId, name }: { tshirtId: number, name: s
     />
   );
 }
+
+const DESKTOP_TSHIRT_POSITIONS = [
+  'top-[8%] left-[8%] w-[18%]',
+  'top-[16%] right-[8%] w-[18%]',
+  'top-[28%] left-[18%] w-[18%]',
+  'top-[36%] right-[18%] w-[18%]',
+  'top-[48%] left-[9%] w-[18%]',
+  'top-[56%] right-[10%] w-[18%]',
+  'top-[67%] left-[24%] w-[17%]',
+  'top-[73%] right-[26%] w-[17%]',
+  'top-[82%] left-[8%] w-[16%]',
+  'top-[84%] right-[10%] w-[16%]',
+] as const;
 
 export default function Home() {
   return (
@@ -65,36 +82,15 @@ export default function Home() {
         
         {/* Desktop T-shirts Overlay */}
         <div className="absolute inset-0 w-full h-full pointer-events-none">
-          <Link to={`/products/${PRODUCTS[0].slug}`} className="absolute top-[10%] left-[10%] w-[25%] pointer-events-auto hover:opacity-90">
-            <TshirtMainImageFallback tshirtId={1} name={PRODUCTS[0].name} />
-          </Link>
-          <Link to={`/products/${PRODUCTS[1].slug}`} className="absolute top-[25%] right-[10%] w-[25%] pointer-events-auto hover:opacity-90">
-            <TshirtMainImageFallback tshirtId={2} name={PRODUCTS[1].name} />
-          </Link>
-          <Link to={`/products/${PRODUCTS[2].slug}`} className="absolute top-[40%] left-[15%] w-[25%] pointer-events-auto hover:opacity-90">
-            <TshirtMainImageFallback tshirtId={3} name={PRODUCTS[2].name} />
-          </Link>
-          <Link to={`/products/${PRODUCTS[3].slug}`} className="absolute top-[55%] right-[15%] w-[25%] pointer-events-auto hover:opacity-90">
-            <TshirtMainImageFallback tshirtId={4} name={PRODUCTS[3].name} />
-          </Link>
-          <Link to={`/products/${PRODUCTS[4].slug}`} className="absolute top-[70%] left-[20%] w-[25%] pointer-events-auto hover:opacity-90">
-            <TshirtMainImageFallback tshirtId={5} name={PRODUCTS[4].name} />
-          </Link>
-          <Link to={`/products/${PRODUCTS[5].slug}`} className="absolute top-[85%] right-[20%] w-[25%] pointer-events-auto hover:opacity-90">
-            <TshirtMainImageFallback tshirtId={6} name={PRODUCTS[5].name} />
-          </Link>
-          <Link to={`/products/${PRODUCTS[6].slug}`} className="absolute top-[92%] left-[37%] w-[25%] pointer-events-auto hover:opacity-90">
-            <TshirtMainImageFallback tshirtId={7} name={PRODUCTS[6].name} />
-          </Link>
-          <Link to={`/products/${PRODUCTS[7].slug}`} className="absolute top-[15%] right-[25%] w-[22%] pointer-events-auto hover:opacity-90">
-            <TshirtMainImageFallback tshirtId={8} name={PRODUCTS[7].name} />
-          </Link>
-          <Link to={`/products/${PRODUCTS[8].slug}`} className="absolute top-[45%] right-[25%] w-[22%] pointer-events-auto hover:opacity-90">
-            <TshirtMainImageFallback tshirtId={9} name={PRODUCTS[8].name} />
-          </Link>
-          <Link to={`/products/${PRODUCTS[9].slug}`} className="absolute top-[75%] right-[35%] w-[22%] pointer-events-auto hover:opacity-90">
-            <TshirtMainImageFallback tshirtId={10} name={PRODUCTS[9].name} />
-          </Link>
+          {PRODUCTS.map((product, index) => (
+            <Link
+              key={product.id}
+              to={`/products/${product.slug}`}
+              className={`absolute pointer-events-auto transition-opacity hover:opacity-90 ${DESKTOP_TSHIRT_POSITIONS[index]}`}
+            >
+              <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
+            </Link>
+          ))}
         </div>
       </div>
 
@@ -153,17 +149,17 @@ export default function Home() {
         {/* Section 6 */}
         <div className="relative w-full">
           <img src="/images/mobile/main-bg-6.png" alt="Mobile Background 6" className="w-full h-auto block" />
-          <Link to={`/products/${PRODUCTS[8].slug}`} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
+          <Link to={`/products/${PRODUCTS[8].slug}`} className="absolute top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
             <TshirtMainImageFallback tshirtId={9} name={PRODUCTS[8].name} />
-          </Link>
-          <Link to={`/products/${PRODUCTS[9].slug}`} className="absolute top-[75%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
-            <TshirtMainImageFallback tshirtId={10} name={PRODUCTS[9].name} />
           </Link>
         </div>
 
         {/* Section 7 */}
         <div className="relative w-full">
           <img src="/images/mobile/main-bg-7.png" alt="Mobile Background 7" className="w-full h-auto block" />
+          <Link to={`/products/${PRODUCTS[9].slug}`} className="absolute top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
+            <TshirtMainImageFallback tshirtId={10} name={PRODUCTS[9].name} />
+          </Link>
         </div>
       </div>
 
