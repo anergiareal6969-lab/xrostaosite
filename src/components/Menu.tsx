@@ -18,12 +18,6 @@ export default function Menu() {
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black">
-          <picture className="absolute inset-0 w-full h-full pointer-events-none">
-            <source media="(max-width: 767px)" srcSet="/images/mobile/menu-bg.png" />
-            <source media="(min-width: 768px)" srcSet="/images/menu-bg.jpg" />
-            <img src="/images/menu-bg.jpg" className="w-full h-full object-cover" alt="" />
-          </picture>
-
           <button 
             onClick={closeMenu}
             className="absolute top-4 left-4 md:top-6 md:left-6 text-white p-2 bg-black/50 rounded-md z-10 hover:bg-black/80 transition-colors"

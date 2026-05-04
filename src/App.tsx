@@ -41,10 +41,6 @@ export default function App() {
       '/images/mobile/main-bg-7.png',
       
       // Menu and UI elements
-      '/images/menu-bg.jpg',
-      '/images/mobile/menu-bg.png',
-      '/images/blue-bandana-bg.jpg',
-      '/images/mobile/blue-bandana-bg.png',
       '/images/footer-bg.png',
       '/images/mobile/footer-bg.png',
 

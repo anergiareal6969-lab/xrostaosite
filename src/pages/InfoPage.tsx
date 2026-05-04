@@ -3,12 +3,7 @@ import Seo from '../components/Seo';
 export default function InfoPage({ title, description, canonicalPath, text }: { title: string; description: string; canonicalPath: string; text: string }) {
   return (
     <div className="relative min-h-screen w-full bg-black flex items-center justify-center p-8 overflow-hidden">
-      <Seo title={title} description={description} canonicalPath={canonicalPath} image="/images/blue-bandana-bg.jpg" />
-      <picture className="absolute inset-0 w-full h-full pointer-events-none">
-        <source media="(max-width: 767px)" srcSet="/images/mobile/blue-bandana-bg.png" />
-        <source media="(min-width: 768px)" srcSet="/images/blue-bandana-bg.jpg" />
-        <img src="/images/blue-bandana-bg.jpg" className="w-full h-full object-cover" alt="" />
-      </picture>
+      <Seo title={title} description={description} canonicalPath={canonicalPath} image="/images/main-bg-1.jpg" />
 
       <div className="relative z-10 max-w-4xl w-full p-8 rounded-xl">
         <p className="font-sans font-bold italic text-white text-center text-xl md:text-4xl leading-relaxed whitespace-pre-wrap">
