@@ -72,17 +72,24 @@ app.get('/api/health', (req, res) => {
 
 // Check Request
 app.get('/api/check-request', async (req, res) => {
-  const { tshirtId } = req.query;
+  const { tshirtId, email } = req.query;
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
   const clientIp = Array.isArray(ip) ? ip[0] : ip.split(',')[0].trim();
 
-  console.log(`[API] Checking request for T-Shirt ${tshirtId} from IP ${clientIp}`);
+  console.log(`[API] Checking request for T-Shirt ${tshirtId} from IP ${clientIp} (Email: ${email || 'none'})`);
 
   try {
-    const result = await pool.query(
-      'SELECT *, created_at FROM requests WHERE ip_address = $1 AND tshirt_id = $2',
-      [clientIp, parseInt(tshirtId as string, 10)]
-    );
+    let query = 'SELECT *, created_at FROM requests WHERE tshirt_id = $1 AND (ip_address = $2';
+    let params: any[] = [parseInt(tshirtId as string, 10), clientIp];
+
+    if (email) {
+      query += ' OR email = $3)';
+      params.push(email);
+    } else {
+      query += ')';
+    }
+
+    const result = await pool.query(query, params);
     
     if (result.rows.length === 0) {
       return res.json({ requested: false, canPurchase: false });
@@ -118,8 +125,8 @@ app.post('/api/request', async (req, res) => {
 
   try {
     const check = await pool.query(
-      'SELECT * FROM requests WHERE ip_address = $1 AND tshirt_id = $2',
-      [clientIp, parseInt(tshirtId, 10)]
+      'SELECT * FROM requests WHERE tshirt_id = $1 AND (ip_address = $2 OR email = $3)',
+      [parseInt(tshirtId, 10), clientIp, email]
     );
 
     if (check.rows.length > 0) {

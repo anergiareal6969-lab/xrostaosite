@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu as MenuIcon, X } from 'lucide-react';
+import { Menu as MenuIcon, X, User as UserIcon } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Menu() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   const closeMenu = () => setIsOpen(false);
 
@@ -15,6 +18,38 @@ export default function Menu() {
       >
         <MenuIcon className="w-6 h-6 md:w-8 md:h-8" />
       </button>
+
+      {user && (
+        <div className="fixed top-4 right-4 md:top-6 md:right-6 z-50">
+          <button
+            onClick={() => setIsProfileOpen(!isProfileOpen)}
+            className="text-white p-2 bg-black/50 rounded-md hover:bg-black/80 transition-colors flex items-center justify-center"
+          >
+            {user.photoURL ? (
+              <img src={user.photoURL} alt="Profile" className="w-6 h-6 md:w-8 md:h-8 rounded-full" />
+            ) : (
+              <UserIcon className="w-6 h-6 md:w-8 md:h-8" />
+            )}
+          </button>
+
+          {isProfileOpen && (
+            <div className="absolute top-full right-0 mt-2 w-48 bg-black/90 border border-white/10 p-4 rounded-xl shadow-2xl backdrop-blur-md">
+              <p className="text-white font-black italic text-xs md:text-sm break-all">
+                {user.email}
+              </p>
+              <button
+                onClick={() => {
+                  logout();
+                  setIsProfileOpen(false);
+                }}
+                className="mt-4 w-full text-white/60 hover:text-white font-black italic text-xs md:text-sm transition-colors text-right"
+              >
+                LOGOUT
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black">

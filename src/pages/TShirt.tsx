@@ -4,6 +4,7 @@ import Preloader from '../components/Preloader';
 import RequestModal from '../components/RequestModal';
 import Seo from '../components/Seo';
 import { getProductById } from '../data/products';
+import { useAuth } from '../contexts/AuthContext';
 
 function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImageLoad, altBase }: { tshirtId: number, imgNum: number, onZoom: (src: string) => void, mobileTopClass: string, onImageLoad: () => void, altBase?: string }) {
   // Use a timestamp to prevent the browser from showing old cached images
@@ -50,6 +51,7 @@ export default function TShirt() {
   const { id } = useParams();
   const tshirtId = parseInt(id || '1', 10);
   const product = getProductById(tshirtId);
+  const { user } = useAuth();
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadedImagesCount, setLoadedImagesCount] = useState(0);
@@ -81,13 +83,14 @@ export default function TShirt() {
     }, 10000);
     
     return () => clearTimeout(safetyTimer);
-  }, [id]);
+  }, [id, user]);
 
   const checkIfRequested = async () => {
     try {
       const apiUrl = '/api/check-request';
       console.log(`Checking request status at: ${apiUrl}`);
-      const response = await fetch(`${apiUrl}?tshirtId=${tshirtId}`);
+      const emailParam = user?.email ? `&email=${encodeURIComponent(user.email)}` : '';
+      const response = await fetch(`${apiUrl}?tshirtId=${tshirtId}${emailParam}`);
       
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('text/html')) {
