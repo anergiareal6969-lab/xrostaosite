@@ -48,6 +48,16 @@ export default function App() {
       '/images/footer-bg.png',
       '/images/mobile/footer-bg.png',
 
+      // T-shirt page backgrounds
+      '/images/tshirt-bg-1.jpg',
+      '/images/tshirt-bg-mid.jpg',
+      '/images/tshirt-bg-last.jpg',
+      '/images/mobile/tshirt-bg-1.png',
+      '/images/mobile/tshirt-bg-mid-2.png',
+      '/images/mobile/tshirt-bg-mid-3.png',
+      '/images/mobile/tshirt-bg-mid-4.png',
+      '/images/mobile/tshirt-bg-last.png',
+
       // Home page t-shirt thumbnails
       '/images/tshirts/1/main.png',
       '/images/tshirts/1/main.jpg',
@@ -73,10 +83,22 @@ export default function App() {
       '/images/tshirts/6/main.jpg',
       '/images/tshirts/6/main.jpeg',
       '/images/tshirts/6/main.webp',
-      '/images/tshirts/7/page-1.png',
-      '/images/tshirts/8/page-1.png',
-      '/images/tshirts/9/page-1.png',
-      '/images/tshirts/10/page-1.png',
+      '/images/tshirts/7/main.png',
+      '/images/tshirts/7/main.jpg',
+      '/images/tshirts/7/main.jpeg',
+      '/images/tshirts/7/main.webp',
+      '/images/tshirts/8/main.png',
+      '/images/tshirts/8/main.jpg',
+      '/images/tshirts/8/main.jpeg',
+      '/images/tshirts/8/main.webp',
+      '/images/tshirts/9/main.png',
+      '/images/tshirts/9/main.jpg',
+      '/images/tshirts/9/main.jpeg',
+      '/images/tshirts/9/main.webp',
+      '/images/tshirts/10/main.png',
+      '/images/tshirts/10/main.jpg',
+      '/images/tshirts/10/main.jpeg',
+      '/images/tshirts/10/main.webp',
     ];
 
     const preloadImage = (src: string) => {

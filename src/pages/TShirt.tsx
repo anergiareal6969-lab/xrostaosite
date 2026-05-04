@@ -222,7 +222,7 @@ export default function TShirt() {
       {images.map((imgNum, index) => {
         // Determine the background image based on the index
         let desktopBgImage = '/images/tshirt-bg-mid.jpg'; // Default for middle images
-        let mobileBgImage = '/images/mobile/tshirt-bg-mid.png';
+        let mobileBgImage = `/images/mobile/tshirt-bg-mid-${index + 1}.png`; // Dynamic mid background for mobile
         let mobileTopClass = 'max-md:top-[52%]'; // Adjusted slightly up for mid
         
         if (index === 0) {
