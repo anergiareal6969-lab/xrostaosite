@@ -23,11 +23,28 @@ if (!DATABASE_URL) {
 
 const pool = new pg.Pool({
   connectionString: DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-  max: 20,
+  ssl: DATABASE_URL.includes('localhost') ? false : { rejectUnauthorized: false },
+  max: 10,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,
 });
+
+// Test connection and retry logic
+async function connectWithRetry(retries = 5) {
+  while (retries > 0) {
+    try {
+      const client = await pool.connect();
+      console.log('[INIT] Successfully connected to PostgreSQL');
+      client.release();
+      return;
+    } catch (err) {
+      retries -= 1;
+      console.error(`[DB] Connection failed. Retries left: ${retries}`, err);
+      if (retries === 0) throw err;
+      await new Promise(res => setTimeout(resolve => res(resolve), 5000));
+    }
+  }
+}
 
 // Error handling for the pool
 pool.on('error', (err) => {
@@ -260,6 +277,7 @@ async function start() {
 
   try {
     if (process.env.DATABASE_URL) {
+      await connectWithRetry();
       await ensureRequestsTable();
       console.log('[INIT] Database table checked/created');
     }
