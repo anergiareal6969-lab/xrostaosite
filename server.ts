@@ -15,9 +15,23 @@ dotenv.config();
 const app = express();
 
 // 1. Initializations
+const DATABASE_URL = process.env.DATABASE_URL;
+
+if (!DATABASE_URL) {
+  console.error('[CRITICAL ERROR] DATABASE_URL is not defined in environment variables!');
+}
+
 const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL || "postgresql://anergia_user:gjyyxZaOaxiX9mUMLW9ZyMMmRrSuyMf9@dpg-d7hkrlcvikkc73ab76bg-a.frankfurt-postgres.render.com/anergia",
-  ssl: { rejectUnauthorized: false }
+  connectionString: DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
+});
+
+// Error handling for the pool
+pool.on('error', (err) => {
+  console.error('[POSTGRES POOL ERROR]', err);
 });
 
 const transporter = process.env.EMAIL_PASSWORD
@@ -240,8 +254,15 @@ app.get('*', (req, res) => {
 const PORT = process.env.PORT || 5000;
 
 async function start() {
+  console.log(`[INIT] Starting server...`);
+  console.log(`[INIT] DATABASE_URL present: ${!!process.env.DATABASE_URL}`);
+  console.log(`[INIT] EMAIL_PASSWORD present: ${!!process.env.EMAIL_PASSWORD}`);
+
   try {
-    await ensureRequestsTable();
+    if (process.env.DATABASE_URL) {
+      await ensureRequestsTable();
+      console.log('[INIT] Database table checked/created');
+    }
   } catch (err) {
     console.error('[DATABASE INIT ERROR]', err);
   }
