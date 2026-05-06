@@ -61,7 +61,8 @@ const transporter = process.env.EMAIL_PASSWORD
     })
   : null;
 
-async function ensureRequestsTable() {
+async function ensureTables() {
+  // Requests table
   await pool.query(`
     CREATE TABLE IF NOT EXISTS requests (
       id SERIAL PRIMARY KEY,
@@ -72,6 +73,18 @@ async function ensureRequestsTable() {
       UNIQUE (ip_address, tshirt_id)
     );
   `);
+
+  // Users table
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      username TEXT,
+      last_ip TEXT,
+      last_login TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+  console.log('[DB] Tables ensured');
 }
 
 async function sendMailSafe(options: nodemailer.SendMailOptions) {
@@ -99,6 +112,50 @@ app.use((req, res, next) => {
 // Health Check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', database: 'checking...' });
+});
+
+// API to sync user after Google Login
+app.post('/api/sync-user', async (req, res) => {
+  const { email, username } = req.body;
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+  const clientIp = Array.isArray(ip) ? ip[0] : ip.split(',')[0].trim();
+
+  if (!email) return res.status(400).json({ error: 'Email is required' });
+
+  try {
+    await pool.query(
+      `INSERT INTO users (email, username, last_ip, last_login) 
+       VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+       ON CONFLICT (email) DO UPDATE 
+       SET username = $2, last_ip = $3, last_login = CURRENT_TIMESTAMP`,
+      [email, username || email.split('@')[0], clientIp]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[API] User sync error:', err);
+    res.status(500).json({ error: 'Sync failed' });
+  }
+});
+
+// API to auto-login by IP
+app.get('/api/me-by-ip', async (req, res) => {
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+  const clientIp = Array.isArray(ip) ? ip[0] : ip.split(',')[0].trim();
+
+  try {
+    const result = await pool.query(
+      'SELECT email, username FROM users WHERE last_ip = $1 ORDER BY last_login DESC LIMIT 1',
+      [clientIp]
+    );
+    if (result.rows.length > 0) {
+      res.json({ user: result.rows[0] });
+    } else {
+      res.json({ user: null });
+    }
+  } catch (err) {
+    console.error('[API] IP lookup error:', err);
+    res.status(500).json({ error: 'Lookup failed' });
+  }
 });
 
 // Check Request
@@ -278,8 +335,8 @@ async function start() {
   try {
     if (process.env.DATABASE_URL) {
       await connectWithRetry();
-      await ensureRequestsTable();
-      console.log('[INIT] Database table checked/created');
+      await ensureTables();
+      console.log('[INIT] Database tables checked/created');
     }
   } catch (err) {
     console.error('[DATABASE INIT ERROR]', err);

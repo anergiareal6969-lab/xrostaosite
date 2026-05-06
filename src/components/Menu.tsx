@@ -34,18 +34,27 @@ export default function Menu() {
             </button>
 
             {isProfileOpen && (
-              <div className="absolute top-full left-0 mt-2 w-48 bg-black/90 border border-white/10 p-4 rounded-xl shadow-2xl backdrop-blur-md">
-                <p className="text-white font-black italic text-xs md:text-sm break-all">
-                  {user.email}
-                </p>
+              <div className="absolute top-full left-0 mt-2 w-56 bg-white/10 border border-white/20 p-5 rounded-2xl shadow-2xl backdrop-blur-xl ring-1 ring-white/30">
+                <div className="flex flex-col gap-1 mb-4">
+                  <p className="text-white/40 text-[10px] font-black italic uppercase tracking-widest">Username</p>
+                  <p className="text-white font-black italic text-sm md:text-base break-all uppercase leading-none">
+                    {user.username}
+                  </p>
+                </div>
+                <div className="flex flex-col gap-1 mb-6">
+                  <p className="text-white/40 text-[10px] font-black italic uppercase tracking-widest">Email</p>
+                  <p className="text-white font-black italic text-xs md:text-sm break-all leading-none">
+                    {user.email}
+                  </p>
+                </div>
                 <button
                   onClick={() => {
                     logout();
                     setIsProfileOpen(false);
                   }}
-                  className="mt-4 w-full text-white/60 hover:text-white font-black italic text-xs md:text-sm transition-colors text-left"
+                  className="w-full bg-white/10 hover:bg-white/20 text-white font-black italic text-xs md:text-sm py-3 rounded-xl transition-all border border-white/10 uppercase tracking-tighter"
                 >
-                  LOGOUT
+                  Log out
                 </button>
               </div>
             )}
