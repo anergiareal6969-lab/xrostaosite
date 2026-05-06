@@ -13,7 +13,7 @@ interface RequestModalProps {
 export default function RequestModal({ isOpen, onClose, onSubmit, mode = 'request', selectedSize }: RequestModalProps) {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user, loginWithGoogle } = useAuth();
+  const { user, loginWithGoogle, loading } = useAuth();
 
   useEffect(() => {
     if (user?.email) {
@@ -25,14 +25,8 @@ export default function RequestModal({ isOpen, onClose, onSubmit, mode = 'reques
     e.preventDefault();
     
     if (!user) {
-      try {
-        await loginWithGoogle();
-        // After successful login, the email will be set by useEffect
-        return;
-      } catch (error) {
-        console.error("Login failed:", error);
-        return;
-      }
+      await loginWithGoogle();
+      return;
     }
 
     if (!email) return;
@@ -63,7 +57,12 @@ export default function RequestModal({ isOpen, onClose, onSubmit, mode = 'reques
             className="bg-black/40 border border-white/10 p-8 rounded-2xl w-full max-w-md shadow-2xl backdrop-blur-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            {!user ? (
+            {loading ? (
+              <div className="flex flex-col items-center gap-4 py-8">
+                <div className="w-10 h-10 border-4 border-white/20 border-t-white rounded-full animate-spin" />
+                <p className="text-white/40 font-bold italic text-sm">ΦΟΡΤΩΣΗ...</p>
+              </div>
+            ) : !user ? (
               /* ================= LOGIN STAGE ================= */
               <div className="flex flex-col items-center gap-8">
                 <div className="text-center">

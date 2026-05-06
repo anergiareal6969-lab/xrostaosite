@@ -22,41 +22,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. First, set up the listener for auth state changes
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log("[AUTH] State changed, user:", user?.email);
-      setUser(user);
+    // 1. Monitor auth state changes (standard way)
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      console.log("[AUTH] State change:", currentUser?.email);
+      setUser(currentUser);
       setLoading(false);
     });
 
-    // 2. Then, handle the redirect result specifically
-    const handleRedirect = async () => {
+    // 2. Force check for redirect result on every mount
+    const checkRedirect = async () => {
       try {
         const result = await getRedirectResult(auth);
         if (result?.user) {
-          console.log("[AUTH] Redirect result found user:", result.user.email);
+          console.log("[AUTH] Redirect success:", result.user.email);
           setUser(result.user);
         }
       } catch (error: any) {
-        console.error("[AUTH] Error handling redirect result:", error);
-        // Only alert if it's a real error, not just "no result"
-        if (error.code !== 'auth/no-current-user') {
-          // alert(`Σφάλμα κατά την επιστροφή: ${error.message}`);
-        }
+        console.error("[AUTH] Redirect error:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    handleRedirect();
+    checkRedirect();
 
     return () => unsubscribe();
   }, []);
 
   const loginWithGoogle = async () => {
     try {
-      // Use Redirect instead of Popup to avoid "black screen" issues on mobile/browsers
+      setLoading(true);
       await signInWithRedirect(auth, googleProvider);
     } catch (error: any) {
-      console.error("Error starting redirect login:", error);
+      setLoading(false);
+      console.error("[AUTH] Login start error:", error);
       alert(`Σφάλμα σύνδεσης: ${error.message}`);
       throw error;
     }
