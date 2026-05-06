@@ -12,15 +12,19 @@ export default function Menu() {
 
   return (
     <>
-      <div className="fixed top-4 left-4 md:top-6 md:left-6 z-50 flex items-center gap-4">
+      {/* Menu Button (Left) */}
+      <div className="fixed top-4 left-4 md:top-6 md:left-6 z-50">
         <button 
           onClick={() => setIsOpen(true)}
           className="text-white p-2 bg-black/50 rounded-md hover:bg-black/80 transition-colors"
         >
           <MenuIcon className="w-6 h-6 md:w-8 md:h-8" />
         </button>
+      </div>
 
-        {user && (
+      {/* Profile Button (Right) */}
+      {user && (
+        <div className="fixed top-4 right-4 md:top-6 md:right-6 z-50">
           <div className="relative">
             <button
               onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -34,7 +38,7 @@ export default function Menu() {
             </button>
 
             {isProfileOpen && (
-              <div className="absolute top-full left-0 mt-2 w-56 bg-white/10 border border-white/20 p-5 rounded-2xl shadow-2xl backdrop-blur-xl ring-1 ring-white/30">
+              <div className="absolute top-full right-0 mt-2 w-56 bg-white/10 border border-white/20 p-5 rounded-2xl shadow-2xl backdrop-blur-xl ring-1 ring-white/30">
                 <div className="flex flex-col gap-1 mb-4">
                   <p className="text-white/40 text-[10px] font-black italic uppercase tracking-widest">Username</p>
                   <p className="text-white font-black italic text-sm md:text-base break-all uppercase leading-none">
@@ -59,8 +63,8 @@ export default function Menu() {
               </div>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black">
