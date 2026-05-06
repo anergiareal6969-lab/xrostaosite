@@ -22,15 +22,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for redirect result when the app loads
-    getRedirectResult(auth).catch((error) => {
-      console.error("Error handling redirect result:", error);
-    });
-
+    // 1. First, set up the listener for auth state changes
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log("[AUTH] State changed, user:", user?.email);
       setUser(user);
       setLoading(false);
     });
+
+    // 2. Then, handle the redirect result specifically
+    const handleRedirect = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result?.user) {
+          console.log("[AUTH] Redirect result found user:", result.user.email);
+          setUser(result.user);
+        }
+      } catch (error: any) {
+        console.error("[AUTH] Error handling redirect result:", error);
+        // Only alert if it's a real error, not just "no result"
+        if (error.code !== 'auth/no-current-user') {
+          // alert(`Σφάλμα κατά την επιστροφή: ${error.message}`);
+        }
+      }
+    };
+
+    handleRedirect();
+
     return () => unsubscribe();
   }, []);
 
