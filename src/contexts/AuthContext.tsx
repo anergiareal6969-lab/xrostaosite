@@ -2,8 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { 
   User, 
   onAuthStateChanged, 
-  signInWithRedirect, 
-  getRedirectResult,
+  signInWithPopup,
   signOut 
 } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
@@ -29,21 +28,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Function to sync user with our DB
   const syncUserWithDB = async (email: string, username: string) => {
+    console.log("[AUTH] Attempting to sync with DB:", email);
     try {
-      await fetch('/api/sync-user', {
+      const response = await fetch('/api/sync-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, username }),
       });
+      const data = await response.json();
+      console.log("[AUTH] DB Sync response:", data);
     } catch (err) {
       console.error("[AUTH] DB Sync error:", err);
     }
   };
 
   useEffect(() => {
+    console.log("[AUTH] Provider initialized, checking state...");
+    
     // 1. Monitor Firebase auth state
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser?.email) {
+        console.log("[AUTH] Firebase user found:", currentUser.email);
         const userData: AuthUser = {
           email: currentUser.email,
           username: currentUser.displayName || currentUser.email.split('@')[0],
@@ -52,58 +57,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(userData);
         await syncUserWithDB(userData.email, userData.username);
       } else {
+        console.log("[AUTH] No Firebase user, checking IP auto-login...");
         // 2. If no Firebase user, try auto-login by IP from our DB
         try {
           const res = await fetch('/api/me-by-ip');
           const data = await res.json();
           if (data.user) {
+            console.log("[AUTH] IP Auto-login success:", data.user.email);
             setUser({
               email: data.user.email,
               username: data.user.username
             });
           } else {
+            console.log("[AUTH] No IP record found.");
             setUser(null);
           }
         } catch (err) {
+          console.error("[AUTH] IP lookup error:", err);
           setUser(null);
         }
       }
       setLoading(false);
     });
 
-    // 3. Handle redirect result
-    const checkRedirect = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (result?.user?.email) {
-          const userData: AuthUser = {
-            email: result.user.email,
-            username: result.user.displayName || result.user.email.split('@')[0],
-            photoURL: result.user.photoURL || undefined
-          };
-          setUser(userData);
-          await syncUserWithDB(userData.email, userData.username);
-        }
-      } catch (error: any) {
-        console.error("[AUTH] Redirect error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkRedirect();
     return () => unsubscribe();
   }, []);
 
   const loginWithGoogle = async () => {
+    console.log("[AUTH] Login with Google started (Popup)...");
     try {
       setLoading(true);
-      await signInWithRedirect(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      console.log("[AUTH] Popup success, user:", result.user.email);
+      
+      const userData: AuthUser = {
+        email: result.user.email,
+        username: result.user.displayName || result.user.email.split('@')[0],
+        photoURL: result.user.photoURL || undefined
+      };
+      
+      setUser(userData);
+      await syncUserWithDB(userData.email, userData.username);
+      console.log("[AUTH] Login flow completed.");
     } catch (error: any) {
       setLoading(false);
-      console.error("[AUTH] Login start error:", error);
-      alert(`Σφάλμα σύνδεσης: ${error.message}`);
+      console.error("[AUTH] Login error:", error);
+      if (error.code === 'auth/popup-blocked') {
+        alert("Το παράθυρο σύνδεσης μπλοκαρίστηκε. Παρακαλώ επέτρεψε τα pop-ups.");
+      } else {
+        alert(`Σφάλμα σύνδεσης: ${error.message}`);
+      }
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
