@@ -30,9 +30,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginWithGoogle = async () => {
     try {
+      // Clear any previous error states if needed
       await signInWithPopup(auth, googleProvider);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error logging in with Google:", error);
+      if (error.code === 'auth/popup-blocked') {
+        alert("Το popup μπλοκαρίστηκε από τον browser. Παρακαλώ επέτρεψε τα popups για αυτό το site.");
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        // User closed the popup, do nothing
+      } else {
+        alert(`Σφάλμα σύνδεσης: ${error.message}`);
+      }
       throw error;
     }
   };
