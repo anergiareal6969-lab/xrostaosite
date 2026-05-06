@@ -2,7 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { 
   User, 
   onAuthStateChanged, 
-  signInWithPopup, 
+  signInWithRedirect, 
+  getRedirectResult,
   signOut 
 } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
@@ -21,6 +22,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check for redirect result when the app loads
+    getRedirectResult(auth).catch((error) => {
+      console.error("Error handling redirect result:", error);
+    });
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
@@ -30,17 +36,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginWithGoogle = async () => {
     try {
-      // Clear any previous error states if needed
-      await signInWithPopup(auth, googleProvider);
+      // Use Redirect instead of Popup to avoid "black screen" issues on mobile/browsers
+      await signInWithRedirect(auth, googleProvider);
     } catch (error: any) {
-      console.error("Error logging in with Google:", error);
-      if (error.code === 'auth/popup-blocked') {
-        alert("Το popup μπλοκαρίστηκε από τον browser. Παρακαλώ επέτρεψε τα popups για αυτό το site.");
-      } else if (error.code === 'auth/cancelled-popup-request') {
-        // User closed the popup, do nothing
-      } else {
-        alert(`Σφάλμα σύνδεσης: ${error.message}`);
-      }
+      console.error("Error starting redirect login:", error);
+      alert(`Σφάλμα σύνδεσης: ${error.message}`);
       throw error;
     }
   };
