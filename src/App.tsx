@@ -28,97 +28,39 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const criticalImages = [
-      // Main backgrounds
-      '/images/main-bg-1.jpg',
-      '/images/main-bg-2.jpg',
-      '/images/main-bg-3.jpg',
-      '/images/mobile/main-bg-1.png',
-      '/images/mobile/main-bg-2.png',
-      '/images/mobile/main-bg-3.png',
-      '/images/mobile/main-bg-4.png',
-      '/images/mobile/main-bg-5.png',
-      '/images/mobile/main-bg-6.png',
-      '/images/mobile/main-bg-7.png',
-      
-      // Menu and UI elements
-      '/images/footer-bg.png',
-      '/images/mobile/footer-bg.png',
-
-      // T-shirt page backgrounds
-      '/images/tshirt-bg-1.jpg',
-      '/images/tshirt-bg-mid.jpg',
-      '/images/tshirt-bg-last.jpg',
-      '/images/mobile/tshirt-bg-1.png',
-      '/images/mobile/tshirt-bg-mid-2.png',
-      '/images/mobile/tshirt-bg-mid-3.png',
-      '/images/mobile/tshirt-bg-mid-4.png',
-      '/images/mobile/tshirt-bg-last.png',
-
-      // Home page t-shirt thumbnails
-      '/images/tshirts/1/main.png',
-      '/images/tshirts/1/main.jpg',
-      '/images/tshirts/1/main.jpeg',
-      '/images/tshirts/1/main.webp',
-      '/images/tshirts/2/main.png',
-      '/images/tshirts/2/main.jpg',
-      '/images/tshirts/2/main.jpeg',
-      '/images/tshirts/2/main.webp',
-      '/images/tshirts/3/main.png',
-      '/images/tshirts/3/main.jpg',
-      '/images/tshirts/3/main.jpeg',
-      '/images/tshirts/3/main.webp',
-      '/images/tshirts/4/main.png',
-      '/images/tshirts/4/main.jpg',
-      '/images/tshirts/4/main.jpeg',
-      '/images/tshirts/4/main.webp',
-      '/images/tshirts/5/main.png',
-      '/images/tshirts/5/main.jpg',
-      '/images/tshirts/5/main.jpeg',
-      '/images/tshirts/5/main.webp',
-      '/images/tshirts/6/main.png',
-      '/images/tshirts/6/main.jpg',
-      '/images/tshirts/6/main.jpeg',
-      '/images/tshirts/6/main.webp',
-      '/images/tshirts/7/main.png',
-      '/images/tshirts/7/main.jpg',
-      '/images/tshirts/7/main.jpeg',
-      '/images/tshirts/7/main.webp',
-      '/images/tshirts/8/main.png',
-      '/images/tshirts/8/main.jpg',
-      '/images/tshirts/8/main.jpeg',
-      '/images/tshirts/8/main.webp',
-      '/images/tshirts/9/main.png',
-      '/images/tshirts/9/main.jpg',
-      '/images/tshirts/9/main.jpeg',
-      '/images/tshirts/9/main.webp',
-      '/images/tshirts/10/main.png',
-      '/images/tshirts/10/main.jpg',
-      '/images/tshirts/10/main.jpeg',
-      '/images/tshirts/10/main.webp',
-    ];
-
-    const preloadImage = (src: string) => {
-            return new Promise((resolve) => {
-              const img = new Image();
-              // Add a cache buster to the preloading too
-              img.src = `${src}?v=${Date.now()}`;
-              img.onload = resolve;
-              img.onerror = resolve; // Don't block if an image fails
-            });
-          };
-
     const startTime = Date.now();
-    const minLoadingTime = 2500; // Slightly increased for better feel
+    
+    // Minimum 3 seconds for the beautiful preloader
+    const MIN_LOAD_TIME = 3000;
 
-    Promise.all(criticalImages.map(preloadImage)).then(() => {
+    const loadAssets = async () => {
+      // Preload critical images only initially to speed up
+      const criticalImages = [
+        '/images/main-bg-1.jpg',
+        '/images/mobile/main-bg-1.png',
+        '/images/footer-bg.png'
+      ];
+
+      const promises = criticalImages.map(src => {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.src = src;
+          img.onload = resolve;
+          img.onerror = resolve;
+        });
+      });
+
+      await Promise.all(promises);
+      
       const elapsedTime = Date.now() - startTime;
-      const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
+      const remainingTime = Math.max(0, MIN_LOAD_TIME - elapsedTime);
       
       setTimeout(() => {
         setIsLoading(false);
       }, remainingTime);
-    });
+    };
+
+    loadAssets();
   }, []);
 
   return (

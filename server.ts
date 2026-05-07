@@ -2,6 +2,7 @@ import express from 'express';
 import pg from 'pg';
 import nodemailer from 'nodemailer';
 import cors from 'cors';
+import compression from 'compression';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
@@ -99,6 +100,7 @@ async function sendMailSafe(options: nodemailer.SendMailOptions) {
 }
 
 // 2. Middleware
+app.use(compression()); // Compress all responses
 app.use(cors());
 app.use(express.json());
 
@@ -308,7 +310,11 @@ app.get('/admin-dashboard-xrostao', async (req, res) => {
 
 // 4. Static Files (ONLY AFTER API ROUTES)
 const distPath = path.join(__dirname, 'dist');
-app.use(express.static(distPath));
+app.use(express.static(distPath, {
+  maxAge: '1d', // Cache static files for 1 day
+  etag: true,
+  lastModified: true
+}));
 
 // 5. SPA Catch-all (MUST BE LAST)
 app.get('*', (req, res) => {
