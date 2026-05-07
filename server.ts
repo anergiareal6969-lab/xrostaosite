@@ -54,13 +54,19 @@ pool.on('error', (err) => {
 
 const transporter = process.env.EMAIL_PASSWORD
   ? nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true, // Use SSL
       auth: {
         user: 'anergiareal6969@gmail.com',
         pass: process.env.EMAIL_PASSWORD,
       },
     })
   : null;
+
+if (!transporter) {
+  console.warn('[WARNING] EMAIL_PASSWORD is not defined. Email sending will be disabled.');
+}
 
 async function ensureTables() {
   // Requests table
@@ -89,9 +95,13 @@ async function ensureTables() {
 }
 
 async function sendMailSafe(options: nodemailer.SendMailOptions) {
-  if (!transporter) return false;
+  if (!transporter) {
+    console.error('[EMAIL] Transporter not initialized. Check EMAIL_PASSWORD.');
+    return false;
+  }
   try {
-    await transporter.sendMail(options);
+    const info = await transporter.sendMail(options);
+    console.log(`[EMAIL] Sent: ${info.messageId} to ${options.to}`);
     return true;
   } catch (err) {
     console.error('[EMAIL ERROR]', err);
@@ -125,6 +135,10 @@ app.post('/api/sync-user', async (req, res) => {
   if (!email) return res.status(400).json({ error: 'Email is required' });
 
   try {
+    // Check if user is new
+    const checkUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    const isNewUser = checkUser.rows.length === 0;
+
     await pool.query(
       `INSERT INTO users (email, username, last_ip, last_login) 
        VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
@@ -132,7 +146,18 @@ app.post('/api/sync-user', async (req, res) => {
        SET username = $2, last_ip = $3, last_login = CURRENT_TIMESTAMP`,
       [email, username || email.split('@')[0], clientIp]
     );
-    res.json({ success: true });
+
+    if (isNewUser) {
+      console.log(`[API] New user signed up: ${email}. Sending welcome email.`);
+      await sendMailSafe({
+        from: 'anergiareal6969@gmail.com',
+        to: email,
+        subject: 'Καλώς ήρθες στην anergia! | xrostao',
+        text: 'Σε ευχαριστούμε για την εγγραφή σου! Θα ενημερωθείς για όλα τα νέα drops.'
+      });
+    }
+
+    res.json({ success: true, isNewUser });
   } catch (err) {
     console.error('[API] User sync error:', err);
     res.status(500).json({ error: 'Sync failed' });
@@ -247,10 +272,11 @@ app.post('/api/request', async (req, res) => {
     const userMailSent = await sendMailSafe({
       from: 'anergiareal6969@gmail.com',
       to: email,
-      subject: 'Επιβεβαίωση Αιτήματος - xrostao',
-      text: 'Λάβαμε το αίτημά σου! Θα ενημερωθείς μόλις κυκλοφορήσουν οι μπλούζες.'
+      subject: 'Επιβεβαίωση Αιτήματος | anergia season by xrostao',
+      text: 'Έχουμε λάβει το μήνυμα πως έχουμε λάβει το αίτημα σου και θα ενημερωθείς όταν κυκλοφορήσει το drop.'
     });
 
+    console.log(`[API] Emails sent - Admin: ${adminMailSent}, User: ${userMailSent}`);
     res.json({ status: 'success', adminMailSent, userMailSent });
   } catch (err) {
     console.error('[SERVER ERROR]', err);
