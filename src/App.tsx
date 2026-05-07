@@ -28,36 +28,62 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const startTime = Date.now();
-    
-    // Minimum 3 seconds for the beautiful preloader
-    const MIN_LOAD_TIME = 3000;
-
     const loadAssets = async () => {
-      // Preload critical images only initially to speed up
-      const criticalImages = [
+      const allImages = [
+        // Desktop Backgrounds
         '/images/main-bg-1.jpg',
+        '/images/main-bg-2.jpg',
+        '/images/main-bg-3.jpg',
+        
+        // Mobile Backgrounds
         '/images/mobile/main-bg-1.png',
-        '/images/footer-bg.png'
+        '/images/mobile/main-bg-2.png',
+        '/images/mobile/main-bg-3.png',
+        '/images/mobile/main-bg-4.png',
+        '/images/mobile/main-bg-5.png',
+        '/images/mobile/main-bg-6.png',
+        '/images/mobile/main-bg-7.png',
+        
+        // UI & Common
+        '/images/footer-bg.png',
+        '/images/mobile/footer-bg.png',
+        '/images/tshirt-bg-1.jpg',
+        '/images/tshirt-bg-mid.jpg',
+        '/images/tshirt-bg-last.jpg',
+        '/images/mobile/tshirt-bg-1.png',
+        '/images/mobile/tshirt-bg-mid-2.png',
+        '/images/mobile/tshirt-bg-mid-3.png',
+        '/images/mobile/tshirt-bg-mid-4.png',
+        '/images/mobile/tshirt-bg-last.png',
+
+        // T-shirts
+        ...Array.from({ length: 10 }, (_, i) => [
+          `/images/tshirts/${i + 1}/main.png`,
+          `/images/tshirts/${i + 1}/main.jpg`,
+          `/images/tshirts/${i + 1}/main.jpeg`,
+          `/images/tshirts/${i + 1}/main.webp`,
+        ]).flat()
       ];
 
-      const promises = criticalImages.map(src => {
+      // Use a Set to remove duplicates
+      const uniqueImages = [...new Set(allImages)];
+
+      const promises = uniqueImages.map(src => {
         return new Promise((resolve) => {
           const img = new Image();
           img.src = src;
           img.onload = resolve;
-          img.onerror = resolve;
+          img.onerror = resolve; // Continue even if one fails
         });
       });
 
+      // Wait for ALL images to be in browser cache
       await Promise.all(promises);
       
-      const elapsedTime = Date.now() - startTime;
-      const remainingTime = Math.max(0, MIN_LOAD_TIME - elapsedTime);
-      
+      // Minimum safety delay for transition
       setTimeout(() => {
         setIsLoading(false);
-      }, remainingTime);
+      }, 500);
     };
 
     loadAssets();

@@ -249,7 +249,7 @@ export default function TShirt() {
               <img 
                 src={desktopBgImage} 
                 alt="" 
-                className="w-full h-auto" 
+                className="w-full h-auto no-select" 
                 onLoad={handleImageLoad}
                 onError={handleImageLoad}
               />

@@ -75,26 +75,22 @@ export default function Home() {
       
       {/* ================= DESKTOP VERSION ================= */}
       <div className="hidden md:block relative w-full">
-        {/* Desktop Backgrounds */}
-        <img 
-          src="/images/main-bg-1.jpg" 
-          alt="Background 1" 
-          className="w-full h-auto block"
-          loading="eager"
-          fetchPriority="high"
-        />
-        <img 
-          src="/images/main-bg-2.jpg" 
-          alt="Background 2" 
-          className="w-full h-auto block" 
-          loading="lazy"
-        />
-        <img 
-          src="/images/main-bg-3.jpg" 
-          alt="Background 3" 
-          className="w-full h-auto block" 
-          loading="lazy"
-        />
+          {/* Desktop Backgrounds */}
+          <img 
+            src="/images/main-bg-1.jpg" 
+            alt="Background 1" 
+            className="w-full h-auto block no-select"
+          />
+          <img 
+            src="/images/main-bg-2.jpg" 
+            alt="Background 2" 
+            className="w-full h-auto block no-select" 
+          />
+          <img 
+            src="/images/main-bg-3.jpg" 
+            alt="Background 3" 
+            className="w-full h-auto block no-select" 
+          />
         
         {/* Desktop T-shirts Overlay */}
         <div className="absolute inset-0 w-full h-full pointer-events-none">
@@ -118,9 +114,7 @@ export default function Home() {
           <img 
             src="/images/mobile/main-bg-1.png" 
             alt="Mobile Background 1" 
-            className="w-full h-auto block"
-            loading="eager"
-            fetchPriority="high"
+            className="w-full h-auto block no-select"
           />
           <Link to={`/products/${PRODUCTS[0].slug}`} className="absolute top-[66%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
             <TshirtMainImageFallback tshirtId={1} name={PRODUCTS[0].name} />
@@ -132,8 +126,7 @@ export default function Home() {
           <img 
             src="/images/mobile/main-bg-2.png" 
             alt="Mobile Background 2" 
-            className="w-full h-auto block" 
-            loading="lazy"
+            className="w-full h-auto block no-select" 
           />
           <Link to={`/products/${PRODUCTS[1].slug}`} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
             <TshirtMainImageFallback tshirtId={2} name={PRODUCTS[1].name} />
@@ -148,8 +141,7 @@ export default function Home() {
           <img 
             src="/images/mobile/main-bg-3.png" 
             alt="Mobile Background 3" 
-            className="w-full h-auto block" 
-            loading="lazy"
+            className="w-full h-auto block no-select" 
           />
           <Link to={`/products/${PRODUCTS[3].slug}`} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
             <TshirtMainImageFallback tshirtId={4} name={PRODUCTS[3].name} />
@@ -164,8 +156,7 @@ export default function Home() {
           <img 
             src="/images/mobile/main-bg-4.png" 
             alt="Mobile Background 4" 
-            className="w-full h-auto block" 
-            loading="lazy"
+            className="w-full h-auto block no-select" 
           />
           <Link to={`/products/${PRODUCTS[5].slug}`} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
             <TshirtMainImageFallback tshirtId={6} name={PRODUCTS[5].name} />
@@ -180,8 +171,7 @@ export default function Home() {
           <img 
             src="/images/mobile/main-bg-5.png" 
             alt="Mobile Background 5" 
-            className="w-full h-auto block" 
-            loading="lazy"
+            className="w-full h-auto block no-select" 
           />
           <Link to={`/products/${PRODUCTS[7].slug}`} className="absolute top-[46%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
             <TshirtMainImageFallback tshirtId={8} name={PRODUCTS[7].name} />
@@ -193,8 +183,7 @@ export default function Home() {
           <img 
             src="/images/mobile/main-bg-6.png" 
             alt="Mobile Background 6" 
-            className="w-full h-auto block" 
-            loading="lazy"
+            className="w-full h-auto block no-select" 
           />
           <Link to={`/products/${PRODUCTS[8].slug}`} className="absolute top-[21%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
             <TshirtMainImageFallback tshirtId={9} name={PRODUCTS[8].name} />
@@ -209,8 +198,7 @@ export default function Home() {
           <img 
             src="/images/mobile/main-bg-7.png" 
             alt="Mobile Background 7" 
-            className="w-full h-auto block" 
-            loading="lazy"
+            className="w-full h-auto block no-select" 
           />
         </div>
       </div>
