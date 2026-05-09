@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'motion/react';
 import Seo from '../components/Seo';
 import { PRODUCTS } from '../data/products';
@@ -42,12 +42,12 @@ function TshirtMainImageFallback({ tshirtId, name }: { tshirtId: number, name: s
 
 export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const navigate = useNavigate();
   const x = useMotionValue(0);
-  const scale = useTransform(x, [-200, 0], [0.5, 1]);
-  const opacity = useTransform(x, [-200, -150], [0, 1]);
+  const scale = useTransform(x, [-300, 0], [0.5, 1]);
+  const opacity = useTransform(x, [-300, -200], [0, 1]);
 
   const handleDragEnd = (_: any, info: any) => {
-    // If swiped left enough
     if (info.offset.x < -100 || info.velocity.x < -500) {
       setCurrentIndex((prev) => (prev + 1) % PRODUCTS.length);
     }
@@ -81,11 +81,10 @@ export default function Home() {
         />
         
         {/* T-shirts Stack Overlay */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative w-[35%] aspect-square flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="relative w-[30%] aspect-square flex items-center justify-center pointer-events-auto">
             <AnimatePresence mode="popLayout">
-              {/* Show the next one behind, and the current one on top */}
-              {[currentIndex + 1, currentIndex].map((idx, stackPos) => {
+              {[currentIndex + 1, currentIndex].map((idx) => {
                 const productIdx = idx % PRODUCTS.length;
                 const product = PRODUCTS[productIdx];
                 const isTop = idx === currentIndex;
@@ -101,37 +100,26 @@ export default function Home() {
                     }}
                     drag={isTop ? "x" : false}
                     dragConstraints={{ left: -1000, right: 0 }}
-                    dragElastic={0.2}
+                    dragElastic={0.1}
                     onDragEnd={handleDragEnd}
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: isTop ? 1 : 0.4, scale: isTop ? 1 : 0.9 }}
                     exit={{ x: -1000, opacity: 0, scale: 0.5 }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    className="absolute inset-0 flex flex-col items-center justify-center"
+                    className="absolute inset-0 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing"
+                    onTap={() => {
+                      if (Math.abs(x.get()) < 10) {
+                        navigate(`/products/${product.slug}`);
+                      }
+                    }}
                   >
-                    <div className="relative w-full h-full flex flex-col items-center justify-center group">
-                      <Link
-                        to={`/products/${product.slug}`}
-                        className="w-full h-full flex flex-col items-center justify-center cursor-grab active:cursor-grabbing pointer-events-auto"
-                        onClick={(e) => {
-                          // Prevent link if dragging
-                          if (Math.abs(x.get()) > 10) {
-                            e.preventDefault();
-                          }
-                        }}
-                      >
-                        <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
-                      </Link>
-                      
-                      {isTop && (
-                        <Link 
-                          to={`/products/${product.slug}`}
-                          className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 px-8 py-3 rounded-full text-white font-black italic text-sm tracking-widest uppercase hover:bg-white/20 transition-all active:scale-95 pointer-events-auto"
-                        >
-                          δεσ το tshirt
-                        </Link>
-                      )}
-                    </div>
+                    <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
+                    
+                    {isTop && (
+                      <div className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 px-8 py-3 rounded-full text-white font-black italic text-sm tracking-widest uppercase hover:bg-white/20 transition-all pointer-events-none">
+                        δεσ το tshirt
+                      </div>
+                    )}
                   </motion.div>
                 );
               })}

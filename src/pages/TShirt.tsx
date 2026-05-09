@@ -62,8 +62,8 @@ export default function TShirt() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const x = useMotionValue(0);
-  const scale = useTransform(x, [0, 200], [1, 0.5]);
-  const opacity = useTransform(x, [150, 200], [1, 0]);
+  const scale = useTransform(x, [0, 300], [1, 0.5]);
+  const opacity = useTransform(x, [200, 300], [1, 0]);
 
   const imagesCount = 4; // page-1 to page-4
   const sizes = ['S', 'M', 'L', 'XL'];
@@ -85,7 +85,6 @@ export default function TShirt() {
   }, [id, user]);
 
   const handleDragEnd = (_: any, info: any) => {
-    // If swiped right enough
     if (info.offset.x > 100 || info.velocity.x > 500) {
       setCurrentIndex((prev) => (prev + 1) % imagesCount);
     }
@@ -158,23 +157,23 @@ export default function TShirt() {
       />
 
       {/* Main Background (PC only) */}
-      <div className="hidden md:block absolute inset-0 z-0">
+      <div className="hidden md:block absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <img 
           src="/images/tshirt-bg.png" 
           alt="Background" 
-          className="w-full h-full object-cover no-select pointer-events-none"
+          className="w-full h-full object-cover no-select"
           onLoad={() => setLoadedImagesCount(prev => prev + 1)}
         />
       </div>
 
       {/* Mobile Backgrounds */}
-      <div className="md:hidden absolute inset-0 z-0">
+      <div className="md:hidden absolute inset-0 z-0 overflow-hidden pointer-events-none">
          <img src="/images/mobile/tshirt-bg-1.png" alt="" className="w-full h-full object-cover" />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-7xl px-4 gap-12">
+      <div className="relative z-10 flex flex-col items-center justify-center w-full h-full max-w-7xl px-4 pointer-events-none">
         {/* T-Shirt Image Stack */}
-        <div className="relative w-[80%] md:w-[45%] aspect-square flex items-center justify-center">
+        <div className="relative w-[80%] md:w-[45%] aspect-square flex items-center justify-center pointer-events-auto">
           <AnimatePresence mode="popLayout">
             {[currentIndex + 1, currentIndex].map((idx) => {
               const imageIdx = idx % imagesCount;
@@ -191,7 +190,7 @@ export default function TShirt() {
                   }}
                   drag={isTop ? "x" : false}
                   dragConstraints={{ left: 0, right: 1000 }}
-                  dragElastic={0.2}
+                  dragElastic={0.1}
                   onDragEnd={handleDragEnd}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: isTop ? 1 : 0.4, scale: isTop ? 1 : 0.9 }}
@@ -213,7 +212,7 @@ export default function TShirt() {
         </div>
 
         {/* Request Area (Always visible under the stack) */}
-        <div className="flex flex-col items-center gap-6 w-full max-w-md">
+        <div className="absolute bottom-[10%] md:bottom-[5%] flex flex-col items-center gap-6 w-full max-w-md pointer-events-auto">
           {canPurchase && (
             <div className="flex gap-4 mb-2">
               {sizes.map((size) => (
