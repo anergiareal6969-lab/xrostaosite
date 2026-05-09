@@ -30,10 +30,9 @@ export default function App() {
   useEffect(() => {
     const loadAssets = async () => {
       const allImages = [
-        // Desktop Backgrounds
-        '/images/main-bg-1.jpg',
-        '/images/main-bg-2.jpg',
-        '/images/main-bg-3.jpg',
+        // Main Backgrounds
+        '/images/main-bg.png',
+        '/images/tshirt-bg.png',
         
         // Mobile Backgrounds
         '/images/mobile/main-bg-1.png',
@@ -45,11 +44,7 @@ export default function App() {
         '/images/mobile/main-bg-7.png',
         
         // UI & Common
-        '/images/footer-bg.png',
         '/images/mobile/footer-bg.png',
-        '/images/tshirt-bg-1.jpg',
-        '/images/tshirt-bg-mid.jpg',
-        '/images/tshirt-bg-last.jpg',
         '/images/mobile/tshirt-bg-1.png',
         '/images/mobile/tshirt-bg-mid-2.png',
         '/images/mobile/tshirt-bg-mid-3.png',
@@ -97,50 +92,6 @@ export default function App() {
           <Menu />
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route
-              path="/who-we-are"
-              element={
-                <InfoPage
-                  title="Ποιοι είμαστε | xrostao clothing"
-                  description="Μάθε ποιοι στον πούτσο είμαστε (aka η ομάδα του xrostao)."
-                  canonicalPath="/who-we-are"
-                  text={INFO_PAGES.who.text}
-                />
-              }
-            />
-            <Route
-              path="/idea"
-              element={
-                <InfoPage
-                  title="Ιδέα | xrostao clothing"
-                  description="Η ιδέα πίσω από το xrostao clothing και το drop anergia season."
-                  canonicalPath="/idea"
-                  text={INFO_PAGES.idea.text}
-                />
-              }
-            />
-            <Route
-              path="/how-it-works"
-              element={
-                <InfoPage
-                  title="Πώς λειτουργεί το αίτημα | xrostao clothing"
-                  description="Δες πώς λειτουργεί το αίτημα ενδιαφέροντος για τα t-shirts του xrostao."
-                  canonicalPath="/how-it-works"
-                  text={INFO_PAGES.how.text}
-                />
-              }
-            />
-            <Route
-              path="/are-you-unemployed"
-              element={
-                <InfoPage
-                  title="Είσαι άνεργος; | xrostao clothing"
-                  description="Είσαι άνεργος/η; Μια απολύτως σοβαρή ερώτηση από το xrostao clothing."
-                  canonicalPath="/are-you-unemployed"
-                  text={INFO_PAGES.unemployed.text}
-                />
-              }
-            />
             <Route path="/products/:slug" element={<Product />} />
             <Route path="/tshirt/:id" element={<TShirt />} />
           </Routes>

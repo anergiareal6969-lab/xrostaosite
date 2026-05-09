@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'motion/react';
 import Seo from '../components/Seo';
 import { PRODUCTS } from '../data/products';
 
@@ -34,32 +35,32 @@ function TshirtMainImageFallback({ tshirtId, name }: { tshirtId: number, name: s
           setHasFailed(true);
         }
       }}
-      className="w-full h-auto drop-shadow-2xl aspect-square object-contain" 
+      className="w-full h-auto drop-shadow-2xl aspect-square object-contain pointer-events-none select-none" 
     />
   );
 }
 
-const DESKTOP_TSHIRT_POSITIONS = [
-  'top-[8%] left-[8%] w-[18%]',
-  'top-[16%] right-[8%] w-[18%]',
-  'top-[28%] left-[18%] w-[18%]',
-  'top-[36%] right-[18%] w-[18%]',
-  'top-[48%] left-[9%] w-[18%]',
-  'top-[56%] right-[10%] w-[18%]',
-  'top-[67%] left-[24%] w-[17%]',
-  'top-[73%] right-[26%] w-[17%]',
-  'top-[82%] left-[8%] w-[16%]',
-  'top-[84%] right-[10%] w-[16%]',
-] as const;
-
 export default function Home() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const x = useMotionValue(0);
+  const scale = useTransform(x, [-200, 0], [0.5, 1]);
+  const opacity = useTransform(x, [-200, -150], [0, 1]);
+
+  const handleDragEnd = (_: any, info: any) => {
+    if (info.offset.x < -100) {
+      // Swipe left -> next t-shirt
+      setCurrentIndex((prev) => (prev + 1) % PRODUCTS.length);
+    }
+    x.set(0);
+  };
+
   return (
-    <div className="relative w-full min-h-screen bg-black flex flex-col">
+    <div className="relative w-full min-h-screen bg-black flex flex-col overflow-hidden">
       <Seo
         title="xrostao clothing | anergia season"
         description="xrostao clothing — anergia season. Μπλούζες. Κάνε αίτημα και δήλωσε ενδιαφέρον για το drop."
         canonicalPath="/"
-        image="/images/main-bg-1.jpg"
+        image="/images/main-bg.png"
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'Organization',
@@ -69,46 +70,69 @@ export default function Home() {
       />
 
       <h1 className="sr-only">xrostao clothing — anergia season</h1>
-      <p className="sr-only">
-        Streetwear drop με μπλούζες (t-shirts). Δες τα προϊόντα και κάνε αίτημα ενδιαφέροντος.
-      </p>
       
       {/* ================= DESKTOP VERSION ================= */}
-      <div className="hidden md:block relative w-full">
-          {/* Desktop Backgrounds */}
-          <img 
-            src="/images/main-bg-1.jpg" 
-            alt="Background 1" 
-            className="w-full h-auto block no-select"
-          />
-          <img 
-            src="/images/main-bg-2.jpg" 
-            alt="Background 2" 
-            className="w-full h-auto block no-select" 
-          />
-          <img 
-            src="/images/main-bg-3.jpg" 
-            alt="Background 3" 
-            className="w-full h-auto block no-select" 
-          />
+      <div className="hidden md:block relative w-full h-screen">
+        {/* Main Background */}
+        <img 
+          src="/images/main-bg.png" 
+          alt="Background" 
+          className="absolute inset-0 w-full h-full object-cover no-select pointer-events-none"
+        />
         
-        {/* Desktop T-shirts Overlay */}
-        <div className="absolute inset-0 w-full h-full pointer-events-none">
-          {PRODUCTS.map((product, index) => (
-            <Link
-              key={product.id}
-              to={`/products/${product.slug}`}
-              className={`absolute pointer-events-auto transition-opacity hover:opacity-90 ${DESKTOP_TSHIRT_POSITIONS[index]}`}
-            >
-              <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
-            </Link>
-          ))}
+        {/* T-shirts Stack Overlay */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="relative w-[40%] aspect-square flex items-center justify-center">
+            <AnimatePresence mode="popLayout">
+              {/* Render current and next for smoothness */}
+              {[currentIndex + 1, currentIndex].map((idx) => {
+                const productIdx = idx % PRODUCTS.length;
+                const product = PRODUCTS[productIdx];
+                const isTop = idx === currentIndex;
+
+                return (
+                  <motion.div
+                    key={product.id}
+                    style={isTop ? { x, scale, opacity, zIndex: 10 } : { zIndex: 5, scale: 0.9, opacity: 0.5 }}
+                    drag={isTop ? "x" : false}
+                    dragConstraints={{ left: -500, right: 0 }}
+                    onDragEnd={handleDragEnd}
+                    initial={isTop ? { x: 0, opacity: 1, scale: 1 } : { opacity: 0 }}
+                    animate={{ opacity: 1, scale: isTop ? 1 : 0.9 }}
+                    exit={{ x: -500, opacity: 0, scale: 0.5 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    className="absolute inset-0 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing"
+                  >
+                    <Link
+                      to={`/products/${product.slug}`}
+                      className="w-full h-full flex flex-col items-center justify-center pointer-events-auto"
+                      onClick={(e) => {
+                        // Prevent click during drag
+                        if (x.get() !== 0) e.preventDefault();
+                      }}
+                    >
+                      <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
+                      {isTop && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="mt-4 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full text-white font-black italic text-sm tracking-widest uppercase"
+                        >
+                          δεσ το tshirt
+                        </motion.div>
+                      )}
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
       {/* ================= MOBILE VERSION ================= */}
       <div className="block md:hidden w-full flex flex-col">
-        
+        {/* Keep existing mobile logic as requested only for PC changes */}
         {/* Section 1 */}
         <div className="relative w-full">
           <img 
@@ -202,7 +226,6 @@ export default function Home() {
           />
         </div>
       </div>
-
     </div>
   );
 }

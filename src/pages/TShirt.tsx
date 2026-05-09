@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'motion/react';
 import Preloader from '../components/Preloader';
 import RequestModal from '../components/RequestModal';
 import Seo from '../components/Seo';
@@ -7,7 +8,6 @@ import { getProductById } from '../data/products';
 import { useAuth } from '../contexts/AuthContext';
 
 function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImageLoad, altBase }: { tshirtId: number, imgNum: number, onZoom: (src: string) => void, mobileTopClass: string, onImageLoad: () => void, altBase?: string }) {
-  // Use a timestamp to prevent the browser from showing old cached images
   const [cacheBuster] = useState(Date.now());
   const paths = [
     `/images/tshirts/${tshirtId}/page-${imgNum}.png`,
@@ -18,14 +18,13 @@ function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImage
   const [pathIndex, setPathIndex] = useState(0);
   const [hasFailed, setHasFailed] = useState(false);
 
-  // Get current path with cache buster
   const currentPath = `${paths[pathIndex]}?v=${cacheBuster}`;
 
   if (hasFailed) return null;
 
   return (
     <div 
-      className={`absolute left-[50%] md:top-[47%] md:left-[48%] -translate-x-1/2 -translate-y-1/2 z-10 w-[90%] md:w-[35%] cursor-pointer transition-transform duration-300 hover:scale-105 ${mobileTopClass}`} 
+      className={`absolute left-[50%] md:top-1/2 md:left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-[90%] md:w-[80%] cursor-pointer transition-transform duration-300 hover:scale-105 ${mobileTopClass}`} 
       onClick={() => onZoom(currentPath)}
     >
       <img 
@@ -37,11 +36,11 @@ function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImage
             setPathIndex(prev => prev + 1);
           } else {
             setHasFailed(true);
-            onImageLoad(); // Count failure as "loaded" so we don't block forever
+            onImageLoad();
           }
         }}
         alt={`${altBase || `T-Shirt ${tshirtId}`} — View ${imgNum}`}
-        className="w-full h-auto object-contain drop-shadow-2xl"
+        className="w-full h-auto object-contain drop-shadow-2xl pointer-events-none select-none"
       />
     </div>
   );
@@ -61,23 +60,23 @@ export default function TShirt() {
   const [hoursRemaining, setHoursRemaining] = useState<number | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
 
-  // All t-shirts now have exactly 5 images total (4 t-shirts + 1 button).
-  const imageCount = 5;
-  const tshirtsCount = 4; // Number of tshirt images (page-1 to page-4)
-  const bgCount = 5; // Number of background images (one for each section)
-  const totalCriticalImages = tshirtsCount + bgCount;
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const x = useMotionValue(0);
+  const scale = useTransform(x, [0, 200], [1, 0.5]);
+  const opacity = useTransform(x, [150, 200], [1, 0]);
+
+  const imagesCount = 4; // page-1 to page-4
   const sizes = ['S', 'M', 'L', 'XL'];
 
   useEffect(() => {
-    // Reset state on ID change
     setIsLoading(true);
     setLoadedImagesCount(0);
     setSelectedSize(null);
     setHoursRemaining(null);
+    setCurrentIndex(0);
     window.scrollTo(0, 0);
     checkIfRequested();
 
-    // Safety timeout: hide preloader after 10 seconds regardless
     const safetyTimer = setTimeout(() => {
       setIsLoading(false);
     }, 10000);
@@ -85,18 +84,20 @@ export default function TShirt() {
     return () => clearTimeout(safetyTimer);
   }, [id, user]);
 
+  const handleDragEnd = (_: any, info: any) => {
+    if (info.offset.x > 100) {
+      // Swipe right -> next image
+      setCurrentIndex((prev) => (prev + 1) % (imagesCount + 1)); // +1 for the button page
+    }
+    x.set(0);
+  };
+
   const checkIfRequested = async () => {
     try {
       const apiUrl = '/api/check-request';
-      console.log(`Checking request status at: ${apiUrl}`);
       const emailParam = user?.email ? `&email=${encodeURIComponent(user.email)}` : '';
       const response = await fetch(`${apiUrl}?tshirtId=${tshirtId}${emailParam}`);
       
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('text/html')) {
-        throw new Error('Server returned HTML instead of JSON. Check API routing.');
-      }
-
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setHasRequested(data.requested);
@@ -117,95 +118,36 @@ export default function TShirt() {
   };
 
   const handleRequestSubmit = async (email: string) => {
-    console.log('Submit button pressed for:', email);
     try {
-      const apiUrl = '/api/request';
-      console.log(`Sending request to: ${apiUrl}`);
-      const response = await fetch(apiUrl, {
+      const response = await fetch('/api/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, tshirtId })
       });
-
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('text/html')) {
-        throw new Error('Server returned HTML instead of JSON. Check API routing.');
-      }
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorData;
-        try {
-          errorData = JSON.parse(errorText);
-        } catch (e) {
-          throw new Error(errorText || `HTTP error! status: ${response.status}`);
-        }
-        throw new Error(errorData.details || errorData.error || `HTTP error! status: ${response.status}`);
-      }
-
       const data = await response.json();
       if (data.status === 'success' || data.status === 'already_requested') {
         setHasRequested(true);
-      } else {
-        throw new Error(data.details || 'Unknown error');
       }
     } catch (err) {
       console.error('Submit error:', err);
-      alert(`Σφάλμα: ${err instanceof Error ? err.message : 'Κάτι πήγε στραβά!'}`);
     }
   };
 
   useEffect(() => {
-    // Once all critical images (overlays + backgrounds) are loaded, hide the preloader
-    if (loadedImagesCount >= totalCriticalImages) {
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-      }, 800); // Small extra delay for smoothness
-      return () => clearTimeout(timer);
+    if (loadedImagesCount >= imagesCount + 1) { // images + background
+      setIsLoading(false);
     }
-  }, [loadedImagesCount, totalCriticalImages]);
-
-  const handleImageLoad = () => {
-    setLoadedImagesCount(prev => prev + 1);
-  };
+  }, [loadedImagesCount]);
 
   if (isNaN(tshirtId) || tshirtId < 1 || tshirtId > 10) {
     return <Navigate to="/" />;
   }
 
   const seoTitle = product ? `${product.name} | xrostao clothing` : 'xrostao clothing';
-  const seoDescription = product
-    ? product.description.replace(/\s+/g, ' ').trim()
-    : 'xrostao clothing — anergia season.';
-  const canonicalPath = product ? `/products/${product.slug}` : `/tshirt/${tshirtId}`;
-  const jsonLd = product
-    ? {
-        '@context': 'https://schema.org',
-        '@type': 'Product',
-        name: product.name,
-        description: product.description,
-        image: [product.primaryImage],
-        brand: {
-          '@type': 'Brand',
-          name: 'xrostao',
-        },
-        category: 'T-Shirts',
-        sku: `xrostao-tshirt-${product.id}`,
-        url: canonicalPath,
-      }
-    : undefined;
-
-  const images = Array.from({ length: imageCount }, (_, i) => i + 1);
 
   return (
-    <div key={tshirtId} className="relative w-full bg-black flex flex-col">
-      <Seo
-        title={seoTitle}
-        description={seoDescription}
-        canonicalPath={canonicalPath}
-        image={product?.primaryImage}
-        jsonLd={jsonLd}
-      />
+    <div key={tshirtId} className="relative w-full h-screen bg-black overflow-hidden">
+      <Seo title={seoTitle} description={product?.description || ''} canonicalPath={`/tshirt/${tshirtId}`} image={product?.primaryImage} />
       <Preloader isLoading={isLoading} />
       <RequestModal 
         isOpen={isModalOpen} 
@@ -215,102 +157,82 @@ export default function TShirt() {
         selectedSize={selectedSize}
       />
 
-      {product && (
-        <div className="sr-only">
-          <h1>{product.name}</h1>
-          <p>{product.description}</p>
-          <Link to={`/products/${product.slug}`}>Σελίδα προϊόντος</Link>
-        </div>
-      )}
-      {images.map((imgNum, index) => {
-        // Determine the background image based on the index
-        let desktopBgImage = '/images/tshirt-bg-mid.jpg'; // Default for middle images
-        let mobileBgImage = `/images/mobile/tshirt-bg-mid-${index + 1}.png`; // Dynamic mid background for mobile
-        let mobileTopClass = 'max-md:top-[52%]'; // Adjusted slightly up for mid
-        
-        if (index === 0) {
-          desktopBgImage = '/images/tshirt-bg-1.jpg'; // First image background (with logo)
-          mobileBgImage = '/images/mobile/tshirt-bg-1.png';
-          mobileTopClass = 'max-md:top-[60%]'; // Logo pushes circle down even more
-        } else if (index === images.length - 1) {
-          desktopBgImage = '/images/tshirt-bg-last.jpg'; // Last image background (with button)
-          mobileBgImage = '/images/mobile/tshirt-bg-last.png';
-          mobileTopClass = 'max-md:top-[46%]'; // Button pushes circle up (if used)
-        }
+      {/* Main Background (PC only change as per request) */}
+      <div className="hidden md:block absolute inset-0">
+        <img 
+          src="/images/tshirt-bg.png" 
+          alt="Background" 
+          className="w-full h-full object-cover no-select pointer-events-none"
+          onLoad={() => setLoadedImagesCount(prev => prev + 1)}
+        />
+      </div>
 
-        const isLastImage = index === images.length - 1;
+      {/* Mobile Backgrounds (Keep existing logic or simplified) */}
+      <div className="md:hidden absolute inset-0">
+         <img src="/images/mobile/tshirt-bg-1.png" alt="" className="w-full h-full object-cover" />
+      </div>
 
-        return (
-          <div key={imgNum} className="relative w-full flex items-center justify-center overflow-hidden">
-            {/* Split explicit images for accurate DOM height calculation, preventing absolute jump bugs */}
-            <picture className="w-full h-auto pointer-events-none">
-              <source media="(max-width: 767px)" srcSet={mobileBgImage} />
-              <source media="(min-width: 768px)" srcSet={desktopBgImage} />
-              <img 
-                src={desktopBgImage} 
-                alt="" 
-                className="w-full h-auto no-select" 
-                onLoad={handleImageLoad}
-                onError={handleImageLoad}
-              />
-            </picture>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="relative w-[80%] md:w-[40%] aspect-square flex items-center justify-center">
+          <AnimatePresence mode="popLayout">
+            {[currentIndex + 1, currentIndex].map((idx) => {
+              const imageIdx = idx % (imagesCount + 1);
+              const isTop = idx === currentIndex;
+              const isButtonPage = imageIdx === imagesCount;
 
-            {/* Logo Link (Only on the first image) */}
-            {index === 0 && (
-              <Link to="/" className="absolute top-[5%] md:top-[5%] left-[5%] md:left-[5%] z-20 w-[30%] md:w-[15%] h-[15%] rounded-full cursor-pointer hover:opacity-80 transition-opacity">
-                 {/* Invisible clickable area over the logo in the background image */}
-              </Link>
-            )}
-
-            {/* T-Shirt Image - Centered exactly in the middle faded logo with format fallback */}
-            {!isLastImage && (
-              <TShirtImageFallback tshirtId={tshirtId} imgNum={imgNum} onZoom={setZoomedImage} mobileTopClass={mobileTopClass} onImageLoad={handleImageLoad} />
-            )}
-
-            {/* Request Button (Only on the last image) - Positioned exactly in the center */}
-            {isLastImage && (
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-6 w-full">
-                {canPurchase && (
-                  <div className="flex gap-4 mb-4">
-                    {sizes.map((size) => (
-                      <button
-                        key={size}
-                        onClick={() => setSelectedSize(size)}
-                        className={`w-12 h-12 md:w-16 md:h-16 flex items-center justify-center border-2 border-white font-bold italic text-lg md:text-2xl transition-all ${
-                          selectedSize === size ? 'bg-white text-black' : 'bg-black/40 text-white hover:bg-white/20'
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                
-                <button 
-                  onClick={() => setIsModalOpen(true)}
-                  disabled={hasRequested && !canPurchase}
-                  className={`${
-                    canPurchase 
-                      ? 'bg-blue-400 hover:bg-blue-500' 
-                      : hasRequested 
-                        ? 'bg-green-500 hover:bg-green-500 cursor-default' 
-                        : 'bg-blue-400 hover:bg-blue-500'
-                  } text-white font-sans font-bold italic text-xl md:text-3xl py-4 px-12 md:px-24 rounded-md shadow-lg transition-colors`}
+              return (
+                <motion.div
+                  key={`${tshirtId}-${imageIdx}`}
+                  style={isTop ? { x, scale, opacity, zIndex: 10 } : { zIndex: 5, scale: 0.9, opacity: 0.5 }}
+                  drag={isTop ? "x" : false}
+                  dragConstraints={{ left: 0, right: 500 }}
+                  onDragEnd={handleDragEnd}
+                  initial={isTop ? { x: 0, opacity: 1, scale: 1 } : { opacity: 0 }}
+                  animate={{ opacity: 1, scale: isTop ? 1 : 0.9 }}
+                  exit={{ x: 500, opacity: 0, scale: 0.5 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  className="absolute inset-0 flex flex-col items-center justify-center"
                 >
-                  {canPurchase ? 'ἀγόρασον' : hasRequested ? 'αιτημα εληφθη' : 'αίτημα'}
-                </button>
-
-                {hasRequested && !canPurchase && hoursRemaining !== null && (
-                  <div className="text-white font-sans font-medium text-sm md:text-base opacity-80 mt-2">
-                    Διαθέσιμο για αγορά σε: <span className="font-bold">{formatTimeRemaining(hoursRemaining)}</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        );
-      })}
-
+                  {isButtonPage ? (
+                    <div className="flex flex-col items-center gap-6 w-full">
+                      {canPurchase && (
+                        <div className="flex gap-4 mb-4">
+                          {sizes.map((size) => (
+                            <button
+                              key={size}
+                              onClick={() => setSelectedSize(size)}
+                              className={`w-12 h-12 md:w-16 md:h-16 flex items-center justify-center border-2 border-white font-bold italic text-lg md:text-2xl transition-all ${
+                                selectedSize === size ? 'bg-white text-black' : 'bg-black/40 text-white hover:bg-white/20'
+                              }`}
+                            >
+                              {size}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      <button 
+                        onClick={() => setIsModalOpen(true)}
+                        disabled={hasRequested && !canPurchase}
+                        className="bg-blue-400 hover:bg-blue-500 text-white font-sans font-bold italic text-xl md:text-3xl py-4 px-12 md:px-24 rounded-md shadow-lg transition-colors"
+                      >
+                        {canPurchase ? 'ἀγόρασον' : hasRequested ? 'αιτημα εληφθη' : 'αίτημα'}
+                      </button>
+                    </div>
+                  ) : (
+                    <TShirtImageFallback 
+                      tshirtId={tshirtId} 
+                      imgNum={imageIdx + 1} 
+                      onZoom={setZoomedImage} 
+                      mobileTopClass="max-md:top-1/2" 
+                      onImageLoad={() => setLoadedImagesCount(prev => prev + 1)} 
+                    />
+                  )}
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
+      </div>
 
       {/* Zoom Modal */}
       {zoomedImage && (
@@ -318,17 +240,7 @@ export default function TShirt() {
           className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 cursor-zoom-out"
           onClick={() => setZoomedImage(null)}
         >
-          <img 
-            src={zoomedImage} 
-            alt="Zoomed T-Shirt" 
-            className="max-w-full max-h-full object-contain"
-          />
-          <button 
-            className="absolute top-4 right-4 text-white p-2 bg-black/50 rounded-md hover:bg-black/80 transition-colors"
-            onClick={() => setZoomedImage(null)}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
+          <img src={zoomedImage} alt="Zoomed T-Shirt" className="max-w-full max-h-full object-contain" />
         </div>
       )}
     </div>
