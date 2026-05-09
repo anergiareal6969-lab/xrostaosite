@@ -47,8 +47,8 @@ export default function Home() {
   const opacity = useTransform(x, [-200, -150], [0, 1]);
 
   const handleDragEnd = (_: any, info: any) => {
-    if (info.offset.x < -100) {
-      // Swipe left -> next t-shirt
+    // If swiped left enough
+    if (info.offset.x < -100 || info.velocity.x < -500) {
       setCurrentIndex((prev) => (prev + 1) % PRODUCTS.length);
     }
     x.set(0);
@@ -72,7 +72,7 @@ export default function Home() {
       <h1 className="sr-only">xrostao clothing — anergia season</h1>
       
       {/* ================= DESKTOP VERSION ================= */}
-      <div className="hidden md:block relative w-full h-screen">
+      <div className="hidden md:block relative w-full h-screen overflow-hidden">
         {/* Main Background */}
         <img 
           src="/images/main-bg.png" 
@@ -82,10 +82,10 @@ export default function Home() {
         
         {/* T-shirts Stack Overlay */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative w-[40%] aspect-square flex items-center justify-center">
+          <div className="relative w-[35%] aspect-square flex items-center justify-center">
             <AnimatePresence mode="popLayout">
-              {/* Render current and next for smoothness */}
-              {[currentIndex + 1, currentIndex].map((idx) => {
+              {/* Show the next one behind, and the current one on top */}
+              {[currentIndex + 1, currentIndex].map((idx, stackPos) => {
                 const productIdx = idx % PRODUCTS.length;
                 const product = PRODUCTS[productIdx];
                 const isTop = idx === currentIndex;
@@ -93,35 +93,45 @@ export default function Home() {
                 return (
                   <motion.div
                     key={product.id}
-                    style={isTop ? { x, scale, opacity, zIndex: 10 } : { zIndex: 5, scale: 0.9, opacity: 0.5 }}
+                    style={{ 
+                      x: isTop ? x : 0, 
+                      scale: isTop ? scale : 0.9, 
+                      opacity: isTop ? opacity : 0.4,
+                      zIndex: isTop ? 20 : 10 
+                    }}
                     drag={isTop ? "x" : false}
-                    dragConstraints={{ left: -500, right: 0 }}
+                    dragConstraints={{ left: -1000, right: 0 }}
+                    dragElastic={0.2}
                     onDragEnd={handleDragEnd}
-                    initial={isTop ? { x: 0, opacity: 1, scale: 1 } : { opacity: 0 }}
-                    animate={{ opacity: 1, scale: isTop ? 1 : 0.9 }}
-                    exit={{ x: -500, opacity: 0, scale: 0.5 }}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: isTop ? 1 : 0.4, scale: isTop ? 1 : 0.9 }}
+                    exit={{ x: -1000, opacity: 0, scale: 0.5 }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    className="absolute inset-0 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing"
+                    className="absolute inset-0 flex flex-col items-center justify-center"
                   >
-                    <Link
-                      to={`/products/${product.slug}`}
-                      className="w-full h-full flex flex-col items-center justify-center pointer-events-auto"
-                      onClick={(e) => {
-                        // Prevent click during drag
-                        if (x.get() !== 0) e.preventDefault();
-                      }}
-                    >
-                      <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
+                    <div className="relative w-full h-full flex flex-col items-center justify-center group">
+                      <Link
+                        to={`/products/${product.slug}`}
+                        className="w-full h-full flex flex-col items-center justify-center cursor-grab active:cursor-grabbing pointer-events-auto"
+                        onClick={(e) => {
+                          // Prevent link if dragging
+                          if (Math.abs(x.get()) > 10) {
+                            e.preventDefault();
+                          }
+                        }}
+                      >
+                        <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
+                      </Link>
+                      
                       {isTop && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="mt-4 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full text-white font-black italic text-sm tracking-widest uppercase"
+                        <Link 
+                          to={`/products/${product.slug}`}
+                          className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 px-8 py-3 rounded-full text-white font-black italic text-sm tracking-widest uppercase hover:bg-white/20 transition-all active:scale-95 pointer-events-auto"
                         >
                           δεσ το tshirt
-                        </motion.div>
+                        </Link>
                       )}
-                    </Link>
+                    </div>
                   </motion.div>
                 );
               })}

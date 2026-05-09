@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 export default function FooterLinks() {
   return (
-    <div className="relative w-full bg-black py-20 px-4 flex flex-col items-center gap-6 mt-auto">
+    <div className="md:hidden relative w-full bg-black py-20 px-4 flex flex-col items-center gap-6 mt-auto">
       {/* 
         This is the footer area corresponding to the 12th image.
         The user wants the links exactly here in white, bold, italic.
