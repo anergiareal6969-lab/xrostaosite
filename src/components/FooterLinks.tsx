@@ -9,8 +9,7 @@ export default function FooterLinks() {
       */}
       <picture className="absolute inset-0 w-full h-full opacity-50 pointer-events-none">
         <source media="(max-width: 767px)" srcSet="/images/mobile/footer-bg.png" />
-        <source media="(min-width: 768px)" srcSet="/images/footer-bg.png" />
-        <img src="/images/footer-bg.png" className="w-full h-full object-cover" alt="" />
+        <img src="/images/mobile/footer-bg.png" className="w-full h-full object-cover" alt="" />
       </picture>
       
       <div className="relative z-10 flex flex-col md:flex-row flex-wrap items-center justify-center gap-6 md:gap-12">

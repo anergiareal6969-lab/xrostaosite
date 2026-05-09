@@ -5,7 +5,6 @@ import InfoPage from './pages/InfoPage';
 import TShirt from './pages/TShirt';
 import Product from './pages/Product';
 import Menu from './components/Menu';
-import FooterLinks from './components/FooterLinks';
 import Preloader from './components/Preloader';
 import { AuthProvider } from './contexts/AuthContext';
 

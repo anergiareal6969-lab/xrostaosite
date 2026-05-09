@@ -67,6 +67,7 @@ export default function TShirt() {
   const imagesCount = 4; // page-1 to page-4
   const sizes = ['S', 'M', 'L', 'XL'];
   const step = 450 + 48;
+  const mobileStep = 280;
 
   useEffect(() => {
     setIsLoading(true);
@@ -206,9 +207,43 @@ export default function TShirt() {
             </div>
           </div>
 
-          {/* Mobile Stack (Keep existing) */}
-          <div className="md:hidden relative w-[80%] aspect-square flex items-center justify-center pointer-events-auto">
-             <TShirtImageFallback tshirtId={tshirtId} imgNum={1} onZoom={setZoomedImage} mobileTopClass="top-1/2" onImageLoad={() => setLoadedImagesCount(prev => prev + 1)} canZoom={true} />
+          {/* Mobile Carousel */}
+          <div className="md:hidden relative w-full h-full items-center justify-center overflow-hidden pointer-events-auto">
+            <div className="relative w-full h-full">
+              {Array.from({ length: imagesCount }).map((_, index) => {
+                const isCenter = index === currentIndex;
+                const distance = Math.abs(index - currentIndex);
+                const x = (index - currentIndex) * mobileStep;
+
+                return (
+                  <motion.div
+                    key={`${tshirtId}-mobile-${index}`}
+                    animate={{
+                      x,
+                      scale: isCenter ? 1 : 0.72,
+                      opacity: isCenter ? 1 : 0.25,
+                      filter: isCenter ? 'blur(0px) brightness(1)' : 'blur(10px) brightness(0.6)',
+                      zIndex: isCenter ? 30 : 20 - distance,
+                    }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 35 }}
+                    onMouseDown={(e) => {
+                      if (e.button !== 0) return;
+                      setCurrentIndex(index);
+                    }}
+                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[520px] aspect-square flex items-center justify-center cursor-pointer select-none"
+                  >
+                    <TShirtImageFallback
+                      tshirtId={tshirtId}
+                      imgNum={index + 1}
+                      onZoom={setZoomedImage}
+                      mobileTopClass="top-1/2"
+                      onImageLoad={() => setLoadedImagesCount((prev) => prev + 1)}
+                      canZoom={isCenter}
+                    />
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Request Area (PC) */}
