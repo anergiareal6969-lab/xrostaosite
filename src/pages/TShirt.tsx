@@ -63,9 +63,6 @@ export default function TShirt() {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const x = useMotionValue(0);
-  const scale = useTransform(x, [0, 400], [1, 0.4]);
-  const opacity = useTransform(x, [200, 400], [1, 0]);
 
   const imagesCount = 4; // page-1 to page-4
   const sizes = ['S', 'M', 'L', 'XL'];
@@ -85,14 +82,6 @@ export default function TShirt() {
     
     return () => clearTimeout(safetyTimer);
   }, [id, user]);
-
-  const handleDragEnd = (_: any, info: any) => {
-    // If swiped right (positive x)
-    if (info.offset.x > 100 || info.velocity.x > 500) {
-      setCurrentIndex((prev) => (prev + 1) % imagesCount);
-    }
-    x.set(0);
-  };
 
   const checkIfRequested = async () => {
     try {
@@ -177,43 +166,43 @@ export default function TShirt() {
         </div>
 
         <div className="relative z-10 flex flex-col items-center justify-center w-full h-full max-w-7xl px-4 pointer-events-none">
-          {/* T-Shirt Image Stack */}
-          <div className="relative w-[80%] md:w-[45%] aspect-square flex items-center justify-center pointer-events-auto">
-            <AnimatePresence mode="popLayout">
-              {[currentIndex + 1, currentIndex].map((idx) => {
-                const imageIdx = idx % imagesCount;
-                const isTop = idx === currentIndex;
-
+          {/* T-Shirt Image Carousel (PC) */}
+          <div className="hidden md:flex relative w-full h-full items-center justify-center overflow-hidden pointer-events-auto">
+            <div className="flex gap-12 items-center justify-center">
+              {Array.from({ length: imagesCount }).map((_, index) => {
+                const isCenter = index === currentIndex;
+                const distance = Math.abs(index - currentIndex);
+                
                 return (
                   <motion.div
-                    key={`${tshirtId}-${imageIdx}`}
-                    style={{ 
-                      x: isTop ? x : 0, 
-                      scale: isTop ? 1 : 0.9, 
-                      opacity: isTop ? opacity : 0.4,
-                      zIndex: isTop ? 20 : 10 
+                    key={`${tshirtId}-${index}`}
+                    animate={{
+                      x: -(currentIndex * (450 + 48)), // center logic (450px width + 48px gap)
+                      scale: isCenter ? 1 : 0.7,
+                      opacity: isCenter ? 1 : 0.3,
+                      filter: isCenter ? "blur(0px)" : "blur(8px)",
+                      zIndex: isCenter ? 30 : 10 - distance
                     }}
-                    drag={isTop ? "x" : false}
-                    dragConstraints={{ left: 0, right: 1500 }}
-                    dragElastic={0.05}
-                    onDragEnd={handleDragEnd}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: isTop ? 1 : 0.4, scale: isTop ? 1 : 0.9 }}
-                    exit={{ x: 1500, opacity: 0, scale: 0.4 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 40 }}
-                    className="absolute inset-0 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing touch-none"
+                    transition={{ type: "spring", stiffness: 200, damping: 35 }}
+                    onClick={() => setCurrentIndex(index)}
+                    className="relative w-[450px] aspect-square flex items-center justify-center cursor-pointer"
                   >
                     <TShirtImageFallback 
                       tshirtId={tshirtId} 
-                      imgNum={imageIdx + 1} 
+                      imgNum={index + 1} 
                       onZoom={setZoomedImage} 
-                      mobileTopClass="max-md:top-1/2" 
+                      mobileTopClass="top-1/2" 
                       onImageLoad={() => setLoadedImagesCount(prev => prev + 1)} 
                     />
                   </motion.div>
                 );
               })}
-            </AnimatePresence>
+            </div>
+          </div>
+
+          {/* Mobile Stack (Keep existing) */}
+          <div className="md:hidden relative w-[80%] aspect-square flex items-center justify-center pointer-events-auto">
+             <TShirtImageFallback tshirtId={tshirtId} imgNum={1} onZoom={setZoomedImage} mobileTopClass="top-1/2" onImageLoad={() => setLoadedImagesCount(prev => prev + 1)} />
           </div>
 
           {/* Request Area (PC) */}

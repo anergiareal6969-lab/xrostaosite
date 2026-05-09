@@ -43,22 +43,7 @@ function TshirtMainImageFallback({ tshirtId, name }: { tshirtId: number, name: s
 
 export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showButton, setShowButton] = useState(false);
   const navigate = useNavigate();
-  const x = useMotionValue(0);
-  
-  // Swipe left: moves to negative x.
-  const scale = useTransform(x, [-400, 0], [0.4, 1]);
-  const opacity = useTransform(x, [-400, -200], [0, 1]);
-
-  const handleDragEnd = (_: any, info: any) => {
-    // If swiped left (negative x)
-    if (info.offset.x < -100 || info.velocity.x < -500) {
-      setCurrentIndex((prev) => (prev + 1) % PRODUCTS.length);
-      setShowButton(false);
-    }
-    x.set(0);
-  };
 
   return (
     <div className="relative w-full min-h-screen bg-black flex flex-col overflow-x-hidden">
@@ -86,60 +71,51 @@ export default function Home() {
           className="absolute inset-0 w-full h-full object-cover no-select pointer-events-none z-0"
         />
         
-        {/* T-shirts Stack */}
-        <div className="relative z-10 w-[35%] aspect-square flex items-center justify-center">
-          <AnimatePresence mode="popLayout">
-            {[currentIndex + 1, currentIndex].map((idx) => {
-              const productIdx = idx % PRODUCTS.length;
-              const product = PRODUCTS[productIdx];
-              const isTop = idx === currentIndex;
-
-              return (
-                <motion.div
-                  key={product.id}
-                  style={{ 
-                    x: isTop ? x : 0, 
-                    scale: isTop ? scale : 0.9, 
-                    opacity: isTop ? opacity : 0.4,
-                    zIndex: isTop ? 20 : 10 
-                  }}
-                  drag={isTop ? "x" : false}
-                  dragConstraints={{ left: -1500, right: 0 }}
-                  dragElastic={0.05}
-                  onDragEnd={handleDragEnd}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: isTop ? 1 : 0.4, scale: isTop ? 1 : 0.9 }}
-                  exit={{ x: -1500, opacity: 0, scale: 0.4 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 40 }}
-                  className="absolute inset-0 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing touch-none"
-                  onTap={() => {
-                    if (Math.abs(x.get()) < 5) {
-                      setShowButton(!showButton);
-                    }
-                  }}
-                >
-                  <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
+        {/* T-shirts Carousel */}
+        <div className="relative z-10 w-full h-full flex items-center justify-center overflow-hidden">
+          <div className="flex items-center justify-center w-full">
+            <AnimatePresence mode="popLayout">
+              <div className="flex gap-12 items-center justify-center">
+                {PRODUCTS.map((product, index) => {
+                  const isCenter = index === currentIndex;
+                  const distance = Math.abs(index - currentIndex);
                   
-                  <AnimatePresence>
-                    {isTop && showButton && (
-                      <motion.button 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/products/${product.slug}`);
-                        }}
-                        className="absolute -bottom-20 bg-white/10 backdrop-blur-xl border border-white/30 px-10 py-4 rounded-2xl text-white font-black italic text-base tracking-widest uppercase hover:bg-white/20 transition-all shadow-2xl ring-1 ring-white/20"
-                      >
-                        δεσ το tshirt
-                      </motion.button>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+                  return (
+                    <motion.div
+                      key={product.id}
+                      initial={false}
+                      animate={{
+                        x: -(currentIndex * (300 + 48)), // center logic based on width (300px) + gap (48px)
+                        scale: isCenter ? 1 : 0.7,
+                        opacity: isCenter ? 1 : 0.3,
+                        filter: isCenter ? "blur(0px)" : "blur(8px)",
+                        zIndex: isCenter ? 30 : 10 - distance
+                      }}
+                      transition={{ type: "spring", stiffness: 200, damping: 35 }}
+                      onClick={() => setCurrentIndex(index)}
+                      className="relative w-[300px] aspect-square flex flex-col items-center justify-center cursor-pointer"
+                    >
+                      <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
+                      
+                      {isCenter && (
+                        <motion.button 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/products/${product.slug}`);
+                          }}
+                          className="absolute -bottom-24 bg-white/10 backdrop-blur-xl border border-white/30 px-10 py-4 rounded-2xl text-white font-black italic text-base tracking-widest uppercase hover:bg-white/20 transition-all shadow-2xl ring-1 ring-white/20 whitespace-nowrap"
+                        >
+                          δεσ το tshirt
+                        </motion.button>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
