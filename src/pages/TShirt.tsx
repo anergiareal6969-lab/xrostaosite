@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Navigate, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence, useMotionValue, useTransform } from 'motion/react';
+import { motion } from 'motion/react';
 import Preloader from '../components/Preloader';
 import RequestModal from '../components/RequestModal';
 import Seo from '../components/Seo';
@@ -8,7 +8,7 @@ import FooterLinks from '../components/FooterLinks';
 import { getProductById } from '../data/products';
 import { useAuth } from '../contexts/AuthContext';
 
-function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImageLoad, altBase }: { tshirtId: number, imgNum: number, onZoom: (src: string) => void, mobileTopClass: string, onImageLoad: () => void, altBase?: string }) {
+function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImageLoad, altBase, canZoom }: { tshirtId: number, imgNum: number, onZoom: (src: string) => void, mobileTopClass: string, onImageLoad: () => void, altBase?: string, canZoom: boolean }) {
   const [cacheBuster] = useState(Date.now());
   const paths = [
     `/images/tshirts/${tshirtId}/page-${imgNum}.png`,
@@ -25,8 +25,8 @@ function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImage
 
   return (
     <div 
-      className={`absolute left-[50%] md:top-1/2 md:left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-[90%] md:w-[80%] cursor-pointer transition-transform duration-300 hover:scale-105 ${mobileTopClass}`} 
-      onClick={() => onZoom(currentPath)}
+      className={`absolute left-[50%] md:top-1/2 md:left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-[90%] md:w-[80%] transition-transform duration-300 ${canZoom ? 'cursor-pointer hover:scale-105' : 'cursor-default'} ${mobileTopClass}`} 
+      onClick={canZoom ? () => onZoom(currentPath) : undefined}
     >
       <img 
         key={`${tshirtId}-${imgNum}-${pathIndex}`}
@@ -66,6 +66,7 @@ export default function TShirt() {
 
   const imagesCount = 4; // page-1 to page-4
   const sizes = ['S', 'M', 'L', 'XL'];
+  const step = 450 + 48;
 
   useEffect(() => {
     setIsLoading(true);
@@ -168,24 +169,28 @@ export default function TShirt() {
         <div className="relative z-10 flex flex-col items-center justify-center w-full h-full max-w-7xl px-4 pointer-events-none">
           {/* T-Shirt Image Carousel (PC) */}
           <div className="hidden md:flex relative w-full h-full items-center justify-center overflow-hidden pointer-events-auto">
-            <div className="flex gap-12 items-center justify-center">
+            <div className="relative w-full h-full">
               {Array.from({ length: imagesCount }).map((_, index) => {
                 const isCenter = index === currentIndex;
                 const distance = Math.abs(index - currentIndex);
+                const x = (index - currentIndex) * step;
                 
                 return (
                   <motion.div
                     key={`${tshirtId}-${index}`}
                     animate={{
-                      x: -(currentIndex * (450 + 48)), // center logic (450px width + 48px gap)
-                      scale: isCenter ? 1 : 0.7,
-                      opacity: isCenter ? 1 : 0.3,
-                      filter: isCenter ? "blur(0px)" : "blur(8px)",
-                      zIndex: isCenter ? 30 : 10 - distance
+                      x,
+                      scale: isCenter ? 1 : 0.72,
+                      opacity: isCenter ? 1 : 0.25,
+                      filter: isCenter ? 'blur(0px) brightness(1)' : 'blur(10px) brightness(0.6)',
+                      zIndex: isCenter ? 30 : 20 - distance
                     }}
-                    transition={{ type: "spring", stiffness: 200, damping: 35 }}
-                    onClick={() => setCurrentIndex(index)}
-                    className="relative w-[450px] aspect-square flex items-center justify-center cursor-pointer"
+                    transition={{ type: 'spring', stiffness: 260, damping: 35 }}
+                    onMouseDown={(e) => {
+                      if (e.button !== 0) return;
+                      setCurrentIndex(index);
+                    }}
+                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] aspect-square flex items-center justify-center cursor-pointer select-none"
                   >
                     <TShirtImageFallback 
                       tshirtId={tshirtId} 
@@ -193,6 +198,7 @@ export default function TShirt() {
                       onZoom={setZoomedImage} 
                       mobileTopClass="top-1/2" 
                       onImageLoad={() => setLoadedImagesCount(prev => prev + 1)} 
+                      canZoom={isCenter}
                     />
                   </motion.div>
                 );
@@ -202,7 +208,7 @@ export default function TShirt() {
 
           {/* Mobile Stack (Keep existing) */}
           <div className="md:hidden relative w-[80%] aspect-square flex items-center justify-center pointer-events-auto">
-             <TShirtImageFallback tshirtId={tshirtId} imgNum={1} onZoom={setZoomedImage} mobileTopClass="top-1/2" onImageLoad={() => setLoadedImagesCount(prev => prev + 1)} />
+             <TShirtImageFallback tshirtId={tshirtId} imgNum={1} onZoom={setZoomedImage} mobileTopClass="top-1/2" onImageLoad={() => setLoadedImagesCount(prev => prev + 1)} canZoom={true} />
           </div>
 
           {/* Request Area (PC) */}

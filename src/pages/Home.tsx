@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence, useMotionValue, useTransform } from 'motion/react';
+import { motion } from 'motion/react';
 import Seo from '../components/Seo';
 import FooterLinks from '../components/FooterLinks';
 import { PRODUCTS } from '../data/products';
@@ -44,6 +44,7 @@ function TshirtMainImageFallback({ tshirtId, name }: { tshirtId: number, name: s
 export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigate = useNavigate();
+  const step = 300 + 48;
 
   return (
     <div className="relative w-full min-h-screen bg-black flex flex-col overflow-x-hidden">
@@ -73,48 +74,49 @@ export default function Home() {
         
         {/* T-shirts Carousel */}
         <div className="relative z-10 w-full h-full flex items-center justify-center overflow-hidden">
-          <div className="flex items-center justify-center w-full">
-            <AnimatePresence mode="popLayout">
-              <div className="flex gap-12 items-center justify-center">
-                {PRODUCTS.map((product, index) => {
-                  const isCenter = index === currentIndex;
-                  const distance = Math.abs(index - currentIndex);
-                  
-                  return (
-                    <motion.div
-                      key={product.id}
-                      initial={false}
-                      animate={{
-                        x: -(currentIndex * (300 + 48)), // center logic based on width (300px) + gap (48px)
-                        scale: isCenter ? 1 : 0.7,
-                        opacity: isCenter ? 1 : 0.3,
-                        filter: isCenter ? "blur(0px)" : "blur(8px)",
-                        zIndex: isCenter ? 30 : 10 - distance
+          <div className="relative w-full h-full">
+            {PRODUCTS.map((product, index) => {
+              const isCenter = index === currentIndex;
+              const distance = Math.abs(index - currentIndex);
+              const x = (index - currentIndex) * step;
+
+              return (
+                <motion.div
+                  key={product.id}
+                  initial={false}
+                  animate={{
+                    x,
+                    scale: isCenter ? 1 : 0.72,
+                    opacity: isCenter ? 1 : 0.25,
+                    filter: isCenter ? 'blur(0px) brightness(1)' : 'blur(10px) brightness(0.6)',
+                    zIndex: isCenter ? 30 : 20 - distance
+                  }}
+                  transition={{ type: 'spring', stiffness: 260, damping: 35 }}
+                  onMouseDown={(e) => {
+                    if (e.button !== 0) return;
+                    setCurrentIndex(index);
+                  }}
+                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] aspect-square flex flex-col items-center justify-center cursor-pointer select-none"
+                >
+                  <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
+
+                  {isCenter && (
+                    <motion.button
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/products/${product.slug}`);
                       }}
-                      transition={{ type: "spring", stiffness: 200, damping: 35 }}
-                      onClick={() => setCurrentIndex(index)}
-                      className="relative w-[300px] aspect-square flex flex-col items-center justify-center cursor-pointer"
+                      className="absolute -bottom-24 bg-white/10 backdrop-blur-xl border border-white/30 px-10 py-4 rounded-2xl text-white font-black italic text-base tracking-widest uppercase hover:bg-white/20 transition-all shadow-2xl ring-1 ring-white/20 whitespace-nowrap"
                     >
-                      <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
-                      
-                      {isCenter && (
-                        <motion.button 
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/products/${product.slug}`);
-                          }}
-                          className="absolute -bottom-24 bg-white/10 backdrop-blur-xl border border-white/30 px-10 py-4 rounded-2xl text-white font-black italic text-base tracking-widest uppercase hover:bg-white/20 transition-all shadow-2xl ring-1 ring-white/20 whitespace-nowrap"
-                        >
-                          δεσ το tshirt
-                        </motion.button>
-                      )}
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </AnimatePresence>
+                      δεσ το tshirt
+                    </motion.button>
+                  )}
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </div>
