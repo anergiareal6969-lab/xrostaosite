@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useParams, Navigate, Link } from 'react-router-dom';
+import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'motion/react';
 import Preloader from '../components/Preloader';
 import RequestModal from '../components/RequestModal';
 import Seo from '../components/Seo';
+import FooterLinks from '../components/FooterLinks';
 import { getProductById } from '../data/products';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -48,6 +49,7 @@ function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImage
 
 export default function TShirt() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const tshirtId = parseInt(id || '1', 10);
   const product = getProductById(tshirtId);
   const { user } = useAuth();
@@ -62,8 +64,8 @@ export default function TShirt() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const x = useMotionValue(0);
-  const scale = useTransform(x, [0, 300], [1, 0.5]);
-  const opacity = useTransform(x, [200, 300], [1, 0]);
+  const scale = useTransform(x, [0, 400], [1, 0.4]);
+  const opacity = useTransform(x, [200, 400], [1, 0]);
 
   const imagesCount = 4; // page-1 to page-4
   const sizes = ['S', 'M', 'L', 'XL'];
@@ -85,6 +87,7 @@ export default function TShirt() {
   }, [id, user]);
 
   const handleDragEnd = (_: any, info: any) => {
+    // If swiped right (positive x)
     if (info.offset.x > 100 || info.velocity.x > 500) {
       setCurrentIndex((prev) => (prev + 1) % imagesCount);
     }
@@ -145,7 +148,7 @@ export default function TShirt() {
   const seoTitle = product ? `${product.name} | xrostao clothing` : 'xrostao clothing';
 
   return (
-    <div key={tshirtId} className="relative w-full h-screen bg-black overflow-hidden flex flex-col items-center justify-center">
+    <div key={tshirtId} className="relative w-full min-h-screen bg-black overflow-x-hidden flex flex-col items-center">
       <Seo title={seoTitle} description={product?.description || ''} canonicalPath={`/tshirt/${tshirtId}`} image={product?.primaryImage} />
       <Preloader isLoading={isLoading} />
       <RequestModal 
@@ -156,99 +159,134 @@ export default function TShirt() {
         selectedSize={selectedSize}
       />
 
-      {/* Main Background (PC only) */}
-      <div className="hidden md:block absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <img 
-          src="/images/tshirt-bg.png" 
-          alt="Background" 
-          className="w-full h-full object-cover no-select"
-          onLoad={() => setLoadedImagesCount(prev => prev + 1)}
-        />
-      </div>
-
-      {/* Mobile Backgrounds */}
-      <div className="md:hidden absolute inset-0 z-0 overflow-hidden pointer-events-none">
-         <img src="/images/mobile/tshirt-bg-1.png" alt="" className="w-full h-full object-cover" />
-      </div>
-
-      <div className="relative z-10 flex flex-col items-center justify-center w-full h-full max-w-7xl px-4 pointer-events-none">
-        {/* T-Shirt Image Stack */}
-        <div className="relative w-[80%] md:w-[45%] aspect-square flex items-center justify-center pointer-events-auto">
-          <AnimatePresence mode="popLayout">
-            {[currentIndex + 1, currentIndex].map((idx) => {
-              const imageIdx = idx % imagesCount;
-              const isTop = idx === currentIndex;
-
-              return (
-                <motion.div
-                  key={`${tshirtId}-${imageIdx}`}
-                  style={{ 
-                    x: isTop ? x : 0, 
-                    scale: isTop ? 1 : 0.9, 
-                    opacity: isTop ? opacity : 0.4,
-                    zIndex: isTop ? 20 : 10 
-                  }}
-                  drag={isTop ? "x" : false}
-                  dragConstraints={{ left: 0, right: 1000 }}
-                  dragElastic={0.1}
-                  onDragEnd={handleDragEnd}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: isTop ? 1 : 0.4, scale: isTop ? 1 : 0.9 }}
-                  exit={{ x: 1000, opacity: 0, scale: 0.5 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  className="absolute inset-0 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing"
-                >
-                  <TShirtImageFallback 
-                    tshirtId={tshirtId} 
-                    imgNum={imageIdx + 1} 
-                    onZoom={setZoomedImage} 
-                    mobileTopClass="max-md:top-1/2" 
-                    onImageLoad={() => setLoadedImagesCount(prev => prev + 1)} 
-                  />
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+      {/* Main Content Area */}
+      <div className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden">
+        {/* Main Background (PC only) */}
+        <div className="hidden md:block absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <img 
+            src="/images/tshirt-bg.png" 
+            alt="Background" 
+            className="w-full h-full object-cover no-select"
+            onLoad={() => setLoadedImagesCount(prev => prev + 1)}
+          />
         </div>
 
-        {/* Request Area (Always visible under the stack) */}
-        <div className="absolute bottom-[10%] md:bottom-[5%] flex flex-col items-center gap-6 w-full max-w-md pointer-events-auto">
-          {canPurchase && (
-            <div className="flex gap-4 mb-2">
-              {sizes.map((size) => (
-                <button
-                  key={size}
-                  onClick={() => setSelectedSize(size)}
-                  className={`w-12 h-12 md:w-16 md:h-16 flex items-center justify-center border-2 border-white font-bold italic text-lg md:text-2xl transition-all rounded-xl ${
-                    selectedSize === size ? 'bg-white text-black' : 'bg-white/10 backdrop-blur-md text-white hover:bg-white/20'
-                  }`}
-                >
-                  {size}
-                </button>
-              ))}
-            </div>
-          )}
-          
-          <button 
-            onClick={() => setIsModalOpen(true)}
-            disabled={hasRequested && !canPurchase}
-            className={`w-full max-w-sm ${
-              canPurchase 
-                ? 'bg-blue-400 hover:bg-blue-500' 
-                : hasRequested 
-                  ? 'bg-green-500 hover:bg-green-500 cursor-default' 
-                  : 'bg-blue-400 hover:bg-blue-500'
-            } text-white font-sans font-bold italic text-xl md:text-3xl py-5 px-12 rounded-2xl shadow-2xl backdrop-blur-md transition-all active:scale-95`}
-          >
-            {canPurchase ? 'ἀγόρασον' : hasRequested ? 'αιτημα εληφθη' : 'αίτημα'}
-          </button>
-
-          {hasRequested && !canPurchase && hoursRemaining !== null && (
-            <div className="text-white font-sans font-medium text-sm md:text-base opacity-80 mt-2 bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm">
-              Διαθέσιμο για αγορά σε: <span className="font-bold">{formatTimeRemaining(hoursRemaining)}</span>
-            </div>
-          )}
+        {/* Mobile Backgrounds */}
+        <div className="md:hidden absolute inset-0 z-0 overflow-hidden pointer-events-none">
+           <img src="/images/mobile/tshirt-bg-1.png" alt="" className="w-full h-full object-cover" />
         </div>
+
+        <div className="relative z-10 flex flex-col items-center justify-center w-full h-full max-w-7xl px-4 pointer-events-none">
+          {/* T-Shirt Image Stack */}
+          <div className="relative w-[80%] md:w-[45%] aspect-square flex items-center justify-center pointer-events-auto">
+            <AnimatePresence mode="popLayout">
+              {[currentIndex + 1, currentIndex].map((idx) => {
+                const imageIdx = idx % imagesCount;
+                const isTop = idx === currentIndex;
+
+                return (
+                  <motion.div
+                    key={`${tshirtId}-${imageIdx}`}
+                    style={{ 
+                      x: isTop ? x : 0, 
+                      scale: isTop ? 1 : 0.9, 
+                      opacity: isTop ? opacity : 0.4,
+                      zIndex: isTop ? 20 : 10 
+                    }}
+                    drag={isTop ? "x" : false}
+                    dragConstraints={{ left: 0, right: 1500 }}
+                    dragElastic={0.05}
+                    onDragEnd={handleDragEnd}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: isTop ? 1 : 0.4, scale: isTop ? 1 : 0.9 }}
+                    exit={{ x: 1500, opacity: 0, scale: 0.4 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 40 }}
+                    className="absolute inset-0 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing touch-none"
+                  >
+                    <TShirtImageFallback 
+                      tshirtId={tshirtId} 
+                      imgNum={imageIdx + 1} 
+                      onZoom={setZoomedImage} 
+                      mobileTopClass="max-md:top-1/2" 
+                      onImageLoad={() => setLoadedImagesCount(prev => prev + 1)} 
+                    />
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
+
+          {/* Request Area (PC) */}
+          <div className="hidden md:flex absolute bottom-[8%] flex-col items-center gap-6 w-full max-w-md pointer-events-auto">
+            {canPurchase && (
+              <div className="flex gap-4 mb-2">
+                {sizes.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`w-12 h-12 md:w-16 md:h-16 flex items-center justify-center border-2 border-white font-bold italic text-lg md:text-2xl transition-all rounded-xl ${
+                      selectedSize === size ? 'bg-white text-black' : 'bg-white/10 backdrop-blur-md text-white hover:bg-white/20'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              disabled={hasRequested && !canPurchase}
+              className={`w-full max-w-sm ${
+                canPurchase 
+                  ? 'bg-blue-400 hover:bg-blue-500' 
+                  : hasRequested 
+                    ? 'bg-green-500 hover:bg-green-500 cursor-default' 
+                    : 'bg-blue-400 hover:bg-blue-500'
+              } text-white font-sans font-bold italic text-xl md:text-3xl py-5 px-12 rounded-2xl shadow-2xl backdrop-blur-md border border-white/20 transition-all active:scale-95`}
+            >
+              {canPurchase ? 'ἀγόρασον' : hasRequested ? 'αιτημα εληφθη' : 'αίτημα'}
+            </button>
+
+            {hasRequested && !canPurchase && hoursRemaining !== null && (
+              <div className="text-white font-sans font-medium text-sm md:text-base opacity-80 mt-2 bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm">
+                Διαθέσιμο για αγορά σε: <span className="font-bold">{formatTimeRemaining(hoursRemaining)}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile-only Request Area & Footer */}
+      <div className="md:hidden w-full flex flex-col items-center gap-8 py-10">
+          <div className="flex flex-col items-center gap-6 w-full max-w-md px-4">
+            {canPurchase && (
+              <div className="flex gap-4 mb-2">
+                {sizes.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`w-12 h-12 flex items-center justify-center border-2 border-white font-bold italic text-lg transition-all rounded-xl ${
+                      selectedSize === size ? 'bg-white text-black' : 'bg-white/10 backdrop-blur-md text-white hover:bg-white/20'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              disabled={hasRequested && !canPurchase}
+              className={`w-full ${
+                canPurchase ? 'bg-blue-400' : hasRequested ? 'bg-green-500' : 'bg-blue-400'
+              } text-white font-bold italic text-xl py-5 px-12 rounded-2xl shadow-2xl`}
+            >
+              {canPurchase ? 'ἀγόρασον' : hasRequested ? 'αιτημα εληφθη' : 'αίτημα'}
+            </button>
+          </div>
+          <FooterLinks />
       </div>
 
       {/* Zoom Modal */}

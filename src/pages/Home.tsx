@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'motion/react';
 import Seo from '../components/Seo';
+import FooterLinks from '../components/FooterLinks';
 import { PRODUCTS } from '../data/products';
 
 function TshirtMainImageFallback({ tshirtId, name }: { tshirtId: number, name: string }) {
@@ -42,20 +43,25 @@ function TshirtMainImageFallback({ tshirtId, name }: { tshirtId: number, name: s
 
 export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showButton, setShowButton] = useState(false);
   const navigate = useNavigate();
   const x = useMotionValue(0);
-  const scale = useTransform(x, [-300, 0], [0.5, 1]);
-  const opacity = useTransform(x, [-300, -200], [0, 1]);
+  
+  // Swipe left: moves to negative x.
+  const scale = useTransform(x, [-400, 0], [0.4, 1]);
+  const opacity = useTransform(x, [-400, -200], [0, 1]);
 
   const handleDragEnd = (_: any, info: any) => {
+    // If swiped left (negative x)
     if (info.offset.x < -100 || info.velocity.x < -500) {
       setCurrentIndex((prev) => (prev + 1) % PRODUCTS.length);
+      setShowButton(false);
     }
     x.set(0);
   };
 
   return (
-    <div className="relative w-full min-h-screen bg-black flex flex-col overflow-hidden">
+    <div className="relative w-full min-h-screen bg-black flex flex-col overflow-x-hidden">
       <Seo
         title="xrostao clothing | anergia season"
         description="xrostao clothing — anergia season. Μπλούζες. Κάνε αίτημα και δήλωσε ενδιαφέρον για το drop."
@@ -72,65 +78,73 @@ export default function Home() {
       <h1 className="sr-only">xrostao clothing — anergia season</h1>
       
       {/* ================= DESKTOP VERSION ================= */}
-      <div className="hidden md:block relative w-full h-screen overflow-hidden">
+      <div className="hidden md:flex relative w-full h-screen overflow-hidden items-center justify-center">
         {/* Main Background */}
         <img 
           src="/images/main-bg.png" 
           alt="Background" 
-          className="absolute inset-0 w-full h-full object-cover no-select pointer-events-none"
+          className="absolute inset-0 w-full h-full object-cover no-select pointer-events-none z-0"
         />
         
-        {/* T-shirts Stack Overlay */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="relative w-[30%] aspect-square flex items-center justify-center pointer-events-auto">
-            <AnimatePresence mode="popLayout">
-              {[currentIndex + 1, currentIndex].map((idx) => {
-                const productIdx = idx % PRODUCTS.length;
-                const product = PRODUCTS[productIdx];
-                const isTop = idx === currentIndex;
+        {/* T-shirts Stack */}
+        <div className="relative z-10 w-[35%] aspect-square flex items-center justify-center">
+          <AnimatePresence mode="popLayout">
+            {[currentIndex + 1, currentIndex].map((idx) => {
+              const productIdx = idx % PRODUCTS.length;
+              const product = PRODUCTS[productIdx];
+              const isTop = idx === currentIndex;
 
-                return (
-                  <motion.div
-                    key={product.id}
-                    style={{ 
-                      x: isTop ? x : 0, 
-                      scale: isTop ? scale : 0.9, 
-                      opacity: isTop ? opacity : 0.4,
-                      zIndex: isTop ? 20 : 10 
-                    }}
-                    drag={isTop ? "x" : false}
-                    dragConstraints={{ left: -1000, right: 0 }}
-                    dragElastic={0.1}
-                    onDragEnd={handleDragEnd}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: isTop ? 1 : 0.4, scale: isTop ? 1 : 0.9 }}
-                    exit={{ x: -1000, opacity: 0, scale: 0.5 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    className="absolute inset-0 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing"
-                    onTap={() => {
-                      if (Math.abs(x.get()) < 10) {
-                        navigate(`/products/${product.slug}`);
-                      }
-                    }}
-                  >
-                    <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
-                    
-                    {isTop && (
-                      <div className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 px-8 py-3 rounded-full text-white font-black italic text-sm tracking-widest uppercase hover:bg-white/20 transition-all pointer-events-none">
+              return (
+                <motion.div
+                  key={product.id}
+                  style={{ 
+                    x: isTop ? x : 0, 
+                    scale: isTop ? scale : 0.9, 
+                    opacity: isTop ? opacity : 0.4,
+                    zIndex: isTop ? 20 : 10 
+                  }}
+                  drag={isTop ? "x" : false}
+                  dragConstraints={{ left: -1500, right: 0 }}
+                  dragElastic={0.05}
+                  onDragEnd={handleDragEnd}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: isTop ? 1 : 0.4, scale: isTop ? 1 : 0.9 }}
+                  exit={{ x: -1500, opacity: 0, scale: 0.4 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 40 }}
+                  className="absolute inset-0 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing touch-none"
+                  onTap={() => {
+                    if (Math.abs(x.get()) < 5) {
+                      setShowButton(!showButton);
+                    }
+                  }}
+                >
+                  <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
+                  
+                  <AnimatePresence>
+                    {isTop && showButton && (
+                      <motion.button 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/products/${product.slug}`);
+                        }}
+                        className="absolute -bottom-20 bg-white/10 backdrop-blur-xl border border-white/30 px-10 py-4 rounded-2xl text-white font-black italic text-base tracking-widest uppercase hover:bg-white/20 transition-all shadow-2xl ring-1 ring-white/20"
+                      >
                         δεσ το tshirt
-                      </div>
+                      </motion.button>
                     )}
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-          </div>
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
         </div>
       </div>
 
       {/* ================= MOBILE VERSION ================= */}
       <div className="block md:hidden w-full flex flex-col">
-        {/* Keep existing mobile logic as requested only for PC changes */}
         {/* Section 1 */}
         <div className="relative w-full">
           <img 
@@ -138,9 +152,9 @@ export default function Home() {
             alt="Mobile Background 1" 
             className="w-full h-auto block no-select"
           />
-          <Link to={`/products/${PRODUCTS[0].slug}`} className="absolute top-[66%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
+          <div onClick={() => navigate(`/products/${PRODUCTS[0].slug}`)} className="absolute top-[66%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
             <TshirtMainImageFallback tshirtId={1} name={PRODUCTS[0].name} />
-          </Link>
+          </div>
         </div>
 
         {/* Section 2 */}
@@ -150,12 +164,12 @@ export default function Home() {
             alt="Mobile Background 2" 
             className="w-full h-auto block no-select" 
           />
-          <Link to={`/products/${PRODUCTS[1].slug}`} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
+          <div onClick={() => navigate(`/products/${PRODUCTS[1].slug}`)} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
             <TshirtMainImageFallback tshirtId={2} name={PRODUCTS[1].name} />
-          </Link>
-          <Link to={`/products/${PRODUCTS[2].slug}`} className="absolute top-[75%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
+          </div>
+          <div onClick={() => navigate(`/products/${PRODUCTS[2].slug}`)} className="absolute top-[75%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
             <TshirtMainImageFallback tshirtId={3} name={PRODUCTS[2].name} />
-          </Link>
+          </div>
         </div>
 
         {/* Section 3 */}
@@ -165,12 +179,12 @@ export default function Home() {
             alt="Mobile Background 3" 
             className="w-full h-auto block no-select" 
           />
-          <Link to={`/products/${PRODUCTS[3].slug}`} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
+          <div onClick={() => navigate(`/products/${PRODUCTS[3].slug}`)} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
             <TshirtMainImageFallback tshirtId={4} name={PRODUCTS[3].name} />
-          </Link>
-          <Link to={`/products/${PRODUCTS[4].slug}`} className="absolute top-[75%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
+          </div>
+          <div onClick={() => navigate(`/products/${PRODUCTS[4].slug}`)} className="absolute top-[75%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
             <TshirtMainImageFallback tshirtId={5} name={PRODUCTS[4].name} />
-          </Link>
+          </div>
         </div>
 
         {/* Section 4 */}
@@ -180,12 +194,12 @@ export default function Home() {
             alt="Mobile Background 4" 
             className="w-full h-auto block no-select" 
           />
-          <Link to={`/products/${PRODUCTS[5].slug}`} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
+          <div onClick={() => navigate(`/products/${PRODUCTS[5].slug}`)} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
             <TshirtMainImageFallback tshirtId={6} name={PRODUCTS[5].name} />
-          </Link>
-          <Link to={`/products/${PRODUCTS[6].slug}`} className="absolute top-[75%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
+          </div>
+          <div onClick={() => navigate(`/products/${PRODUCTS[6].slug}`)} className="absolute top-[75%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
             <TshirtMainImageFallback tshirtId={7} name={PRODUCTS[6].name} />
-          </Link>
+          </div>
         </div>
 
         {/* Section 5 */}
@@ -195,9 +209,9 @@ export default function Home() {
             alt="Mobile Background 5" 
             className="w-full h-auto block no-select" 
           />
-          <Link to={`/products/${PRODUCTS[7].slug}`} className="absolute top-[46%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
+          <div onClick={() => navigate(`/products/${PRODUCTS[7].slug}`)} className="absolute top-[46%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
             <TshirtMainImageFallback tshirtId={8} name={PRODUCTS[7].name} />
-          </Link>
+          </div>
         </div>
 
         {/* Section 6 */}
@@ -207,12 +221,12 @@ export default function Home() {
             alt="Mobile Background 6" 
             className="w-full h-auto block no-select" 
           />
-          <Link to={`/products/${PRODUCTS[8].slug}`} className="absolute top-[21%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
+          <div onClick={() => navigate(`/products/${PRODUCTS[8].slug}`)} className="absolute top-[21%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
             <TshirtMainImageFallback tshirtId={9} name={PRODUCTS[8].name} />
-          </Link>
-          <Link to={`/products/${PRODUCTS[9].slug}`} className="absolute top-[71%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
+          </div>
+          <div onClick={() => navigate(`/products/${PRODUCTS[9].slug}`)} className="absolute top-[71%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] pointer-events-auto hover:opacity-90 transition-transform hover:scale-105">
             <TshirtMainImageFallback tshirtId={10} name={PRODUCTS[9].name} />
-          </Link>
+          </div>
         </div>
 
         {/* Section 7 */}
@@ -223,6 +237,9 @@ export default function Home() {
             className="w-full h-auto block no-select" 
           />
         </div>
+
+        {/* Footer ONLY for Mobile */}
+        <FooterLinks />
       </div>
     </div>
   );

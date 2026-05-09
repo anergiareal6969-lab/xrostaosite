@@ -95,9 +95,6 @@ export default function App() {
             <Route path="/products/:slug" element={<Product />} />
             <Route path="/tshirt/:id" element={<TShirt />} />
           </Routes>
-          <div className="md:hidden">
-            <FooterLinks />
-          </div>
         </div>
       </BrowserRouter>
     </AuthProvider>
