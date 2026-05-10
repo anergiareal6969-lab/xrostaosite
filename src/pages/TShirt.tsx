@@ -150,173 +150,79 @@ export default function TShirt() {
         selectedSize={selectedSize}
       />
 
-      {/* Main Content Area */}
-      <div className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden">
-        {/* Main Background (PC only) */}
-        <div className="hidden md:block absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <img 
-            src="/images/tshirt-bg.png" 
-            alt="Background" 
-            className="w-full h-full object-cover no-select"
-            onLoad={() => setLoadedImagesCount(prev => prev + 1)}
-          />
-        </div>
+      {/* Main Content Area - 4 Sections with different Backgrounds */}
+      <div className="w-full flex flex-col">
+        {[1, 2, 3, 4].map((num) => (
+          <div key={num} className="relative w-full min-h-screen flex items-center justify-center">
+            {/* Background for each section */}
+            <picture className="absolute inset-0 w-full h-full pointer-events-none z-0">
+              <source media="(max-width: 767px)" srcSet={`/images/mobile/tshirt-bg-${num}.png`} />
+              <source media="(min-width: 768px)" srcSet={`/images/tshirt-bg.png`} />
+              <img 
+                src="/images/tshirt-bg.png" 
+                alt="" 
+                className={`w-full h-full object-cover no-select ${num % 2 === 0 ? 'rotate-180' : ''}`}
+                onLoad={() => setLoadedImagesCount(prev => prev + 1)}
+              />
+            </picture>
 
-        {/* Mobile Backgrounds */}
-        <div className="md:hidden absolute inset-0 z-0 overflow-hidden pointer-events-none">
-           <img src="/images/mobile/tshirt-bg-1.png" alt="" className="w-full h-full object-cover" />
-        </div>
+            {/* T-Shirt Overlay for each section */}
+            <div className="relative z-10 w-[80%] md:w-[40%] aspect-square flex items-center justify-center">
+              <TShirtImageFallback 
+                tshirtId={tshirtId} 
+                imgNum={num} 
+                onZoom={setZoomedImage} 
+                mobileTopClass="top-1/2" 
+                onImageLoad={() => setLoadedImagesCount(prev => prev + 1)} 
+                canZoom={true}
+              />
+            </div>
 
-        <div className="relative z-10 flex flex-col items-center justify-center w-full h-full max-w-7xl px-4 pointer-events-none">
-          {/* T-Shirt Image Carousel (PC) */}
-          <div className="hidden md:flex relative w-full h-full items-center justify-center overflow-hidden pointer-events-auto">
-            <div className="relative w-full h-full">
-              {Array.from({ length: imagesCount }).map((_, index) => {
-                const isCenter = index === currentIndex;
-                const distance = Math.abs(index - currentIndex);
-                const x = (index - currentIndex) * step;
+            {/* Request Button only on the last section */}
+            {num === 4 && (
+              <div className="absolute bottom-[10%] flex flex-col items-center gap-6 w-full max-w-md z-20">
+                {canPurchase && (
+                  <div className="flex gap-4 mb-2">
+                    {sizes.map((size) => (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className={`w-12 h-12 md:w-16 md:h-16 flex items-center justify-center border-2 border-white font-bold italic text-lg md:text-2xl transition-all rounded-xl ${
+                          selectedSize === size ? 'bg-white text-black' : 'bg-white/10 backdrop-blur-md text-white hover:bg-white/20'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 
-                return (
-                  <motion.div
-                    key={`${tshirtId}-${index}`}
-                    animate={{
-                      x,
-                      scale: isCenter ? 1 : 0.72,
-                      opacity: isCenter ? 1 : 0.25,
-                      filter: isCenter ? 'blur(0px) brightness(1)' : 'blur(10px) brightness(0.6)',
-                      zIndex: isCenter ? 30 : 20 - distance
-                    }}
-                    transition={{ type: 'spring', stiffness: 260, damping: 35 }}
-                    onMouseDown={(e) => {
-                      if (e.button !== 0) return;
-                      setCurrentIndex(index);
-                    }}
-                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] aspect-square flex items-center justify-center cursor-pointer select-none"
-                  >
-                    <TShirtImageFallback 
-                      tshirtId={tshirtId} 
-                      imgNum={index + 1} 
-                      onZoom={setZoomedImage} 
-                      mobileTopClass="top-1/2" 
-                      onImageLoad={() => setLoadedImagesCount(prev => prev + 1)} 
-                      canZoom={isCenter}
-                    />
-                  </motion.div>
-                );
-              })}
-            </div>
-          </div>
+                <button 
+                  onClick={() => setIsModalOpen(true)}
+                  disabled={hasRequested && !canPurchase}
+                  className={`w-full max-w-sm ${
+                    canPurchase 
+                      ? 'bg-blue-400 hover:bg-blue-500' 
+                      : hasRequested 
+                        ? 'bg-green-500 hover:bg-green-500 cursor-default' 
+                        : 'bg-blue-400 hover:bg-blue-500'
+                  } text-white font-sans font-bold italic text-xl md:text-3xl py-5 px-12 rounded-2xl shadow-2xl backdrop-blur-md border border-white/20 transition-all active:scale-95`}
+                >
+                  {canPurchase ? 'ἀγόρασον' : hasRequested ? 'αιτημα εληφθη' : 'αίτημα'}
+                </button>
 
-          {/* Mobile Carousel */}
-          <div className="md:hidden relative w-full h-full items-center justify-center overflow-hidden pointer-events-auto">
-            <div className="relative w-full h-full">
-              {Array.from({ length: imagesCount }).map((_, index) => {
-                const isCenter = index === currentIndex;
-                const distance = Math.abs(index - currentIndex);
-                const x = (index - currentIndex) * mobileStep;
-
-                return (
-                  <motion.div
-                    key={`${tshirtId}-mobile-${index}`}
-                    animate={{
-                      x,
-                      scale: isCenter ? 1 : 0.72,
-                      opacity: isCenter ? 1 : 0.25,
-                      filter: isCenter ? 'blur(0px) brightness(1)' : 'blur(10px) brightness(0.6)',
-                      zIndex: isCenter ? 30 : 20 - distance,
-                    }}
-                    transition={{ type: 'spring', stiffness: 260, damping: 35 }}
-                    onMouseDown={(e) => {
-                      if (e.button !== 0) return;
-                      setCurrentIndex(index);
-                    }}
-                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[520px] aspect-square flex items-center justify-center cursor-pointer select-none"
-                  >
-                    <TShirtImageFallback
-                      tshirtId={tshirtId}
-                      imgNum={index + 1}
-                      onZoom={setZoomedImage}
-                      mobileTopClass="top-1/2"
-                      onImageLoad={() => setLoadedImagesCount((prev) => prev + 1)}
-                      canZoom={isCenter}
-                    />
-                  </motion.div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Request Area (PC) */}
-          <div className="hidden md:flex absolute bottom-[8%] flex-col items-center gap-6 w-full max-w-md pointer-events-auto">
-            {canPurchase && (
-              <div className="flex gap-4 mb-2">
-                {sizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`w-12 h-12 md:w-16 md:h-16 flex items-center justify-center border-2 border-white font-bold italic text-lg md:text-2xl transition-all rounded-xl ${
-                      selectedSize === size ? 'bg-white text-black' : 'bg-white/10 backdrop-blur-md text-white hover:bg-white/20'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            )}
-            
-            <button 
-              onClick={() => setIsModalOpen(true)}
-              disabled={hasRequested && !canPurchase}
-              className={`w-full max-w-sm ${
-                canPurchase 
-                  ? 'bg-blue-400 hover:bg-blue-500' 
-                  : hasRequested 
-                    ? 'bg-green-500 hover:bg-green-500 cursor-default' 
-                    : 'bg-blue-400 hover:bg-blue-500'
-              } text-white font-sans font-bold italic text-xl md:text-3xl py-5 px-12 rounded-2xl shadow-2xl backdrop-blur-md border border-white/20 transition-all active:scale-95`}
-            >
-              {canPurchase ? 'ἀγόρασον' : hasRequested ? 'αιτημα εληφθη' : 'αίτημα'}
-            </button>
-
-            {hasRequested && !canPurchase && hoursRemaining !== null && (
-              <div className="text-white font-sans font-medium text-sm md:text-base opacity-80 mt-2 bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm">
-                Διαθέσιμο για αγορά σε: <span className="font-bold">{formatTimeRemaining(hoursRemaining)}</span>
+                {hasRequested && !canPurchase && hoursRemaining !== null && (
+                  <div className="text-white font-sans font-medium text-sm md:text-base opacity-80 mt-2 bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm">
+                    Διαθέσιμο για αγορά σε: <span className="font-bold">{formatTimeRemaining(hoursRemaining)}</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
-        </div>
-      </div>
+        ))}
 
-      {/* Mobile-only Request Area & Footer */}
-      <div className="md:hidden w-full flex flex-col items-center gap-8 py-10">
-          <div className="flex flex-col items-center gap-6 w-full max-w-md px-4">
-            {canPurchase && (
-              <div className="flex gap-4 mb-2">
-                {sizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`w-12 h-12 flex items-center justify-center border-2 border-white font-bold italic text-lg transition-all rounded-xl ${
-                      selectedSize === size ? 'bg-white text-black' : 'bg-white/10 backdrop-blur-md text-white hover:bg-white/20'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            )}
-            
-            <button 
-              onClick={() => setIsModalOpen(true)}
-              disabled={hasRequested && !canPurchase}
-              className={`w-full ${
-                canPurchase ? 'bg-blue-400' : hasRequested ? 'bg-green-500' : 'bg-blue-400'
-              } text-white font-bold italic text-xl py-5 px-12 rounded-2xl shadow-2xl`}
-            >
-              {canPurchase ? 'ἀγόρασον' : hasRequested ? 'αιτημα εληφθη' : 'αίτημα'}
-            </button>
-          </div>
-          <FooterLinks />
+        {/* Footer at the end of T-Shirt page scroll */}
+        <FooterLinks />
       </div>
 
       {/* Zoom Modal */}

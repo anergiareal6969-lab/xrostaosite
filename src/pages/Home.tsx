@@ -44,7 +44,6 @@ function TshirtMainImageFallback({ tshirtId, name }: { tshirtId: number, name: s
 export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigate = useNavigate();
-  const step = 300 + 48;
   const mobileStep = 240;
 
   return (
@@ -65,46 +64,76 @@ export default function Home() {
       <h1 className="sr-only">xrostao clothing — anergia season</h1>
       
       {/* ================= DESKTOP VERSION ================= */}
-      <div className="hidden md:flex relative w-full h-screen overflow-hidden items-center justify-center">
-        {/* Main Background */}
-        <img 
-          src="/images/main-bg.png" 
-          alt="Background" 
-          className="absolute inset-0 w-full h-full object-cover no-select pointer-events-none z-0"
-        />
-        
-        {/* T-shirts Carousel */}
-        <div className="relative z-10 w-full h-full flex items-center justify-center overflow-hidden">
-          <div className="relative w-full h-full">
-            {PRODUCTS.map((product, index) => {
-              const isCenter = index === currentIndex;
-              const distance = Math.abs(index - currentIndex);
-              const x = (index - currentIndex) * step;
-
-              return (
-                <motion.div
-                  key={product.id}
-                  initial={false}
-                  animate={{
-                    x,
-                    scale: isCenter ? 1 : 0.72,
-                    opacity: isCenter ? 1 : 0.25,
-                    filter: isCenter ? 'blur(0px) brightness(1)' : 'blur(10px) brightness(0.6)',
-                    zIndex: isCenter ? 30 : 20 - distance
-                  }}
-                  transition={{ type: 'spring', stiffness: 260, damping: 35 }}
-                  onMouseDown={(e) => {
-                    if (e.button !== 0) return;
-                    setCurrentIndex(index);
-                  }}
-                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] aspect-square flex flex-col items-center justify-center cursor-pointer select-none"
-                >
-                  <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
-                </motion.div>
-              );
-            })}
+      <div className="hidden md:flex flex-col w-full">
+        {/* Main Background Section with T-shirts in a row */}
+        <div className="relative w-full min-h-screen flex items-center justify-center">
+          <img 
+            src="/images/main-bg.png" 
+            alt="Background" 
+            className="absolute inset-0 w-full h-full object-cover no-select pointer-events-none z-0"
+          />
+          
+          <div className="relative z-10 w-full max-w-7xl px-8 flex flex-row items-center justify-center gap-12">
+            {PRODUCTS.slice(0, 3).map((product) => (
+              <div 
+                key={product.id}
+                onClick={() => navigate(`/products/${product.slug}`)}
+                className="w-1/4 aspect-square flex flex-col items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300"
+              >
+                <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
+                <div className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full text-white font-black italic text-xs tracking-widest uppercase">
+                  δεσ το tshirt
+                </div>
+              </div>
+            ))}
           </div>
         </div>
+
+        {/* Second Background Section with more T-shirts */}
+        <div className="relative w-full min-h-screen flex items-center justify-center">
+          <img 
+            src="/images/main-bg.png" 
+            alt="Background" 
+            className="absolute inset-0 w-full h-full object-cover no-select pointer-events-none z-0 rotate-180"
+          />
+          
+          <div className="relative z-10 w-full max-w-7xl px-8 grid grid-cols-3 gap-12">
+            {PRODUCTS.slice(3, 9).map((product) => (
+              <div 
+                key={product.id}
+                onClick={() => navigate(`/products/${product.slug}`)}
+                className="flex flex-col items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300"
+              >
+                <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
+                <div className="mt-4 bg-white/10 backdrop-blur-md border border-white/20 px-4 py-1 rounded-full text-white font-black italic text-[10px] tracking-widest uppercase">
+                  δεσ το tshirt
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Third Section with last T-shirt and Skate BG */}
+        <div className="relative w-full min-h-screen flex items-center justify-center">
+          <img 
+            src="/images/mobile/main-bg-7.png" 
+            alt="Background" 
+            className="absolute inset-0 w-full h-full object-cover no-select pointer-events-none z-0"
+          />
+          
+          <div 
+            onClick={() => navigate(`/products/${PRODUCTS[9].slug}`)}
+            className="relative z-10 w-1/4 aspect-square flex flex-col items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300"
+          >
+            <TshirtMainImageFallback tshirtId={PRODUCTS[9].id} name={PRODUCTS[9].name} />
+            <div className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full text-white font-black italic text-xs tracking-widest uppercase">
+              δεσ το tshirt
+            </div>
+          </div>
+        </div>
+
+        {/* Footer at the end of PC scroll */}
+        <FooterLinks />
       </div>
 
       {/* ================= MOBILE VERSION ================= */}
