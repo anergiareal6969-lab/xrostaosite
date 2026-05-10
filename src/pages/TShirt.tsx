@@ -153,15 +153,15 @@ export default function TShirt() {
       {/* Main Content Area - 4 Sections with different Backgrounds */}
       <div className="w-full flex flex-col">
         {[1, 2, 3, 4].map((num) => (
-          <div key={num} className="relative w-full min-h-screen flex items-center justify-center">
+          <div key={num} className="relative w-full h-screen flex items-center justify-center">
             {/* Background for each section */}
             <picture className="absolute inset-0 w-full h-full pointer-events-none z-0">
               <source media="(max-width: 767px)" srcSet={`/images/mobile/tshirt-bg-${num}.png`} />
-              <source media="(min-width: 768px)" srcSet={`/images/tshirt-bg.png`} />
+              <source media="(min-width: 768px)" srcSet={`/images/tshirt-bg-${num}.png`} />
               <img 
-                src="/images/tshirt-bg.png" 
+                src={`/images/tshirt-bg-${num}.png`} 
                 alt="" 
-                className={`w-full h-full object-cover no-select ${num % 2 === 0 ? 'rotate-180' : ''}`}
+                className="w-full h-full object-cover no-select"
                 onLoad={() => setLoadedImagesCount(prev => prev + 1)}
               />
             </picture>
