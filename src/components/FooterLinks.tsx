@@ -28,7 +28,8 @@ export default function FooterLinks() {
     <div className="relative w-full bg-black py-20 px-4 flex flex-col items-center gap-6 mt-auto overflow-hidden">
       <picture className="absolute inset-0 w-full h-full opacity-60 pointer-events-none">
         <source media="(max-width: 767px)" srcSet="/images/mobile/footer-bg.png" />
-        <img src="/images/mobile/footer-bg.png" className="w-full h-full object-cover" alt="" />
+        <source media="(min-width: 768px)" srcSet="/images/pc-footer-bg.png" />
+        <img src="/images/pc-footer-bg.png" className="w-full h-full object-cover" alt="" />
       </picture>
       
       <div className="relative z-10 flex flex-col md:flex-row flex-wrap items-center justify-center gap-6 md:gap-12">
