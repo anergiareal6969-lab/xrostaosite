@@ -49,6 +49,7 @@ export default function App() {
         '/images/mobile/tshirt-bg-mid-3.png',
         '/images/mobile/tshirt-bg-mid-4.png',
         '/images/mobile/tshirt-bg-last.png',
+        '/images/tshirt-bg-last.png',
 
         // T-shirts
         ...Array.from({ length: 10 }, (_, i) => [

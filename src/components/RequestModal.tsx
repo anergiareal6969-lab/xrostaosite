@@ -13,6 +13,7 @@ interface RequestModalProps {
 export default function RequestModal({ isOpen, onClose, onSubmit, mode = 'request', selectedSize }: RequestModalProps) {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shouldSubmitAfterLogin, setShouldSubmitAfterLogin] = useState(false);
   const { user, loginWithGoogle, loading } = useAuth();
 
   useEffect(() => {
@@ -21,11 +22,60 @@ export default function RequestModal({ isOpen, onClose, onSubmit, mode = 'reques
     }
   }, [user]);
 
+  const startGoogleRequestFlow = async () => {
+    try {
+      setShouldSubmitAfterLogin(true);
+      await loginWithGoogle();
+    } catch (error) {
+      setShouldSubmitAfterLogin(false);
+      throw error;
+    }
+  };
+
+  useEffect(() => {
+    if (!shouldSubmitAfterLogin || !user?.email || isSubmitting) return;
+
+    let isCancelled = false;
+
+    const submitAfterLogin = async () => {
+      if (mode === 'purchase' && !selectedSize) {
+        alert('Παρακαλώ επίλεξε μέγεθος!');
+        setShouldSubmitAfterLogin(false);
+        return;
+      }
+
+      try {
+        setIsSubmitting(true);
+        await onSubmit(user.email);
+        if (!isCancelled) {
+          setShouldSubmitAfterLogin(false);
+          onClose();
+        }
+      } catch (error) {
+        console.error('[REQUEST MODAL] Auto submit after login failed:', error);
+        if (!isCancelled) {
+          setShouldSubmitAfterLogin(false);
+          alert('Υπήρξε πρόβλημα στην αποστολή του αιτήματος. Δοκίμασε ξανά.');
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsSubmitting(false);
+        }
+      }
+    };
+
+    submitAfterLogin();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [shouldSubmitAfterLogin, user, onSubmit, onClose, mode, selectedSize, isSubmitting]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!user) {
-      await loginWithGoogle();
+      await startGoogleRequestFlow();
       return;
     }
 
@@ -34,10 +84,16 @@ export default function RequestModal({ isOpen, onClose, onSubmit, mode = 'reques
       alert('Παρακαλώ επίλεξε μέγεθος!');
       return;
     }
-    setIsSubmitting(true);
-    await onSubmit(email);
-    setIsSubmitting(false);
-    onClose();
+    try {
+      setIsSubmitting(true);
+      await onSubmit(email);
+      onClose();
+    } catch (error) {
+      console.error('[REQUEST MODAL] Submit failed:', error);
+      alert('Υπήρξε πρόβλημα στην αποστολή του αιτήματος. Δοκίμασε ξανά.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -71,7 +127,7 @@ export default function RequestModal({ isOpen, onClose, onSubmit, mode = 'reques
                 </div>
                 
                 <button
-                  onClick={() => loginWithGoogle()}
+                  onClick={startGoogleRequestFlow}
                   className="w-full bg-white text-black font-black italic py-4 px-6 rounded-xl hover:bg-white/90 transition-all active:scale-95 flex items-center justify-center gap-3"
                 >
                   <svg className="w-6 h-6" viewBox="0 0 24 24">

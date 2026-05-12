@@ -5,6 +5,9 @@ import Seo from '../components/Seo';
 import FooterLinks from '../components/FooterLinks';
 import { PRODUCTS } from '../data/products';
 
+const desktopTshirtCardClassName = 'w-full max-w-[18rem] xl:max-w-[20rem] flex flex-col items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300';
+const desktopTshirtFrameClassName = 'w-full aspect-square flex items-center justify-center';
+
 function TshirtMainImageFallback({ tshirtId, name }: { tshirtId: number, name: string }) {
   const [cacheBuster] = useState(Date.now());
   const paths = [
@@ -75,9 +78,11 @@ export default function Home() {
               <div 
                 key={product.id}
                 onClick={() => navigate(`/products/${product.slug}`)}
-                className="w-1/4 aspect-square flex flex-col items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300"
+                className={desktopTshirtCardClassName}
               >
-                <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
+                <div className={desktopTshirtFrameClassName}>
+                  <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
+                </div>
                 <div className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full text-white font-black italic text-xs tracking-widest uppercase shadow-xl">
                   δεσ το tshirt
                 </div>
@@ -98,9 +103,11 @@ export default function Home() {
               <div 
                 key={product.id}
                 onClick={() => navigate(`/products/${product.slug}`)}
-                className="flex flex-col items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300"
+                className={desktopTshirtCardClassName}
               >
-                <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
+                <div className={desktopTshirtFrameClassName}>
+                  <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
+                </div>
                 <div className="mt-4 bg-white/10 backdrop-blur-md border border-white/20 px-4 py-1 rounded-full text-white font-black italic text-[10px] tracking-widest uppercase shadow-xl">
                   δεσ το tshirt
                 </div>
@@ -118,9 +125,11 @@ export default function Home() {
           />
           <div 
             onClick={() => navigate(`/products/${PRODUCTS[9].slug}`)}
-            className="relative z-10 w-1/4 aspect-square flex flex-col items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300"
+            className={`relative z-10 ${desktopTshirtCardClassName}`}
           >
-            <TshirtMainImageFallback tshirtId={PRODUCTS[9].id} name={PRODUCTS[9].name} />
+            <div className={desktopTshirtFrameClassName}>
+              <TshirtMainImageFallback tshirtId={PRODUCTS[9].id} name={PRODUCTS[9].name} />
+            </div>
             <div className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full text-white font-black italic text-xs tracking-widest uppercase shadow-xl">
               δεσ το tshirt
             </div>

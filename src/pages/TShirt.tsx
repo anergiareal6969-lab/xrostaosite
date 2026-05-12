@@ -68,6 +68,11 @@ export default function TShirt() {
   const sizes = ['S', 'M', 'L', 'XL'];
   const step = 450 + 48;
   const mobileStep = 280;
+  const tshirtSectionNumbers = [1, 2, 3, 4];
+  const getMobileBackgroundPath = (sectionNumber: number) =>
+    sectionNumber === 1
+      ? '/images/mobile/tshirt-bg-1.png'
+      : `/images/mobile/tshirt-bg-mid-${sectionNumber}.png`;
 
   useEffect(() => {
     setIsLoading(true);
@@ -152,11 +157,11 @@ export default function TShirt() {
 
       {/* Main Content Area - 4 Sections with different Backgrounds */}
       <div className="w-full flex flex-col">
-        {[1, 2, 3, 4].map((num) => (
+        {tshirtSectionNumbers.map((num) => (
           <div key={num} className="relative w-full h-screen flex items-center justify-center">
             {/* Background for each section */}
             <picture className="absolute inset-0 w-full h-full pointer-events-none z-0">
-              <source media="(max-width: 767px)" srcSet={`/images/mobile/tshirt-bg-${num}.png`} />
+              <source media="(max-width: 767px)" srcSet={getMobileBackgroundPath(num)} />
               <source media="(min-width: 768px)" srcSet={`/images/tshirt-bg-${num}.png`} />
               <img 
                 src={`/images/tshirt-bg-${num}.png`} 
@@ -177,49 +182,58 @@ export default function TShirt() {
                 canZoom={true}
               />
             </div>
+          </div>
+        ))}
 
-            {/* Request Button only on the last section */}
-            {num === 4 && (
-              <div className="absolute bottom-[10%] flex flex-col items-center gap-6 w-full max-w-md z-20">
-                {canPurchase && (
-                  <div className="flex gap-4 mb-2">
-                    {sizes.map((size) => (
-                      <button
-                        key={size}
-                        onClick={() => setSelectedSize(size)}
-                        className={`w-12 h-12 md:w-16 md:h-16 flex items-center justify-center border-2 border-white font-bold italic text-lg md:text-2xl transition-all rounded-xl ${
-                          selectedSize === size ? 'bg-white text-black' : 'bg-white/10 backdrop-blur-md text-white hover:bg-white/20'
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                
-                <button 
-                  onClick={() => setIsModalOpen(true)}
-                  disabled={hasRequested && !canPurchase}
-                  className={`w-full max-w-sm ${
-                    canPurchase 
-                      ? 'bg-blue-400 hover:bg-blue-500' 
-                      : hasRequested 
-                        ? 'bg-green-500 hover:bg-green-500 cursor-default' 
-                        : 'bg-blue-400 hover:bg-blue-500'
-                  } text-white font-sans font-bold italic text-xl md:text-3xl py-5 px-12 rounded-2xl shadow-2xl backdrop-blur-md border border-white/20 transition-all active:scale-95`}
-                >
-                  {canPurchase ? 'ἀγόρασον' : hasRequested ? 'αιτημα εληφθη' : 'αίτημα'}
-                </button>
+        <div className="relative w-full h-screen flex items-center justify-center">
+          <picture className="absolute inset-0 w-full h-full pointer-events-none z-0">
+            <source media="(max-width: 767px)" srcSet="/images/mobile/tshirt-bg-last.png" />
+            <source media="(min-width: 768px)" srcSet="/images/tshirt-bg-last.png" />
+            <img
+              src="/images/tshirt-bg-last.png"
+              alt=""
+              className="w-full h-full object-cover no-select"
+            />
+          </picture>
 
-                {hasRequested && !canPurchase && hoursRemaining !== null && (
-                  <div className="text-white font-sans font-medium text-sm md:text-base opacity-80 mt-2 bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm">
-                    Διαθέσιμο για αγορά σε: <span className="font-bold">{formatTimeRemaining(hoursRemaining)}</span>
-                  </div>
-                )}
+          <div className="relative z-20 flex flex-col items-center gap-6 w-full max-w-md px-6">
+            {canPurchase && (
+              <div className="flex gap-4 mb-2">
+                {sizes.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`w-12 h-12 md:w-16 md:h-16 flex items-center justify-center border-2 border-white font-bold italic text-lg md:text-2xl transition-all rounded-xl ${
+                      selectedSize === size ? 'bg-white text-black' : 'bg-white/10 backdrop-blur-md text-white hover:bg-white/20'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <button
+              onClick={() => setIsModalOpen(true)}
+              disabled={hasRequested && !canPurchase}
+              className={`w-full max-w-sm ${
+                canPurchase
+                  ? 'bg-blue-400 hover:bg-blue-500'
+                  : hasRequested
+                    ? 'bg-green-500 hover:bg-green-500 cursor-default'
+                    : 'bg-blue-400 hover:bg-blue-500'
+              } text-white font-sans font-bold italic text-xl md:text-3xl py-5 px-12 rounded-2xl shadow-2xl backdrop-blur-md border border-white/20 transition-all active:scale-95`}
+            >
+              {canPurchase ? 'ἀγόρασον' : hasRequested ? 'αιτημα εληφθη' : 'αίτημα'}
+            </button>
+
+            {hasRequested && !canPurchase && hoursRemaining !== null && (
+              <div className="text-white font-sans font-medium text-sm md:text-base opacity-80 mt-2 bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm">
+                Διαθέσιμο για αγορά σε: <span className="font-bold">{formatTimeRemaining(hoursRemaining)}</span>
               </div>
             )}
           </div>
-        ))}
+        </div>
 
         {/* Footer at the end of T-Shirt page scroll */}
         <FooterLinks />
