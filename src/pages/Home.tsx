@@ -67,7 +67,7 @@ export default function Home() {
       {/* ================= DESKTOP VERSION ================= */}
       <div className="hidden md:flex flex-col w-full">
         {/* Section 1: PC Background 1 */}
-        <div className="relative w-full h-screen flex items-center justify-center">
+        <div className="relative w-full h-[100dvh] flex items-center justify-center">
           <img 
             src="/images/main-bg-1.png" 
             alt="Background 1" 
@@ -92,7 +92,7 @@ export default function Home() {
         </div>
 
         {/* Section 2: PC Background 2 */}
-        <div className="relative w-full h-screen flex items-center justify-center">
+        <div className="relative w-full h-[100dvh] flex items-center justify-center">
           <img 
             src="/images/main-bg-2.png" 
             alt="Background 2" 
@@ -117,7 +117,7 @@ export default function Home() {
         </div>
 
         {/* Section 3: PC Background 3 (Skate) */}
-        <div className="relative w-full h-screen flex items-center justify-center">
+        <div className="relative w-full h-[100dvh] flex items-center justify-center">
           <img 
             src="/images/main-bg-3.png" 
             alt="Background 3" 
@@ -142,7 +142,7 @@ export default function Home() {
       {/* ================= MOBILE VERSION ================= */}
       <div className="block md:hidden w-full flex flex-col">
         {/* Mobile Section 1: Background 1 */}
-        <div className="relative w-full h-screen">
+        <div className="relative w-full h-[100dvh]">
           <img src="/images/mobile/main-bg-1.png" alt="Mobile BG 1" className="w-full h-full object-cover no-select" />
           <div onClick={() => navigate(`/products/${PRODUCTS[0].slug}`)} className="absolute top-[66%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
             <TshirtMainImageFallback tshirtId={1} name={PRODUCTS[0].name} />
@@ -150,7 +150,7 @@ export default function Home() {
         </div>
 
         {/* Mobile Section 2: Background 2 */}
-        <div className="relative w-full h-screen">
+        <div className="relative w-full h-[100dvh]">
           <img src="/images/mobile/main-bg-2.png" alt="Mobile BG 2" className="w-full h-full object-cover no-select" />
           <div onClick={() => navigate(`/products/${PRODUCTS[1].slug}`)} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
             <TshirtMainImageFallback tshirtId={2} name={PRODUCTS[1].name} />
@@ -161,7 +161,7 @@ export default function Home() {
         </div>
 
         {/* Mobile Section 3: Background 3 */}
-        <div className="relative w-full h-screen">
+        <div className="relative w-full h-[100dvh]">
           <img src="/images/mobile/main-bg-3.png" alt="Mobile BG 3" className="w-full h-full object-cover no-select" />
           <div onClick={() => navigate(`/products/${PRODUCTS[3].slug}`)} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
             <TshirtMainImageFallback tshirtId={4} name={PRODUCTS[3].name} />
@@ -172,7 +172,7 @@ export default function Home() {
         </div>
 
         {/* Mobile Section 4: Background 4 */}
-        <div className="relative w-full h-screen">
+        <div className="relative w-full h-[100dvh]">
           <img src="/images/mobile/main-bg-4.png" alt="Mobile BG 4" className="w-full h-full object-cover no-select" />
           <div onClick={() => navigate(`/products/${PRODUCTS[5].slug}`)} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
             <TshirtMainImageFallback tshirtId={6} name={PRODUCTS[5].name} />
@@ -183,7 +183,7 @@ export default function Home() {
         </div>
 
         {/* Mobile Section 5: Background 5 */}
-        <div className="relative w-full h-screen">
+        <div className="relative w-full h-[100dvh]">
           <img src="/images/mobile/main-bg-5.png" alt="Mobile BG 5" className="w-full h-full object-cover no-select" />
           <div onClick={() => navigate(`/products/${PRODUCTS[7].slug}`)} className="absolute top-[46%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
             <TshirtMainImageFallback tshirtId={8} name={PRODUCTS[7].name} />
@@ -191,7 +191,7 @@ export default function Home() {
         </div>
 
         {/* Mobile Section 6: Background 6 */}
-        <div className="relative w-full h-screen">
+        <div className="relative w-full h-[100dvh]">
           <img src="/images/mobile/main-bg-6.png" alt="Mobile BG 6" className="w-full h-full object-cover no-select" />
           <div onClick={() => navigate(`/products/${PRODUCTS[8].slug}`)} className="absolute top-[21%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
             <TshirtMainImageFallback tshirtId={9} name={PRODUCTS[8].name} />
@@ -202,7 +202,7 @@ export default function Home() {
         </div>
 
         {/* Mobile Section 7: Background 7 */}
-        <div className="relative w-full h-screen">
+        <div className="relative w-full h-[100dvh]">
           <img src="/images/mobile/main-bg-7.png" alt="Mobile BG 7" className="w-full h-full object-cover no-select" />
         </div>
 

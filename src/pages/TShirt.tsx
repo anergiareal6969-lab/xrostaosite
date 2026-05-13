@@ -83,9 +83,10 @@ export default function TShirt() {
     window.scrollTo(0, 0);
     checkIfRequested();
 
+    // Safety timer: maximum 5 seconds on mobile for preloader
     const safetyTimer = setTimeout(() => {
       setIsLoading(false);
-    }, 10000);
+    }, 5000);
     
     return () => clearTimeout(safetyTimer);
   }, [id, user]);
@@ -132,8 +133,11 @@ export default function TShirt() {
   };
 
   useEffect(() => {
-    if (loadedImagesCount >= imagesCount + 1) { // images + background
-      setIsLoading(false);
+    // If most critical images are loaded, we can show the page
+    // background + at least 2 images
+    if (loadedImagesCount >= 3) {
+      const timer = setTimeout(() => setIsLoading(false), 500);
+      return () => clearTimeout(timer);
     }
   }, [loadedImagesCount]);
 
@@ -158,7 +162,7 @@ export default function TShirt() {
       {/* Main Content Area - 4 Sections with different Backgrounds */}
       <div className="w-full flex flex-col">
         {tshirtSectionNumbers.map((num) => (
-          <div key={num} className="relative w-full h-screen flex items-center justify-center">
+          <div key={num} className="relative w-full h-[100dvh] flex items-center justify-center">
             {/* Background for each section */}
             <picture className="absolute inset-0 w-full h-full pointer-events-none z-0">
               <source media="(max-width: 767px)" srcSet={getMobileBackgroundPath(num)} />
@@ -185,7 +189,7 @@ export default function TShirt() {
           </div>
         ))}
 
-        <div className="relative w-full h-screen flex items-center justify-center">
+        <div className="relative w-full h-[100dvh] flex items-center justify-center">
           <picture className="absolute inset-0 w-full h-full pointer-events-none z-0">
             <source media="(max-width: 767px)" srcSet="/images/mobile/tshirt-bg-last.png" />
             <source media="(min-width: 768px)" srcSet="/images/tshirt-bg-last.png" />

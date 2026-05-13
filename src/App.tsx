@@ -23,21 +23,24 @@ export default function App() {
 
   useEffect(() => {
     const loadAssets = async () => {
-      const allImages = [
+      // Critical images that MUST load for the initial view
+      const criticalImages = [
         // Main Backgrounds
-        '/images/main-bg.png',
-        '/images/tshirt-bg.png',
-        
-        // Mobile Backgrounds
+        '/images/main-bg-1.png',
         '/images/mobile/main-bg-1.png',
         '/images/mobile/main-bg-2.png',
+      ];
+
+      // Secondary images that can load in background
+      const secondaryImages = [
+        '/images/main-bg-2.png',
+        '/images/main-bg-3.png',
+        '/images/tshirt-bg.png',
         '/images/mobile/main-bg-3.png',
         '/images/mobile/main-bg-4.png',
         '/images/mobile/main-bg-5.png',
         '/images/mobile/main-bg-6.png',
         '/images/mobile/main-bg-7.png',
-        
-        // UI & Common
         '/images/mobile/footer-bg.png',
         '/images/mobile/tshirt-bg-1.png',
         '/images/mobile/tshirt-bg-mid-2.png',
@@ -45,35 +48,34 @@ export default function App() {
         '/images/mobile/tshirt-bg-mid-4.png',
         '/images/mobile/tshirt-bg-last.png',
         '/images/tshirt-bg-last.png',
-
-        // T-shirts
-        ...Array.from({ length: 10 }, (_, i) => [
-          `/images/tshirts/${i + 1}/main.png`,
-          `/images/tshirts/${i + 1}/main.jpg`,
-          `/images/tshirts/${i + 1}/main.jpeg`,
-          `/images/tshirts/${i + 1}/main.webp`,
-        ]).flat()
       ];
 
-      // Use a Set to remove duplicates
-      const uniqueImages = [...new Set(allImages)];
-
-      const promises = uniqueImages.map(src => {
+      const loadImage = (src: string) => {
         return new Promise((resolve) => {
           const img = new Image();
           img.src = src;
           img.onload = resolve;
-          img.onerror = resolve; // Continue even if one fails
+          img.onerror = resolve;
         });
-      });
+      };
 
-      // Wait for ALL images and fonts to be ready
-      await Promise.all([...promises, document.fonts.ready]);
+      // Wait for critical images and fonts
+      try {
+        await Promise.all([
+          ...criticalImages.map(loadImage),
+          document.fonts ? document.fonts.ready : Promise.resolve()
+        ]);
+      } catch (e) {
+        console.error("Critical assets failed to load", e);
+      }
       
-      // Increased safety delay for a more stable white preloader phase
+      // Release preloader after critical assets
       setTimeout(() => {
         setIsLoading(false);
-      }, 600); 
+      }, 400);
+
+      // Load secondary assets without blocking
+      secondaryImages.forEach(loadImage);
     };
 
     loadAssets();
