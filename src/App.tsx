@@ -67,13 +67,13 @@ export default function App() {
         });
       });
 
-      // Wait for ALL images to be in browser cache
-      await Promise.all(promises);
+      // Wait for ALL images and fonts to be ready
+      await Promise.all([...promises, document.fonts.ready]);
       
-      // Minimum safety delay for transition
+      // Increased safety delay for a more stable white preloader phase
       setTimeout(() => {
         setIsLoading(false);
-      }, 100); // Reduced to 100ms
+      }, 600); 
     };
 
     loadAssets();
@@ -90,3 +90,4 @@ export default function App() {
     </AuthProvider>
   );
 }
+
