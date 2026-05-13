@@ -24,13 +24,13 @@ export default function Preloader({ isLoading }: PreloaderProps) {
   useEffect(() => {
     const skipTimer = setTimeout(() => {
       setShowSkip(true);
-    }, 4000); // Show skip button after 4s if still loading
+    }, 2000); // Show skip after 2s for version 1.0.9
 
     if (!isLoading) {
       setIsFinalizing(true);
       const timer = setTimeout(() => {
         setShowPreloader(false);
-      }, 1000); 
+      }, 800); 
       return () => {
         clearTimeout(timer);
         clearTimeout(skipTimer);
@@ -108,8 +108,8 @@ export default function Preloader({ isLoading }: PreloaderProps) {
             </div>
           </div>
           
-          <div className="absolute bottom-8 text-white/10 text-[10px] font-mono tracking-widest uppercase">
-            v1.0.8-mobile-stable
+          <div className="absolute bottom-8 text-white/20 text-[10px] font-mono tracking-widest uppercase bg-white/5 px-3 py-1 rounded-full">
+            v1.0.9-force-update
           </div>
         </motion.div>
       )}

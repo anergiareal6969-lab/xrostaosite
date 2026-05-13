@@ -23,13 +23,13 @@ export default function App() {
 
   useEffect(() => {
     const loadAssets = async () => {
-      // 1. Minimum preloader time (1s)
-      const minTimePromise = new Promise(res => setTimeout(res, 1000));
+      // 1. Minimum preloader time (500ms)
+      const minTimePromise = new Promise(res => setTimeout(res, 500));
 
-      // 2. Maximum preloader time (5s) - ABSOLUTE SAFETY
+      // 2. Maximum preloader time (4s)
       const maxTimeTimeout = setTimeout(() => {
         setIsLoading(false);
-      }, 5000);
+      }, 4000);
 
       const criticalImages = [
         '/images/mobile/main-bg-1.png',
