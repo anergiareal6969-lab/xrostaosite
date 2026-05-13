@@ -19,18 +19,27 @@ const rgbColors = [
 export default function Preloader({ isLoading }: PreloaderProps) {
   const [showPreloader, setShowPreloader] = useState(true);
   const [isFinalizing, setIsFinalizing] = useState(false);
+  const [showSkip, setShowSkip] = useState(false);
 
   useEffect(() => {
+    const skipTimer = setTimeout(() => {
+      setShowSkip(true);
+    }, 4000); // Show skip button after 4s if still loading
+
     if (!isLoading) {
       setIsFinalizing(true);
       const timer = setTimeout(() => {
         setShowPreloader(false);
-      }, 1800); // Effect lasts for 1.8s
-      return () => clearTimeout(timer);
+      }, 1000); 
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(skipTimer);
+      };
     } else {
       setShowPreloader(true);
       setIsFinalizing(false);
     }
+    return () => clearTimeout(skipTimer);
   }, [isLoading]);
 
   return (
@@ -39,11 +48,11 @@ export default function Preloader({ isLoading }: PreloaderProps) {
         <motion.div
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.8, ease: "easeInOut" }}
-          className="fixed inset-0 z-[999] bg-black flex flex-col items-center justify-center"
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className="fixed inset-0 z-[999] bg-black flex flex-col items-center justify-center touch-none"
         >
-          <div className="flex flex-col items-center gap-4">
-            <h1 className="text-white font-sans font-bold italic text-4xl md:text-6xl tracking-tighter flex">
+          <div className="flex flex-col items-center gap-6 px-4">
+            <h1 className="text-white font-sans font-bold italic text-5xl md:text-7xl tracking-tighter flex">
               {letters.map((letter, index) => (
                 <motion.span
                   key={index}
@@ -52,18 +61,18 @@ export default function Preloader({ isLoading }: PreloaderProps) {
                     color: rgbColors,
                   } : {
                     color: "#ffffff",
-                    scale: [0.95, 1, 0.95],
-                    opacity: [0.7, 1, 0.7],
+                    scale: [0.98, 1, 0.98],
+                    opacity: [0.8, 1, 0.8],
                   }}
                   transition={isFinalizing ? {
-                    duration: 1.5,
+                    duration: 1,
                     repeat: Infinity,
-                    delay: index * 0.1,
+                    delay: index * 0.05,
                     ease: "linear"
                   } : {
-                    duration: 2.5, // Slightly slower pulse for a more stable feel
+                    duration: 2,
                     repeat: Infinity,
-                    delay: index * 0.15, // More staggered
+                    delay: index * 0.1,
                     ease: "easeInOut"
                   }}
                 >
@@ -72,20 +81,35 @@ export default function Preloader({ isLoading }: PreloaderProps) {
               ))}
             </h1>
             
-            {!isFinalizing && (
-              <div className="w-48 h-1 bg-white/20 rounded-full overflow-hidden">
-                <motion.div 
-                  initial={{ x: "-100%" }}
-                  animate={{ x: "100%" }}
-                  transition={{ 
-                    duration: 1.5, 
-                    repeat: Infinity, 
-                    ease: "linear" 
-                  }}
-                  className="w-full h-full bg-white"
-                />
-              </div>
-            )}
+            <div className="flex flex-col items-center gap-4">
+              {!isFinalizing && (
+                <div className="w-32 h-0.5 bg-white/10 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ x: "-100%" }}
+                    animate={{ x: "100%" }}
+                    transition={{ 
+                      duration: 1.2, 
+                      repeat: Infinity, 
+                      ease: "linear" 
+                    }}
+                    className="w-full h-full bg-white/60"
+                  />
+                </div>
+              )}
+
+              {showSkip && !isFinalizing && (
+                <button 
+                  onClick={() => setShowPreloader(false)}
+                  className="mt-4 px-6 py-2 border border-white/20 rounded-full text-white/40 text-xs font-bold italic hover:text-white/80 transition-colors uppercase tracking-widest"
+                >
+                  παρακαμψη (skip)
+                </button>
+              )}
+            </div>
+          </div>
+          
+          <div className="absolute bottom-8 text-white/10 text-[10px] font-mono tracking-widest uppercase">
+            v1.0.8-mobile-stable
           </div>
         </motion.div>
       )}

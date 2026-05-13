@@ -23,37 +23,17 @@ export default function App() {
 
   useEffect(() => {
     const loadAssets = async () => {
-      // Global safety timer: force hide preloader after 6 seconds
-      const globalSafetyTimer = setTimeout(() => {
-        console.warn("Global asset loading timeout");
+      // 1. Minimum preloader time (1s)
+      const minTimePromise = new Promise(res => setTimeout(res, 1000));
+
+      // 2. Maximum preloader time (5s) - ABSOLUTE SAFETY
+      const maxTimeTimeout = setTimeout(() => {
         setIsLoading(false);
-      }, 6000);
+      }, 5000);
 
-      // Critical images that MUST load for the initial view
       const criticalImages = [
-        // Main Backgrounds
-        '/images/main-bg-1.png',
         '/images/mobile/main-bg-1.png',
-        '/images/mobile/main-bg-2.png',
-      ];
-
-      // Secondary images that can load in background
-      const secondaryImages = [
-        '/images/main-bg-2.png',
-        '/images/main-bg-3.png',
-        '/images/tshirt-bg.png',
-        '/images/mobile/main-bg-3.png',
-        '/images/mobile/main-bg-4.png',
-        '/images/mobile/main-bg-5.png',
-        '/images/mobile/main-bg-6.png',
-        '/images/mobile/main-bg-7.png',
-        '/images/mobile/footer-bg.png',
-        '/images/mobile/tshirt-bg-1.png',
-        '/images/mobile/tshirt-bg-mid-2.png',
-        '/images/mobile/tshirt-bg-mid-3.png',
-        '/images/mobile/tshirt-bg-mid-4.png',
-        '/images/mobile/tshirt-bg-last.png',
-        '/images/tshirt-bg-last.png',
+        '/images/main-bg-1.png',
       ];
 
       const loadImage = (src: string) => {
@@ -65,20 +45,30 @@ export default function App() {
         });
       };
 
-      // Wait for critical images
+      // Wait for at least the minimum time and critical images
       try {
-        await Promise.all(criticalImages.map(loadImage));
+        await Promise.all([
+          minTimePromise,
+          ...criticalImages.map(loadImage)
+        ]);
       } catch (e) {
-        console.error("Critical assets failed to load", e);
+        console.error("Asset load error", e);
       }
       
-      // Release preloader after critical assets
-      setTimeout(() => {
-        setIsLoading(false);
-        clearTimeout(globalSafetyTimer);
-      }, 400);
+      // Final release
+      setIsLoading(false);
+      clearTimeout(maxTimeTimeout);
 
-      // Load secondary assets without blocking
+      // Background load the rest
+      const secondaryImages = [
+        '/images/mobile/main-bg-2.png',
+        '/images/mobile/main-bg-3.png',
+        '/images/mobile/main-bg-4.png',
+        '/images/mobile/main-bg-5.png',
+        '/images/mobile/main-bg-6.png',
+        '/images/mobile/main-bg-7.png',
+        '/images/tshirt-bg.png',
+      ];
       secondaryImages.forEach(loadImage);
     };
 
