@@ -23,17 +23,19 @@ export default function App() {
 
   useEffect(() => {
     const loadAssets = async () => {
-      // 1. Minimum preloader time (500ms)
-      const minTimePromise = new Promise(res => setTimeout(res, 500));
+      // 1. Minimum preloader time (3s) to ensure images load
+      const minTimePromise = new Promise(res => setTimeout(res, 3000));
 
-      // 2. Maximum preloader time (4s)
+      // 2. Maximum preloader time (10s) - ABSOLUTE SAFETY
       const maxTimeTimeout = setTimeout(() => {
         setIsLoading(false);
-      }, 4000);
+      }, 10000);
 
       const criticalImages = [
         '/images/mobile/main-bg-1.png',
+        '/images/mobile/main-bg-2.png',
         '/images/main-bg-1.png',
+        '/images/main-bg-2.png',
       ];
 
       const loadImage = (src: string) => {
@@ -45,7 +47,7 @@ export default function App() {
         });
       };
 
-      // Wait for at least the minimum time and critical images
+      // Wait for at least the minimum time and ALL critical images
       try {
         await Promise.all([
           minTimePromise,
@@ -61,13 +63,14 @@ export default function App() {
 
       // Background load the rest
       const secondaryImages = [
-        '/images/mobile/main-bg-2.png',
         '/images/mobile/main-bg-3.png',
         '/images/mobile/main-bg-4.png',
         '/images/mobile/main-bg-5.png',
         '/images/mobile/main-bg-6.png',
         '/images/mobile/main-bg-7.png',
+        '/images/main-bg-3.png',
         '/images/tshirt-bg.png',
+        '/images/mobile/footer-bg.png',
       ];
       secondaryImages.forEach(loadImage);
     };

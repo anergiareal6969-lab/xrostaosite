@@ -83,10 +83,10 @@ export default function TShirt() {
     window.scrollTo(0, 0);
     checkIfRequested();
 
-    // Safety timer: maximum 5 seconds on mobile for preloader
+    // Safety timer: maximum 10 seconds on mobile for preloader
     const safetyTimer = setTimeout(() => {
       setIsLoading(false);
-    }, 5000);
+    }, 10000);
     
     return () => clearTimeout(safetyTimer);
   }, [id, user]);
@@ -134,9 +134,9 @@ export default function TShirt() {
 
   useEffect(() => {
     // If most critical images are loaded, we can show the page
-    // background + at least 2 images
-    if (loadedImagesCount >= 3) {
-      const timer = setTimeout(() => setIsLoading(false), 500);
+    // background + at least 3 images
+    if (loadedImagesCount >= 4) {
+      const timer = setTimeout(() => setIsLoading(false), 1500);
       return () => clearTimeout(timer);
     }
   }, [loadedImagesCount]);

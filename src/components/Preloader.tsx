@@ -19,27 +19,20 @@ const rgbColors = [
 export default function Preloader({ isLoading }: PreloaderProps) {
   const [showPreloader, setShowPreloader] = useState(true);
   const [isFinalizing, setIsFinalizing] = useState(false);
-  const [showSkip, setShowSkip] = useState(false);
 
   useEffect(() => {
-    const skipTimer = setTimeout(() => {
-      setShowSkip(true);
-    }, 2000); // Show skip after 2s for version 1.0.9
-
     if (!isLoading) {
       setIsFinalizing(true);
       const timer = setTimeout(() => {
         setShowPreloader(false);
-      }, 800); 
+      }, 1500); 
       return () => {
         clearTimeout(timer);
-        clearTimeout(skipTimer);
       };
     } else {
       setShowPreloader(true);
       setIsFinalizing(false);
     }
-    return () => clearTimeout(skipTimer);
   }, [isLoading]);
 
   return (
@@ -48,7 +41,7 @@ export default function Preloader({ isLoading }: PreloaderProps) {
         <motion.div
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
           className="fixed inset-0 z-[999] bg-black flex flex-col items-center justify-center touch-none"
         >
           <div className="flex flex-col items-center gap-6 px-4">
@@ -96,20 +89,7 @@ export default function Preloader({ isLoading }: PreloaderProps) {
                   />
                 </div>
               )}
-
-              {showSkip && !isFinalizing && (
-                <button 
-                  onClick={() => setShowPreloader(false)}
-                  className="mt-4 px-6 py-2 border border-white/20 rounded-full text-white/40 text-xs font-bold italic hover:text-white/80 transition-colors uppercase tracking-widest"
-                >
-                  παρακαμψη (skip)
-                </button>
-              )}
             </div>
-          </div>
-          
-          <div className="absolute bottom-8 text-white/20 text-[10px] font-mono tracking-widest uppercase bg-white/5 px-3 py-1 rounded-full">
-            v1.0.9-force-update
           </div>
         </motion.div>
       )}
