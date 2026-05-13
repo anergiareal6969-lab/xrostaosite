@@ -336,10 +336,25 @@ app.get('/admin-dashboard-xrostao', async (req, res) => {
 
 // 4. Static Files (ONLY AFTER API ROUTES)
 const distPath = path.join(__dirname, 'dist');
+
+// Serve index.html without caching
+app.get('/', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
+  res.sendFile(path.join(distPath, 'index.html'));
+});
+
 app.use(express.static(distPath, {
-  maxAge: '1d', // Cache static files for 1 day
+  maxAge: '1h', // Reduced from 1d to 1h for safety
   etag: true,
-  lastModified: true
+  lastModified: true,
+  setHeaders: (res, path) => {
+    if (path.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    }
+  }
 }));
 
 // 5. SPA Catch-all (MUST BE LAST)
@@ -351,6 +366,7 @@ app.get('*', (req, res) => {
   
   const indexPath = path.join(distPath, 'index.html');
   if (fs.existsSync(indexPath)) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.sendFile(indexPath);
   } else {
     res.status(500).send('Frontend build is missing. Run "npm run build".');

@@ -23,6 +23,12 @@ export default function App() {
 
   useEffect(() => {
     const loadAssets = async () => {
+      // Global safety timer: force hide preloader after 6 seconds
+      const globalSafetyTimer = setTimeout(() => {
+        console.warn("Global asset loading timeout");
+        setIsLoading(false);
+      }, 6000);
+
       // Critical images that MUST load for the initial view
       const criticalImages = [
         // Main Backgrounds
@@ -59,12 +65,9 @@ export default function App() {
         });
       };
 
-      // Wait for critical images and fonts
+      // Wait for critical images
       try {
-        await Promise.all([
-          ...criticalImages.map(loadImage),
-          document.fonts ? document.fonts.ready : Promise.resolve()
-        ]);
+        await Promise.all(criticalImages.map(loadImage));
       } catch (e) {
         console.error("Critical assets failed to load", e);
       }
@@ -72,6 +75,7 @@ export default function App() {
       // Release preloader after critical assets
       setTimeout(() => {
         setIsLoading(false);
+        clearTimeout(globalSafetyTimer);
       }, 400);
 
       // Load secondary assets without blocking
