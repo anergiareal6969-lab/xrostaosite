@@ -1,27 +1,22 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Home from './pages/Home';
-import InfoPage from './pages/InfoPage';
 import TShirt from './pages/TShirt';
 import Product from './pages/Product';
 import Menu from './components/Menu';
 import Preloader from './components/Preloader';
 import { AuthProvider } from './contexts/AuthContext';
 
-const INFO_PAGES = {
-  who: {
-    text: "Κάποιοι άνεργοι σχεδιαστές που έπρεπε να κάνουν κάτι γιατί η ανεργία έχει βαρέσει κόκκινο. Επίσης το xrostao δεν θα έχει μόνο ρούχα με θέμα την ανεργία, απλά αυτό είναι το πρώτο drop του xrostao και απλά λέγεται anergia season, ναι οκ καταλάβατε.",
-  },
-  idea: {
-    text: "Κοίτα, η ιδέα που σκεφτήκαμε ήταν να βγάλουμε ρούχα. Ρούχα είναι, εγώ θα σου πρότεινα να μην πάρεις καν.",
-  },
-  how: {
-    text: "Οκ, αυτό είναι σοβαρό. Επειδή δεν θέλαμε να είμαστε ίδιοι με όλους τους lousers, δεν βάλαμε στο site κάποιος να μπορεί να αγοράσει κάτι. Τα ρούχα αυτά δεν πολούνται!! Αλλά άμα κάνεις αίτημα, δηλώνεις το ενδιαφέρον σου, έτσι θα μαζευτούν πολλά αιτήματα και μια λαμπρή μέρα τα ρούχα θα κυκλοφορήσουν.",
-  },
-  unemployed: {
-    text: "Οκ, τώρα αυτό θα έλεγα είναι ίσως ένα από τα μεγαλύτερα ερωτήματα του Σωκράτη. Άμα εσύ, ναι συγκεκριμένα εσύ, ΕΙΣΑΙ ΑΝΕΡΓΟΣ/Η!!! Άμα είσαι άνεργος/η θα πρέπει σίγουρα να φοράς τις μπλούζες αυτές εδώ αλλιώς ξέρεις... ναι... δεν είσαι σίγουρα άνεργος (αυτό σίγουρα δεν το είπα για να πάρεις τα ρούχα) χαχαχαχαχα giiiiiirl πλακίζω, μην πάρεις τίποτα από εδώ, στα παπάρια μου! Καλά, όχι στα παπάρια μου, αααΑΑααα.",
-  }
-};
+function AppRoutes() {
+  const location = useLocation();
+  return (
+    <Routes key={location.pathname}>
+      <Route path="/" element={<Home />} />
+      <Route path="/products/:slug" element={<Product />} />
+      <Route path="/tshirt/:id" element={<TShirt />} />
+    </Routes>
+  );
+}
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -78,23 +73,18 @@ export default function App() {
       // Minimum safety delay for transition
       setTimeout(() => {
         setIsLoading(false);
-      }, 500);
+      }, 100); // Reduced to 100ms
     };
 
     loadAssets();
   }, []);
-
   return (
     <AuthProvider>
       <BrowserRouter>
         <div className="relative min-h-screen w-full font-sans bg-black">
           <Preloader isLoading={isLoading} />
           <Menu />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/products/:slug" element={<Product />} />
-            <Route path="/tshirt/:id" element={<TShirt />} />
-          </Routes>
+          <AppRoutes />
         </div>
       </BrowserRouter>
     </AuthProvider>

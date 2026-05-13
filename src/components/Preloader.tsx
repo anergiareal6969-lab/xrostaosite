@@ -1,46 +1,90 @@
 import { motion, AnimatePresence } from 'motion/react';
+import { useState, useEffect } from 'react';
 
 interface PreloaderProps {
   isLoading: boolean;
 }
 
 export default function Preloader({ isLoading }: PreloaderProps) {
+  const [showPreloader, setShowPreloader] = useState(true);
+  const [isFinalizing, setIsFinalizing] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setIsFinalizing(true);
+      const timer = setTimeout(() => {
+        setShowPreloader(false);
+      }, 1800); // Effect lasts for 1.8s
+      return () => clearTimeout(timer);
+    } else {
+      setShowPreloader(true);
+      setIsFinalizing(false);
+    }
+  }, [isLoading]);
+
+  const letters = "xrostao".split("");
+  const rgbColors = [
+    '#ff0000', // Red
+    '#00ff00', // Green
+    '#0000ff', // Blue
+    '#ffff00', // Yellow
+    '#00ffff', // Cyan
+    '#ff00ff', // Magenta
+    '#ffffff'  // Back to white
+  ];
+
   return (
     <AnimatePresence>
-      {isLoading && (
+      {showPreloader && (
         <motion.div
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
           className="fixed inset-0 z-[999] bg-black flex flex-col items-center justify-center"
         >
-          <motion.div 
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ 
-              duration: 0.5, 
-              repeat: Infinity, 
-              repeatType: "reverse",
-              ease: "easeInOut" 
-            }}
-            className="flex flex-col items-center gap-4"
-          >
-            <h1 className="text-white font-bold italic text-4xl md:text-6xl tracking-tighter">
-              xrostao
+          <div className="flex flex-col items-center gap-4">
+            <h1 className="text-white font-bold italic text-4xl md:text-6xl tracking-tighter flex">
+              {letters.map((letter, index) => (
+                <motion.span
+                  key={index}
+                  animate={isFinalizing ? {
+                    color: rgbColors,
+                  } : {
+                    scale: [0.95, 1, 0.95],
+                    opacity: [0.7, 1, 0.7],
+                  }}
+                  transition={isFinalizing ? {
+                    duration: 1.5,
+                    repeat: Infinity,
+                    delay: index * 0.1,
+                    ease: "linear"
+                  } : {
+                    duration: 2,
+                    repeat: Infinity,
+                    delay: index * 0.1,
+                    ease: "easeInOut"
+                  }}
+                >
+                  {letter}
+                </motion.span>
+              ))}
             </h1>
-            <div className="w-48 h-1 bg-white/20 rounded-full overflow-hidden">
-              <motion.div 
-                initial={{ x: "-100%" }}
-                animate={{ x: "100%" }}
-                transition={{ 
-                  duration: 1.5, 
-                  repeat: Infinity, 
-                  ease: "linear" 
-                }}
-                className="w-full h-full bg-white"
-              />
-            </div>
-          </motion.div>
+            
+            {!isFinalizing && (
+              <div className="w-48 h-1 bg-white/20 rounded-full overflow-hidden">
+                <motion.div 
+                  initial={{ x: "-100%" }}
+                  animate={{ x: "100%" }}
+                  transition={{ 
+                    duration: 1.5, 
+                    repeat: Infinity, 
+                    ease: "linear" 
+                  }}
+                  className="w-full h-full bg-white"
+                />
+              </div>
+            )}
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

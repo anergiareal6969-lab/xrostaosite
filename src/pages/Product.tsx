@@ -1,10 +1,15 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
+import { useEffect } from 'react';
 import Seo from '../components/Seo';
 import { getProductBySlug } from '../data/products';
 
 export default function Product() {
   const { slug } = useParams();
   const product = getProductBySlug(slug || '');
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [slug]);
 
   if (!product) return <Navigate to="/" />;
 
@@ -55,12 +60,14 @@ export default function Product() {
           <div className="flex flex-col gap-4">
             <Link
               to={`/tshirt/${product.id}`}
+              onClick={() => window.scrollTo(0, 0)}
               className="inline-flex items-center justify-center bg-white text-black font-bold italic py-3 px-6 rounded-xl hover:bg-white/90 transition-all active:scale-95"
             >
               Δες το t-shirt
             </Link>
             <Link
               to="/"
+              onClick={() => window.scrollTo(0, 0)}
               className="inline-flex items-center justify-center bg-white/10 text-white font-bold italic py-3 px-6 rounded-xl hover:bg-white/15 transition-all active:scale-95"
             >
               Πίσω στα ρούχα

@@ -65,6 +65,7 @@ export default function TShirt() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const imagesCount = 4; // page-1 to page-4
+  const totalImagesToLoad = (imagesCount * 2) + 1; // 4 backgrounds + 4 tshirts + 1 last background
   const sizes = ['S', 'M', 'L', 'XL'];
   const step = 450 + 48;
   const mobileStep = 280;
@@ -75,17 +76,19 @@ export default function TShirt() {
       : `/images/mobile/tshirt-bg-mid-${sectionNumber}.png`;
 
   useEffect(() => {
+    // Force scroll to top on every mount and ID change
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    
     setIsLoading(true);
     setLoadedImagesCount(0);
     setSelectedSize(null);
     setHoursRemaining(null);
     setCurrentIndex(0);
-    window.scrollTo(0, 0);
     checkIfRequested();
 
     const safetyTimer = setTimeout(() => {
       setIsLoading(false);
-    }, 10000);
+    }, 4000); // Slightly increased safety timer
     
     return () => clearTimeout(safetyTimer);
   }, [id, user]);
@@ -132,10 +135,10 @@ export default function TShirt() {
   };
 
   useEffect(() => {
-    if (loadedImagesCount >= imagesCount + 1) { // images + background
+    if (loadedImagesCount >= totalImagesToLoad) {
       setIsLoading(false);
     }
-  }, [loadedImagesCount]);
+  }, [loadedImagesCount, totalImagesToLoad]);
 
   if (isNaN(tshirtId) || tshirtId < 1 || tshirtId > 10) {
     return <Navigate to="/" />;
@@ -193,6 +196,7 @@ export default function TShirt() {
               src="/images/tshirt-bg-last.png"
               alt=""
               className="w-full h-full object-cover no-select"
+              onLoad={() => setLoadedImagesCount(prev => prev + 1)}
             />
           </picture>
 
