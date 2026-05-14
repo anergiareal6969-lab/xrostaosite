@@ -61,6 +61,9 @@ const transporter = process.env.EMAIL_PASSWORD
         user: 'anergiareal6969@gmail.com',
         pass: process.env.EMAIL_PASSWORD,
       },
+      connectionTimeout: 10000, // 10 seconds timeout
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
     })
   : null;
 
