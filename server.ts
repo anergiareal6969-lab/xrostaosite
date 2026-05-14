@@ -55,13 +55,13 @@ pool.on('error', (err) => {
 const transporter = process.env.EMAIL_PASSWORD
   ? nodemailer.createTransport({
       host: 'smtp.gmail.com',
-      port: 465,
-      secure: true, // Use SSL
+      port: 587,
+      secure: false, // Use STARTTLS for port 587
       auth: {
         user: 'anergiareal6969@gmail.com',
         pass: process.env.EMAIL_PASSWORD,
       },
-      connectionTimeout: 10000, // 10 seconds timeout
+      connectionTimeout: 10000,
       greetingTimeout: 10000,
       socketTimeout: 10000,
     })
@@ -418,6 +418,10 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
+
+// Force IPv4 for external connections (Fixes ENETUNREACH for IPv6 addresses)
+import dns from 'node:dns';
+dns.setDefaultResultOrder('ipv4first');
 
 async function start() {
   console.log(`[INIT] Starting server...`);
