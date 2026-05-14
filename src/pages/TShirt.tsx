@@ -170,6 +170,7 @@ export default function TShirt() {
               <img 
                 src={`/images/tshirt-bg-${num}.png`} 
                 alt="" 
+                loading="eager"
                 className="w-full h-full object-cover no-select"
                 onLoad={() => setLoadedImagesCount(prev => prev + 1)}
               />

@@ -71,6 +71,7 @@ export default function Home() {
           <img 
             src="/images/main-bg-1.png" 
             alt="Background 1" 
+            loading="eager"
             className="absolute inset-0 w-full h-full object-cover no-select pointer-events-none z-0"
           />
           <div className="relative z-10 w-full max-w-7xl px-8 flex flex-row items-center justify-center gap-12">
@@ -143,7 +144,7 @@ export default function Home() {
       <div className="block md:hidden w-full flex flex-col">
         {/* Mobile Section 1: Background 1 */}
         <div className="relative w-full h-[100dvh]">
-          <img src="/images/mobile/main-bg-1.png" alt="Mobile BG 1" className="w-full h-full object-cover no-select" />
+          <img src="/images/mobile/main-bg-1.png" alt="Mobile BG 1" loading="eager" className="w-full h-full object-cover no-select" />
           <div onClick={() => navigate(`/products/${PRODUCTS[0].slug}`)} className="absolute top-[66%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
             <TshirtMainImageFallback tshirtId={1} name={PRODUCTS[0].name} />
           </div>
@@ -151,7 +152,7 @@ export default function Home() {
 
         {/* Mobile Section 2: Background 2 */}
         <div className="relative w-full h-[100dvh]">
-          <img src="/images/mobile/main-bg-2.png" alt="Mobile BG 2" className="w-full h-full object-cover no-select" />
+          <img src="/images/mobile/main-bg-2.png" alt="Mobile BG 2" loading="eager" className="w-full h-full object-cover no-select" />
           <div onClick={() => navigate(`/products/${PRODUCTS[1].slug}`)} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
             <TshirtMainImageFallback tshirtId={2} name={PRODUCTS[1].name} />
           </div>

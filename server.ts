@@ -347,11 +347,16 @@ app.get('/', (req, res) => {
 });
 
 app.use(express.static(distPath, {
-  maxAge: '1h', // Reduced from 1d to 1h for safety
+  maxAge: '1h', // Default for other assets
   etag: true,
   lastModified: true,
-  setHeaders: (res, path) => {
-    if (path.endsWith('.html')) {
+  setHeaders: (res, filePath) => {
+    // Aggressive caching for images (1 year)
+    if (filePath.match(/\.(jpg|jpeg|png|gif|webp|svg|ico)$/)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+    // No cache for HTML
+    if (filePath.endsWith('.html')) {
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     }
   }
