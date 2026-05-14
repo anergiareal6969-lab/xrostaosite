@@ -272,8 +272,12 @@ app.post('/api/request', async (req, res) => {
     console.log(`[API] Request saved to DB for ${email}`);
 
     // 2. Send Emails in parallel for maximum speed
+    // Use the email directly from the request body
+    const userEmailTo = email.trim();
+    console.log(`[API] Preparing to send emails for: ${userEmailTo}`);
+
     const userEmailPromise = sendMailSafe({
-      to: email,
+      to: userEmailTo,
       subject: 'Επιβεβαίωση Αιτήματος | anergia season by xrostao',
       text: `Λάβαμε το αίτημά σου για το T-Shirt #${tshirtId} και θα σε ενημερώσουμε μόλις υπάρξει διαθεσιμότητα για αγορά!`,
       html: `
@@ -288,12 +292,12 @@ app.post('/api/request', async (req, res) => {
 
     const adminEmailPromise = sendMailSafe({
       to: 'anergiareal6969@gmail.com',
-      subject: 'ΝΕΟ ΑΙΤΗΜΑ ΑΠΟ ΧΡΗΣΤΗ! | xrostao',
-      text: `Ο χρήστης με email: ${email} έκανε αίτημα για το T-Shirt #${tshirtId}`,
+      subject: `ΝΕΟ ΑΙΤΗΜΑ: ${userEmailTo} | T-Shirt #${tshirtId}`,
+      text: `Ο χρήστης με email: ${userEmailTo} έκανε αίτημα για το T-Shirt #${tshirtId}`,
       html: `
         <div style="font-family: sans-serif; padding: 20px; background: #f4f4f4; color: #333;">
           <h2>Νέο Αίτημα στο xrostao!</h2>
-          <p><b>Email Χρήστη:</b> ${email}</p>
+          <p><b>Email Χρήστη:</b> ${userEmailTo}</p>
           <p><b>Προϊόν:</b> T-Shirt #${tshirtId}</p>
           <p><b>IP:</b> ${clientIp}</p>
           <hr>
@@ -304,9 +308,9 @@ app.post('/api/request', async (req, res) => {
 
     // We don't wait for emails to respond to the user (Fast UI)
     Promise.all([userEmailPromise, adminEmailPromise]).then(([userSent, adminSent]) => {
-      console.log(`[API] Email results async -> User: ${userSent}, Admin: ${adminSent}`);
+      console.log(`[API] Email results for ${userEmailTo} -> User: ${userSent}, Admin: ${adminSent}`);
     }).catch(err => {
-      console.error('[API] Async email sending failed:', err);
+      console.error(`[API] Async email sending failed for ${userEmailTo}:`, err);
     });
 
     res.json({ status: 'success' });
