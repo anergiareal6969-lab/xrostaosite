@@ -8,6 +8,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import dns from 'node:dns';
+import { Resend } from 'resend';
 
 // 0. Force IPv4 for all external connections immediately
 dns.setDefaultResultOrder('ipv4first');
@@ -16,6 +17,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 dotenv.config();
+
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 const app = express();
 
@@ -56,7 +59,7 @@ pool.on('error', (err) => {
   console.error('[POSTGRES POOL ERROR]', err);
 });
 
-const transporter = process.env.EMAIL_PASSWORD
+const transporter = process.env.EMAIL_PASSWORD && !process.env.RESEND_API_KEY
   ? nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 465,
@@ -113,8 +116,34 @@ async function ensureTables() {
 }
 
 async function sendMailSafe(options: nodemailer.SendMailOptions) {
+  // 1. Try Resend First (Best for Render)
+  if (resend) {
+    try {
+      console.log(`[EMAIL] Sending via Resend to ${options.to}...`);
+      const { data, error } = await resend.emails.send({
+        from: 'xrostao <onboarding@resend.dev>', // Use verified sender once domain is connected
+        to: options.to as string,
+        subject: options.subject as string,
+        html: options.html as string,
+        text: options.text as string,
+      });
+
+      if (error) {
+        console.error('[RESEND ERROR]', error);
+        return false;
+      }
+
+      console.log(`[RESEND SUCCESS] Message ID: ${data?.id}`);
+      return true;
+    } catch (err) {
+      console.error('[RESEND FATAL ERROR]', err);
+      return false;
+    }
+  }
+
+  // 2. Fallback to SMTP (Nodemailer)
   if (!transporter) {
-    console.error('[EMAIL] Transporter not initialized. Check EMAIL_PASSWORD.');
+    console.error('[EMAIL] No email provider configured (RESEND_API_KEY or EMAIL_PASSWORD).');
     return false;
   }
   try {
@@ -124,7 +153,7 @@ async function sendMailSafe(options: nodemailer.SendMailOptions) {
       from: `"xrostao clothing" <anergiareal6969@gmail.com>`,
     };
     const info = await transporter.sendMail(mailOptions);
-    console.log(`[EMAIL] Sent: ${info.messageId} to ${options.to}`);
+    console.log(`[EMAIL] Sent via SMTP: ${info.messageId} to ${options.to}`);
     return true;
   } catch (err) {
     console.error('[EMAIL ERROR] Full details:', err);
@@ -134,6 +163,10 @@ async function sendMailSafe(options: nodemailer.SendMailOptions) {
 
 // Helper to verify SMTP on start with retries
 async function verifySMTP(retries = 3) {
+  if (resend) {
+    console.log('[INIT] Using Resend API (No SMTP verification needed)');
+    return;
+  }
   if (!transporter) return;
   while (retries > 0) {
     try {
