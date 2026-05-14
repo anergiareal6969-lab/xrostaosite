@@ -69,17 +69,23 @@ if (!transporter) {
 }
 
 async function ensureTables() {
-  // Requests table
+  // Requests table - Removed UNIQUE constraint to allow multiple requests
   await pool.query(`
     CREATE TABLE IF NOT EXISTS requests (
       id SERIAL PRIMARY KEY,
       email TEXT NOT NULL,
       ip_address TEXT NOT NULL,
       tshirt_id INTEGER NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      UNIQUE (ip_address, tshirt_id)
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
+
+  // Drop the unique constraint if it exists (for existing databases)
+  try {
+    await pool.query(`ALTER TABLE requests DROP CONSTRAINT IF EXISTS requests_ip_address_tshirt_id_key;`);
+  } catch (e) {
+    console.log('[DB] Unique constraint already removed or not found');
+  }
 
   // Users table
   await pool.query(`
@@ -255,39 +261,15 @@ app.post('/api/request', async (req, res) => {
   }
 
   try {
-    // 1. Check if already requested
-    const check = await pool.query(
-      'SELECT * FROM requests WHERE tshirt_id = $1 AND (ip_address = $2 OR email = $3)',
-      [parseInt(tshirtId, 10), clientIp, email]
-    );
-
-    if (check.rows.length > 0) {
-      console.log(`[API] Already requested by ${email}. Sending reminder email.`);
-      await sendMailSafe({
-        to: email,
-        subject: 'Μην πατάς το χρυσό κουμπί!',
-        text: `Έχουμε ήδη λάβει το αίτημά σου για το T-Shirt #${tshirtId}! Σε ευχαριστούμε!`,
-        html: `
-          <div style="font-family: sans-serif; padding: 20px; background: #000; color: #fff;">
-            <h2 style="color: #fff; font-style: italic;">xrostao clothing</h2>
-            <p>Έχουμε ήδη λάβει το αίτημά σου για το <b>T-Shirt #${tshirtId}</b>!</p>
-            <p>Θα ενημερωθείς μόλις υπάρξει διαθεσιμότητα.</p>
-          </div>
-        `
-      });
-      return res.json({ status: 'already_requested' });
-    }
-
-    // 2. Save to Database
+    // 1. Save to Database (We allow multiple requests now)
     await pool.query(
       'INSERT INTO requests (email, ip_address, tshirt_id) VALUES ($1, $2, $3)',
       [email, clientIp, parseInt(tshirtId, 10)]
     );
     console.log(`[API] Request saved to DB for ${email}`);
 
-    // 3. Send Confirmation to User (The person who clicked the button)
-    console.log(`[API] Sending confirmation to user: ${email}`);
-    const userMailSent = await sendMailSafe({
+    // 2. Send Emails in parallel for maximum speed
+    const userEmailPromise = sendMailSafe({
       to: email,
       subject: 'Επιβεβαίωση Αιτήματος | anergia season by xrostao',
       text: `Λάβαμε το αίτημά σου για το T-Shirt #${tshirtId} και θα σε ενημερώσουμε μόλις υπάρξει διαθεσιμότητα για αγορά!`,
@@ -301,9 +283,7 @@ app.post('/api/request', async (req, res) => {
       `
     });
 
-    // 4. Send Notification to Admin (anergiareal6969@gmail.com)
-    console.log(`[API] Sending notification to admin...`);
-    const adminMailSent = await sendMailSafe({
+    const adminEmailPromise = sendMailSafe({
       to: 'anergiareal6969@gmail.com',
       subject: 'ΝΕΟ ΑΙΤΗΜΑ ΑΠΟ ΧΡΗΣΤΗ! | xrostao',
       text: `Ο χρήστης με email: ${email} έκανε αίτημα για το T-Shirt #${tshirtId}`,
@@ -319,8 +299,14 @@ app.post('/api/request', async (req, res) => {
       `
     });
 
-    console.log(`[API] Email results -> User: ${userMailSent}, Admin: ${adminMailSent}`);
-    res.json({ status: 'success', userMailSent, adminMailSent });
+    // We don't wait for emails to respond to the user (Fast UI)
+    Promise.all([userEmailPromise, adminEmailPromise]).then(([userSent, adminSent]) => {
+      console.log(`[API] Email results async -> User: ${userSent}, Admin: ${adminSent}`);
+    }).catch(err => {
+      console.error('[API] Async email sending failed:', err);
+    });
+
+    res.json({ status: 'success' });
 
   } catch (err) {
     console.error('[SERVER ERROR] Request handling failed:', err);
