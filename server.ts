@@ -100,12 +100,28 @@ async function sendMailSafe(options: nodemailer.SendMailOptions) {
     return false;
   }
   try {
-    const info = await transporter.sendMail(options);
+    // Force the "from" address to be our verified sender
+    const mailOptions = {
+      ...options,
+      from: `"xrostao clothing" <anergiareal6969@gmail.com>`,
+    };
+    const info = await transporter.sendMail(mailOptions);
     console.log(`[EMAIL] Sent: ${info.messageId} to ${options.to}`);
     return true;
   } catch (err) {
-    console.error('[EMAIL ERROR]', err);
+    console.error('[EMAIL ERROR] Full details:', err);
     return false;
+  }
+}
+
+// Helper to verify SMTP on start
+async function verifySMTP() {
+  if (!transporter) return;
+  try {
+    await transporter.verify();
+    console.log('[INIT] SMTP connection verified and ready');
+  } catch (err) {
+    console.error('[INIT] SMTP Verification failed:', err);
   }
 }
 
@@ -391,8 +407,9 @@ async function start() {
       await ensureTables();
       console.log('[INIT] Database tables checked/created');
     }
+    await verifySMTP();
   } catch (err) {
-    console.error('[DATABASE INIT ERROR]', err);
+    console.error('[DATABASE/SMTP INIT ERROR]', err);
   }
 
   app.listen(PORT, () => {
