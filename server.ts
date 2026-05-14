@@ -7,6 +7,10 @@ import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import dns from 'node:dns';
+
+// 0. Force IPv4 for all external connections immediately
+dns.setDefaultResultOrder('ipv4first');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -54,16 +58,14 @@ pool.on('error', (err) => {
 
 const transporter = process.env.EMAIL_PASSWORD
   ? nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false, // Use STARTTLS for port 587
+      service: 'gmail', // Let Nodemailer handle host/port/secure settings
       auth: {
         user: 'anergiareal6969@gmail.com',
         pass: process.env.EMAIL_PASSWORD,
       },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 10000,
+      connectionTimeout: 20000, // 20 seconds
+      greetingTimeout: 20000,
+      socketTimeout: 30000,
     })
   : null;
 
@@ -123,14 +125,22 @@ async function sendMailSafe(options: nodemailer.SendMailOptions) {
   }
 }
 
-// Helper to verify SMTP on start
-async function verifySMTP() {
+// Helper to verify SMTP on start with retries
+async function verifySMTP(retries = 3) {
   if (!transporter) return;
-  try {
-    await transporter.verify();
-    console.log('[INIT] SMTP connection verified and ready');
-  } catch (err) {
-    console.error('[INIT] SMTP Verification failed:', err);
+  while (retries > 0) {
+    try {
+      console.log(`[INIT] SMTP Verification attempt... (Retries left: ${retries - 1})`);
+      await transporter.verify();
+      console.log('[INIT] SMTP connection verified and ready');
+      return;
+    } catch (err) {
+      retries -= 1;
+      console.error(`[INIT] SMTP Verification failed:`, err);
+      if (retries === 0) break;
+      console.log('[INIT] Waiting 5s before next SMTP retry...');
+      await new Promise(res => setTimeout(res, 5000));
+    }
   }
 }
 
@@ -418,10 +428,6 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-
-// Force IPv4 for external connections (Fixes ENETUNREACH for IPv6 addresses)
-import dns from 'node:dns';
-dns.setDefaultResultOrder('ipv4first');
 
 async function start() {
   console.log(`[INIT] Starting server...`);
