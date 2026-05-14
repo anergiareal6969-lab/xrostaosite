@@ -49,7 +49,7 @@ async function connectWithRetry(retries = 5) {
       retries -= 1;
       console.error(`[DB] Connection failed. Retries left: ${retries}`, err);
       if (retries === 0) throw err;
-      await new Promise(res => setTimeout(resolve => res(resolve), 5000));
+      await new Promise<void>(res => setTimeout(res, 5000));
     }
   }
 }
@@ -59,7 +59,7 @@ pool.on('error', (err) => {
   console.error('[POSTGRES POOL ERROR]', err);
 });
 
-const transporter = process.env.EMAIL_PASSWORD && !process.env.RESEND_API_KEY
+const transporter = process.env.EMAIL_PASSWORD
   ? nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 465,
@@ -76,7 +76,7 @@ const transporter = process.env.EMAIL_PASSWORD && !process.env.RESEND_API_KEY
       tls: {
         rejectUnauthorized: false // Helps in some restricted networks
       }
-    })
+    } as any)
   : null;
 
 if (!transporter) {
@@ -91,9 +91,18 @@ async function ensureTables() {
       email TEXT NOT NULL,
       ip_address TEXT NOT NULL,
       tshirt_id INTEGER NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      user_email_sent BOOLEAN NOT NULL DEFAULT FALSE,
+      admin_email_sent BOOLEAN NOT NULL DEFAULT FALSE,
+      email_last_attempted_at TIMESTAMPTZ,
+      email_last_error TEXT
     );
   `);
+
+  await pool.query(`ALTER TABLE requests ADD COLUMN IF NOT EXISTS user_email_sent BOOLEAN NOT NULL DEFAULT FALSE;`);
+  await pool.query(`ALTER TABLE requests ADD COLUMN IF NOT EXISTS admin_email_sent BOOLEAN NOT NULL DEFAULT FALSE;`);
+  await pool.query(`ALTER TABLE requests ADD COLUMN IF NOT EXISTS email_last_attempted_at TIMESTAMPTZ;`);
+  await pool.query(`ALTER TABLE requests ADD COLUMN IF NOT EXISTS email_last_error TEXT;`);
 
   // Drop the unique constraint if it exists (for existing databases)
   try {
@@ -116,35 +125,38 @@ async function ensureTables() {
 }
 
 async function sendMailSafe(options: nodemailer.SendMailOptions) {
-  // 1. Try Resend First (Best for Render)
+  let resendFailure: string | null = null;
   if (resend) {
     try {
       console.log(`[EMAIL] Sending via Resend to ${options.to}...`);
       const { data, error } = await resend.emails.send({
-        from: 'xrostao <onboarding@resend.dev>', // Use verified sender once domain is connected
+        from: 'xrostao <onboarding@resend.dev>',
         to: options.to as string,
         subject: options.subject as string,
         html: options.html as string,
         text: options.text as string,
       });
 
-      if (error) {
-        console.error('[RESEND ERROR]', error);
-        return false;
+      if (!error) {
+        console.log(`[RESEND SUCCESS] Message ID: ${data?.id}`);
+        return { ok: true as const, provider: 'resend' as const };
       }
 
-      console.log(`[RESEND SUCCESS] Message ID: ${data?.id}`);
-      return true;
+      console.error('[RESEND ERROR]', error);
+      resendFailure = typeof error === 'string' ? error : JSON.stringify(error);
     } catch (err) {
       console.error('[RESEND FATAL ERROR]', err);
-      return false;
+      resendFailure = err instanceof Error ? err.message : 'Unknown error';
     }
   }
 
-  // 2. Fallback to SMTP (Nodemailer)
   if (!transporter) {
     console.error('[EMAIL] No email provider configured (RESEND_API_KEY or EMAIL_PASSWORD).');
-    return false;
+    return {
+      ok: false as const,
+      provider: 'none' as const,
+      error: resendFailure ? `Resend failed: ${resendFailure}. No SMTP configured.` : 'No email provider configured',
+    };
   }
   try {
     // Force the "from" address to be our verified sender
@@ -154,11 +166,26 @@ async function sendMailSafe(options: nodemailer.SendMailOptions) {
     };
     const info = await transporter.sendMail(mailOptions);
     console.log(`[EMAIL] Sent via SMTP: ${info.messageId} to ${options.to}`);
-    return true;
+    return { ok: true as const, provider: 'smtp' as const };
   } catch (err) {
     console.error('[EMAIL ERROR] Full details:', err);
-    return false;
+    const smtpError = err instanceof Error ? err.message : 'Unknown error';
+    return {
+      ok: false as const,
+      provider: 'smtp' as const,
+      error: resendFailure ? `Resend failed: ${resendFailure}. SMTP failed: ${smtpError}` : smtpError,
+    };
   }
+}
+
+async function sendMailWithRetry(options: nodemailer.SendMailOptions, attempts = 2) {
+  let last: Awaited<ReturnType<typeof sendMailSafe>> | null = null;
+  for (let i = 0; i < attempts; i++) {
+    last = await sendMailSafe(options);
+    if (last.ok) return last;
+    await new Promise<void>(res => setTimeout(res, 750 * (i + 1)));
+  }
+  return last ?? { ok: false as const, provider: 'none' as const, error: 'Unknown error' };
 }
 
 // Helper to verify SMTP on start with retries
@@ -315,18 +342,22 @@ app.post('/api/request', async (req, res) => {
 
   try {
     // 1. Save to Database (We allow multiple requests now)
-    await pool.query(
-      'INSERT INTO requests (email, ip_address, tshirt_id) VALUES ($1, $2, $3)',
+    const insertResult = await pool.query(
+      'INSERT INTO requests (email, ip_address, tshirt_id) VALUES ($1, $2, $3) RETURNING id',
       [email, clientIp, parseInt(tshirtId, 10)]
     );
-    console.log(`[API] Request saved to DB for ${email}`);
+    const requestId: number = insertResult.rows[0]?.id;
+    console.log(`[API] Request saved to DB for ${email} (id: ${requestId})`);
 
-    // 2. Send Emails in parallel for maximum speed
-    // Use the email directly from the request body
     const userEmailTo = email.trim();
-    console.log(`[API] Preparing to send emails for: ${userEmailTo}`);
+    console.log(`[API] Sending emails for request id ${requestId}: ${userEmailTo}`);
 
-    const userEmailPromise = sendMailSafe({
+    await pool.query(
+      'UPDATE requests SET email_last_attempted_at = NOW(), email_last_error = NULL WHERE id = $1',
+      [requestId]
+    );
+
+    const userEmailResult = await sendMailWithRetry({
       to: userEmailTo,
       subject: 'Επιβεβαίωση Αιτήματος | anergia season by xrostao',
       text: `Λάβαμε το αίτημά σου για το T-Shirt #${tshirtId} και θα σε ενημερώσουμε μόλις υπάρξει διαθεσιμότητα για αγορά!`,
@@ -340,7 +371,7 @@ app.post('/api/request', async (req, res) => {
       `
     });
 
-    const adminEmailPromise = sendMailSafe({
+    const adminEmailResult = await sendMailWithRetry({
       to: 'anergiareal6969@gmail.com',
       subject: `ΝΕΟ ΑΙΤΗΜΑ: ${userEmailTo} | T-Shirt #${tshirtId}`,
       text: `Ο χρήστης με email: ${userEmailTo} έκανε αίτημα για το T-Shirt #${tshirtId}`,
@@ -356,14 +387,40 @@ app.post('/api/request', async (req, res) => {
       `
     });
 
-    // We don't wait for emails to respond to the user (Fast UI)
-    Promise.all([userEmailPromise, adminEmailPromise]).then(([userSent, adminSent]) => {
-      console.log(`[API] Email results for ${userEmailTo} -> User: ${userSent}, Admin: ${adminSent}`);
-    }).catch(err => {
-      console.error(`[API] Async email sending failed for ${userEmailTo}:`, err);
-    });
+    const userSent = userEmailResult.ok;
+    const adminSent = adminEmailResult.ok;
 
-    res.json({ status: 'success' });
+    await pool.query(
+      `UPDATE requests
+       SET user_email_sent = $2,
+           admin_email_sent = $3,
+           email_last_error = $4
+       WHERE id = $1`,
+      [
+        requestId,
+        userSent,
+        adminSent,
+        userSent && adminSent
+          ? null
+          : JSON.stringify({
+              user: userEmailResult.ok ? null : { provider: userEmailResult.provider, error: userEmailResult.error },
+              admin: adminEmailResult.ok ? null : { provider: adminEmailResult.provider, error: adminEmailResult.error },
+            }),
+      ]
+    );
+
+    if (!userSent || !adminSent) {
+      return res.status(502).json({
+        status: 'saved_but_email_failed',
+        requestId,
+        emails: {
+          user: userSent ? { sent: true } : { sent: false, provider: userEmailResult.provider, error: userEmailResult.error },
+          admin: adminSent ? { sent: true } : { sent: false, provider: adminEmailResult.provider, error: adminEmailResult.error },
+        },
+      });
+    }
+
+    res.json({ status: 'success', requestId, emails: { user: { sent: true }, admin: { sent: true } } });
 
   } catch (err) {
     console.error('[SERVER ERROR] Request handling failed:', err);
@@ -473,6 +530,7 @@ async function start() {
   console.log(`[INIT] Starting server...`);
   console.log(`[INIT] DATABASE_URL present: ${!!process.env.DATABASE_URL}`);
   console.log(`[INIT] EMAIL_PASSWORD present: ${!!process.env.EMAIL_PASSWORD}`);
+  console.log(`[INIT] RESEND_API_KEY present: ${!!process.env.RESEND_API_KEY}`);
 
   try {
     if (process.env.DATABASE_URL) {

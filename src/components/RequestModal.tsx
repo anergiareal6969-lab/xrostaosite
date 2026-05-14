@@ -16,6 +16,14 @@ export default function RequestModal({ isOpen, onClose, onSubmit, mode = 'reques
   const [shouldSubmitAfterLogin, setShouldSubmitAfterLogin] = useState(false);
   const { user, loginWithGoogle, loading } = useAuth();
 
+  const getSubmitErrorMessage = (error: unknown) => {
+    const msg = error instanceof Error ? error.message : '';
+    if (msg.includes('saved_but_email_failed')) {
+      return 'Το αίτημα καταχωρήθηκε, αλλά δεν στάλθηκαν τα email επιβεβαίωσης. Δοκίμασε ξανά.';
+    }
+    return 'Υπήρξε πρόβλημα στην αποστολή του αιτήματος. Δοκίμασε ξανά.';
+  };
+
   useEffect(() => {
     if (user?.email) {
       setEmail(user.email);
@@ -55,7 +63,7 @@ export default function RequestModal({ isOpen, onClose, onSubmit, mode = 'reques
         console.error('[REQUEST MODAL] Auto submit after login failed:', error);
         if (!isCancelled) {
           setShouldSubmitAfterLogin(false);
-          alert('Υπήρξε πρόβλημα στην αποστολή του αιτήματος. Δοκίμασε ξανά.');
+          alert(getSubmitErrorMessage(error));
         }
       } finally {
         if (!isCancelled) {
@@ -90,7 +98,7 @@ export default function RequestModal({ isOpen, onClose, onSubmit, mode = 'reques
       onClose();
     } catch (error) {
       console.error('[REQUEST MODAL] Submit failed:', error);
-      alert('Υπήρξε πρόβλημα στην αποστολή του αιτήματος. Δοκίμασε ξανά.');
+      alert(getSubmitErrorMessage(error));
     } finally {
       setIsSubmitting(false);
     }

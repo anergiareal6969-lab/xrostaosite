@@ -57,25 +57,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(userData);
         await syncUserWithDB(userData.email, userData.username);
       } else {
-        console.log("[AUTH] No Firebase user, checking IP auto-login...");
-        // 2. If no Firebase user, try auto-login by IP from our DB
-        try {
-          const res = await fetch('/api/me-by-ip');
-          const data = await res.json();
-          if (data.user) {
-            console.log("[AUTH] IP Auto-login success:", data.user.email);
-            setUser({
-              email: data.user.email,
-              username: data.user.username
-            });
-          } else {
-            console.log("[AUTH] No IP record found.");
-            setUser(null);
-          }
-        } catch (err) {
-          console.error("[AUTH] IP lookup error:", err);
-          setUser(null);
-        }
+        console.log("[AUTH] No Firebase user.");
+        setUser(null);
       }
       setLoading(false);
     });

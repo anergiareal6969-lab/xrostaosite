@@ -117,27 +117,22 @@ export default function TShirt() {
   };
 
   const handleRequestSubmit = async (email: string) => {
-    // 1. Instant UI update for better UX
-    setHasRequested(true);
-    
-    try {
-      const response = await fetch('/api/request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, tshirtId })
-      });
-      const data = await response.json();
-      
-      // Even if it fails, we keep the UI state as "requested" 
-      // because it's usually just a network lag and we want the user to feel success
-      if (data.status === 'success' || data.status === 'already_requested') {
-        setHasRequested(true);
-      }
-    } catch (err) {
-      console.error('Submit error:', err);
-      // Optional: keep it true anyway so user doesn't panic
-      setHasRequested(true);
+    const response = await fetch('/api/request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, tshirtId })
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok || !data || data.status !== 'success') {
+      const details = data?.status
+        ? `${data.status}${data.requestId ? ` (id: ${data.requestId})` : ''}`
+        : `HTTP ${response.status}`;
+      throw new Error(`Request failed: ${details}`);
     }
+
+    setHasRequested(true);
   };
 
   useEffect(() => {

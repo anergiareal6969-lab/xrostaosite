@@ -10,11 +10,13 @@ import { AuthProvider } from './contexts/AuthContext';
 function AppRoutes() {
   const location = useLocation();
   return (
-    <Routes key={location.pathname}>
-      <Route path="/" element={<Home />} />
-      <Route path="/products/:slug" element={<Product />} />
-      <Route path="/tshirt/:id" element={<TShirt />} />
-    </Routes>
+    <div key={location.pathname}>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/products/:slug" element={<Product />} />
+        <Route path="/tshirt/:id" element={<TShirt />} />
+      </Routes>
+    </div>
   );
 }
 
@@ -89,4 +91,3 @@ export default function App() {
     </AuthProvider>
   );
 }
-
