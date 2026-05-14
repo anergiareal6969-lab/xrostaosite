@@ -255,49 +255,79 @@ app.post('/api/request', async (req, res) => {
   }
 
   try {
+    // 1. Check if already requested
     const check = await pool.query(
       'SELECT * FROM requests WHERE tshirt_id = $1 AND (ip_address = $2 OR email = $3)',
       [parseInt(tshirtId, 10), clientIp, email]
     );
 
     if (check.rows.length > 0) {
-      const reminderMailSent = await sendMailSafe({
-        from: 'anergiareal6969@gmail.com',
+      console.log(`[API] Already requested by ${email}. Sending reminder email.`);
+      await sendMailSafe({
         to: email,
         subject: 'Μην πατάς το χρυσό κουμπί!',
-        text: 'Έχουμε ήδη λάβει το αίτημά σου! Σε ευχαριστούμε!',
+        text: `Έχουμε ήδη λάβει το αίτημά σου για το T-Shirt #${tshirtId}! Σε ευχαριστούμε!`,
+        html: `
+          <div style="font-family: sans-serif; padding: 20px; background: #000; color: #fff;">
+            <h2 style="color: #fff; font-style: italic;">xrostao clothing</h2>
+            <p>Έχουμε ήδη λάβει το αίτημά σου για το <b>T-Shirt #${tshirtId}</b>!</p>
+            <p>Θα ενημερωθείς μόλις υπάρξει διαθεσιμότητα.</p>
+          </div>
+        `
       });
-      return res.json({ status: 'already_requested', reminderMailSent });
+      return res.json({ status: 'already_requested' });
     }
 
-    // Save to DB
+    // 2. Save to Database
     await pool.query(
       'INSERT INTO requests (email, ip_address, tshirt_id) VALUES ($1, $2, $3)',
       [email, clientIp, parseInt(tshirtId, 10)]
     );
+    console.log(`[API] Request saved to DB for ${email}`);
 
-    // Send confirmation emails
-    const mailText = `Νέο αίτημα από ${email} για το T-Shirt #${tshirtId}`;
-    const adminMailSent = await sendMailSafe({
-      from: 'anergiareal6969@gmail.com',
-      to: 'anergiareal6969@gmail.com',
-      subject: 'Νέο Αίτημα xrostao!',
-      text: mailText
-    });
-
+    // 3. Send Confirmation to User (The person who clicked the button)
+    console.log(`[API] Sending confirmation to user: ${email}`);
     const userMailSent = await sendMailSafe({
-      from: 'anergiareal6969@gmail.com',
       to: email,
       subject: 'Επιβεβαίωση Αιτήματος | anergia season by xrostao',
-      text: 'Έχουμε λάβει το μήνυμα πως έχουμε λάβει το αίτημα σου και θα ενημερωθείς όταν κυκλοφορήσει το drop.'
+      text: `Λάβαμε το αίτημά σου για το T-Shirt #${tshirtId} και θα σε ενημερώσουμε μόλις υπάρξει διαθεσιμότητα για αγορά!`,
+      html: `
+        <div style="font-family: sans-serif; padding: 20px; background: #000; color: #fff; border: 1px solid #333;">
+          <h1 style="font-style: italic; color: #fff;">xrostao clothing</h1>
+          <p style="font-size: 18px;">Λάβαμε το αίτημά σου!</p>
+          <p>Θα σε ενημερώσουμε αμέσως μόλις υπάρξει διαθεσιμότητα για το <b>T-Shirt #${tshirtId}</b>.</p>
+          <p style="color: #666; font-size: 12px; margin-top: 30px;">anergia season — xrostao.site</p>
+        </div>
+      `
     });
 
-    console.log(`[API] Emails sent - Admin: ${adminMailSent}, User: ${userMailSent}`);
-    res.json({ status: 'success', adminMailSent, userMailSent });
+    // 4. Send Notification to Admin (anergiareal6969@gmail.com)
+    console.log(`[API] Sending notification to admin...`);
+    const adminMailSent = await sendMailSafe({
+      to: 'anergiareal6969@gmail.com',
+      subject: 'ΝΕΟ ΑΙΤΗΜΑ ΑΠΟ ΧΡΗΣΤΗ! | xrostao',
+      text: `Ο χρήστης με email: ${email} έκανε αίτημα για το T-Shirt #${tshirtId}`,
+      html: `
+        <div style="font-family: sans-serif; padding: 20px; background: #f4f4f4; color: #333;">
+          <h2>Νέο Αίτημα στο xrostao!</h2>
+          <p><b>Email Χρήστη:</b> ${email}</p>
+          <p><b>Προϊόν:</b> T-Shirt #${tshirtId}</p>
+          <p><b>IP:</b> ${clientIp}</p>
+          <hr>
+          <p>Δες όλα τα αιτήματα στο admin dashboard σου.</p>
+        </div>
+      `
+    });
+
+    console.log(`[API] Email results -> User: ${userMailSent}, Admin: ${adminMailSent}`);
+    res.json({ status: 'success', userMailSent, adminMailSent });
+
   } catch (err) {
-    console.error('[SERVER ERROR]', err);
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    res.status(500).json({ error: 'Internal server error', details: message });
+    console.error('[SERVER ERROR] Request handling failed:', err);
+    res.status(500).json({ 
+      error: 'Internal server error', 
+      details: err instanceof Error ? err.message : 'Unknown error' 
+    });
   }
 });
 
