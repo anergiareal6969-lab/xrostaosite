@@ -58,14 +58,21 @@ pool.on('error', (err) => {
 
 const transporter = process.env.EMAIL_PASSWORD
   ? nodemailer.createTransport({
-      service: 'gmail', // Let Nodemailer handle host/port/secure settings
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true, // SSL
       auth: {
         user: 'anergiareal6969@gmail.com',
         pass: process.env.EMAIL_PASSWORD,
       },
-      connectionTimeout: 20000, // 20 seconds
+      connectionTimeout: 20000,
       greetingTimeout: 20000,
       socketTimeout: 30000,
+      // CRITICAL: Force IPv4 to avoid ENETUNREACH errors on Render
+      family: 4, 
+      tls: {
+        rejectUnauthorized: false // Helps in some restricted networks
+      }
     })
   : null;
 
@@ -440,7 +447,8 @@ async function start() {
       await ensureTables();
       console.log('[INIT] Database tables checked/created');
     }
-    await verifySMTP();
+    // Don't await verifySMTP - Let the server start even if SMTP is slow
+    verifySMTP();
   } catch (err) {
     console.error('[DATABASE/SMTP INIT ERROR]', err);
   }
