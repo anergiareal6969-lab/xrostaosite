@@ -409,7 +409,7 @@ app.post('/api/request', async (req, res) => {
       ]
     );
 
-    if (!userSent || !adminSent) {
+    if (!adminSent) {
       return res.status(502).json({
         status: 'saved_but_email_failed',
         requestId,
@@ -420,7 +420,14 @@ app.post('/api/request', async (req, res) => {
       });
     }
 
-    res.json({ status: 'success', requestId, emails: { user: { sent: true }, admin: { sent: true } } });
+    res.json({
+      status: 'success',
+      requestId,
+      emails: {
+        user: userSent ? { sent: true } : { sent: false, provider: userEmailResult.provider, error: userEmailResult.error },
+        admin: { sent: true },
+      },
+    });
 
   } catch (err) {
     console.error('[SERVER ERROR] Request handling failed:', err);

@@ -133,6 +133,9 @@ export default function TShirt() {
     }
 
     setHasRequested(true);
+    setCanPurchase(false);
+    setHoursRemaining(24);
+    checkIfRequested();
   };
 
   useEffect(() => {
