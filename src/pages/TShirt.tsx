@@ -242,6 +242,17 @@ export default function TShirt() {
               {canPurchase ? 'ἀγόρασον' : (requestConfirmed || hasRequested) ? 'αιτημα εληφθη' : 'αίτημα'}
             </button>
 
+            {(requestConfirmed || hasRequested) && !canPurchase && (
+              <button
+                type="button"
+                disabled
+                className="w-full max-w-sm bg-white/10 text-white/85 font-sans font-bold italic text-sm md:text-base leading-relaxed py-4 px-6 rounded-2xl border border-white/15 backdrop-blur-md cursor-default"
+              >
+                Μπορείς να κάνεις μόνο ένα αίτημα, γιατί θα μας πρήξεις με πολλά αιτήματα και μετά,
+                σαν άνεργος, θα αγοράζεις μπλούζες, οπότε άστο καλύτερα.
+              </button>
+            )}
+
             {(requestConfirmed || hasRequested) && !canPurchase && hoursRemaining !== null && (
               <div className="text-white font-sans font-medium text-sm md:text-base opacity-80 mt-2 bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm">
                 Διαθέσιμο για αγορά σε: <span className="font-bold">{formatTimeRemaining(hoursRemaining)}</span>
