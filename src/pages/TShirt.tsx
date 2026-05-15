@@ -58,6 +58,7 @@ export default function TShirt() {
   const [loadedImagesCount, setLoadedImagesCount] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasRequested, setHasRequested] = useState(false);
+  const [requestConfirmed, setRequestConfirmed] = useState(false);
   const [canPurchase, setCanPurchase] = useState(false);
   const [hoursRemaining, setHoursRemaining] = useState<number | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
@@ -80,6 +81,7 @@ export default function TShirt() {
     setSelectedSize(null);
     setHoursRemaining(null);
     setCurrentIndex(0);
+    setRequestConfirmed(false);
     window.scrollTo(0, 0);
     checkIfRequested();
 
@@ -100,6 +102,9 @@ export default function TShirt() {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setHasRequested(data.requested);
+      if (data.requested) {
+        setRequestConfirmed(true);
+      }
       setCanPurchase(data.canPurchase);
       if (data.requested && data.hoursRemaining) {
         setHoursRemaining(data.hoursRemaining);
@@ -133,6 +138,7 @@ export default function TShirt() {
     }
 
     setHasRequested(true);
+    setRequestConfirmed(true);
     setCanPurchase(false);
     setHoursRemaining(24);
     checkIfRequested();
@@ -226,19 +232,19 @@ export default function TShirt() {
 
             <button
               onClick={() => setIsModalOpen(true)}
-              disabled={hasRequested && !canPurchase}
+              disabled={(requestConfirmed || hasRequested) && !canPurchase}
               className={`w-full max-w-sm ${
                 canPurchase
                   ? 'bg-blue-400 hover:bg-blue-500'
-                  : hasRequested
+                  : (requestConfirmed || hasRequested)
                     ? 'bg-green-500 hover:bg-green-500 cursor-default'
                     : 'bg-blue-400 hover:bg-blue-500'
               } text-white font-sans font-bold italic text-xl md:text-3xl py-5 px-12 rounded-2xl shadow-2xl backdrop-blur-md border border-white/20 transition-all active:scale-95`}
             >
-              {canPurchase ? 'ἀγόρασον' : hasRequested ? 'αιτημα εληφθη' : 'αίτημα'}
+              {canPurchase ? 'ἀγόρασον' : (requestConfirmed || hasRequested) ? 'αιτημα εληφθη' : 'αίτημα'}
             </button>
 
-            {hasRequested && !canPurchase && hoursRemaining !== null && (
+            {(requestConfirmed || hasRequested) && !canPurchase && hoursRemaining !== null && (
               <div className="text-white font-sans font-medium text-sm md:text-base opacity-80 mt-2 bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm">
                 Διαθέσιμο για αγορά σε: <span className="font-bold">{formatTimeRemaining(hoursRemaining)}</span>
               </div>
