@@ -538,12 +538,17 @@ async function start() {
   console.log(`[INIT] DATABASE_URL present: ${!!process.env.DATABASE_URL}`);
   console.log(`[INIT] EMAIL_PASSWORD present: ${!!process.env.EMAIL_PASSWORD}`);
   console.log(`[INIT] RESEND_API_KEY present: ${!!process.env.RESEND_API_KEY}`);
+  console.log(`[INIT] CLEAR_REQUESTS_ON_START enabled: ${process.env.CLEAR_REQUESTS_ON_START === 'true'}`);
 
   try {
     if (process.env.DATABASE_URL) {
       await connectWithRetry();
       await ensureTables();
       console.log('[INIT] Database tables checked/created');
+      if (process.env.CLEAR_REQUESTS_ON_START === 'true') {
+        const result = await pool.query('TRUNCATE TABLE requests RESTART IDENTITY;');
+        console.log('[INIT] Requests table cleared (profiles/users preserved)');
+      }
     }
     // Don't await verifySMTP - Let the server start even if SMTP is slow
     verifySMTP();
