@@ -7,6 +7,22 @@ import Menu from './components/Menu';
 import Preloader from './components/Preloader';
 import { AuthProvider } from './contexts/AuthContext';
 
+function TopOverlayImage() {
+  const [isVisible, setIsVisible] = useState(true);
+
+  if (!isVisible) return null;
+
+  return (
+    <img
+      src="/images/ai-top.png"
+      alt=""
+      className="fixed top-4 left-1/2 -translate-x-1/2 z-40 w-[170px] md:w-[240px] pointer-events-none select-none"
+      onError={() => setIsVisible(false)}
+      loading="eager"
+    />
+  );
+}
+
 function AppRoutes() {
   const location = useLocation();
   return (
@@ -85,6 +101,7 @@ export default function App() {
         <div className="relative min-h-screen w-full font-sans bg-black">
           <Preloader isLoading={isLoading} />
           <Menu />
+          <TopOverlayImage />
           <AppRoutes />
         </div>
       </BrowserRouter>

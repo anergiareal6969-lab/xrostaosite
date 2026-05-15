@@ -64,22 +64,23 @@ export const PRODUCTS: Product[] = [
   {
     id: 8,
     slug: 'tshirt-8-anergia-season',
-    name: 'xrostao t-shirt 8 — anergia season',
-    description: 'Νέο t-shirt από τη συλλογή anergia season.',
+    name: 'xrostao dolario t-shirt — anergia season',
+    description:
+      'Ένα σχέδιο που οκ το δολάριο image πλέον δεν είναι tuff, απλά η μπλούζα αυτή είναι κομπλέ.',
     primaryImage: '/images/tshirts/8/main.png',
   },
   {
     id: 9,
     slug: 'tshirt-9-anergia-season',
-    name: 'xrostao t-shirt 9 — anergia season',
-    description: 'Νέο t-shirt από τη συλλογή anergia season.',
+    name: 'xrostao tape t-shirt — anergia season',
+    description: 'Δεν υπάρχει εδώ description, απλά έχει tape.',
     primaryImage: '/images/tshirts/9/main.png',
   },
   {
     id: 10,
     slug: 'tshirt-10-anergia-season',
-    name: 'xrostao t-shirt 10 — anergia season',
-    description: 'Νέο t-shirt από τη συλλογή anergia season.',
+    name: 'xrostao gimno baddie t-shirt — anergia season',
+    description: 'Άμα έχεις τέτοια baddies σίγουρα θα χρωστάς for real.',
     primaryImage: '/images/tshirts/10/main.png',
   },
 ];
