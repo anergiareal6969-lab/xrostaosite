@@ -350,26 +350,12 @@ app.post('/api/request', async (req, res) => {
     console.log(`[API] Request saved to DB for ${email} (id: ${requestId})`);
 
     const userEmailTo = email.trim();
-    console.log(`[API] Sending emails for request id ${requestId}: ${userEmailTo}`);
+    console.log(`[API] Sending admin email for request id ${requestId}: ${userEmailTo}`);
 
     await pool.query(
       'UPDATE requests SET email_last_attempted_at = NOW(), email_last_error = NULL WHERE id = $1',
       [requestId]
     );
-
-    const userEmailResult = await sendMailWithRetry({
-      to: userEmailTo,
-      subject: 'Επιβεβαίωση Αιτήματος | anergia season by xrostao',
-      text: `Λάβαμε το αίτημά σου για το T-Shirt #${tshirtId} και θα σε ενημερώσουμε μόλις υπάρξει διαθεσιμότητα για αγορά!`,
-      html: `
-        <div style="font-family: sans-serif; padding: 20px; background: #000; color: #fff; border: 1px solid #333;">
-          <h1 style="font-style: italic; color: #fff;">xrostao clothing</h1>
-          <p style="font-size: 18px;">Λάβαμε το αίτημά σου!</p>
-          <p>Θα σε ενημερώσουμε αμέσως μόλις υπάρξει διαθεσιμότητα για το <b>T-Shirt #${tshirtId}</b>.</p>
-          <p style="color: #666; font-size: 12px; margin-top: 30px;">anergia season — xrostao.site</p>
-        </div>
-      `
-    });
 
     const adminEmailResult = await sendMailWithRetry({
       to: 'anergiareal6969@gmail.com',
@@ -387,7 +373,6 @@ app.post('/api/request', async (req, res) => {
       `
     });
 
-    const userSent = userEmailResult.ok;
     const adminSent = adminEmailResult.ok;
 
     await pool.query(
@@ -398,12 +383,11 @@ app.post('/api/request', async (req, res) => {
        WHERE id = $1`,
       [
         requestId,
-        userSent,
+        false,
         adminSent,
-        userSent && adminSent
+        adminSent
           ? null
           : JSON.stringify({
-              user: userEmailResult.ok ? null : { provider: userEmailResult.provider, error: userEmailResult.error },
               admin: adminEmailResult.ok ? null : { provider: adminEmailResult.provider, error: adminEmailResult.error },
             }),
       ]
@@ -414,7 +398,6 @@ app.post('/api/request', async (req, res) => {
         status: 'saved_but_email_failed',
         requestId,
         emails: {
-          user: userSent ? { sent: true } : { sent: false, provider: userEmailResult.provider, error: userEmailResult.error },
           admin: adminSent ? { sent: true } : { sent: false, provider: adminEmailResult.provider, error: adminEmailResult.error },
         },
       });
@@ -424,7 +407,6 @@ app.post('/api/request', async (req, res) => {
       status: 'success',
       requestId,
       emails: {
-        user: userSent ? { sent: true } : { sent: false, provider: userEmailResult.provider, error: userEmailResult.error },
         admin: { sent: true },
       },
     });

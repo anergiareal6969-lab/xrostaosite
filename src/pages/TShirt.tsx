@@ -130,7 +130,9 @@ export default function TShirt() {
 
     const data = await response.json().catch(() => null);
 
-    if (!response.ok || !data || data.status !== 'success') {
+    const adminEmailConfirmed = !!data?.emails?.admin?.sent;
+
+    if (!response.ok || !data || data.status !== 'success' || !adminEmailConfirmed) {
       const details = data?.status
         ? `${data.status}${data.requestId ? ` (id: ${data.requestId})` : ''}`
         : `HTTP ${response.status}`;
