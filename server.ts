@@ -1,24 +1,16 @@
 import express from 'express';
 import pg from 'pg';
-import nodemailer from 'nodemailer';
 import cors from 'cors';
 import compression from 'compression';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import dns from 'node:dns';
-import { Resend } from 'resend';
-
-// 0. Force IPv4 for all external connections immediately
-dns.setDefaultResultOrder('ipv4first');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 dotenv.config();
-
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 const app = express();
 
@@ -59,57 +51,32 @@ pool.on('error', (err) => {
   console.error('[POSTGRES POOL ERROR]', err);
 });
 
-const transporter = process.env.EMAIL_PASSWORD
-  ? nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true, // SSL
-      auth: {
-        user: 'anergiareal6969@gmail.com',
-        pass: process.env.EMAIL_PASSWORD,
-      },
-      connectionTimeout: 20000,
-      greetingTimeout: 20000,
-      socketTimeout: 30000,
-      // CRITICAL: Force IPv4 to avoid ENETUNREACH errors on Render
-      family: 4, 
-      tls: {
-        rejectUnauthorized: false // Helps in some restricted networks
-      }
-    } as any)
-  : null;
-
-if (!transporter) {
-  console.warn('[WARNING] EMAIL_PASSWORD is not defined. Email sending will be disabled.');
-}
-
 async function ensureTables() {
-  // Requests table - Removed UNIQUE constraint to allow multiple requests
+  // Requests table - One request per signed-in user email
   await pool.query(`
     CREATE TABLE IF NOT EXISTS requests (
       id SERIAL PRIMARY KEY,
       email TEXT NOT NULL,
       ip_address TEXT NOT NULL,
       tshirt_id INTEGER NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      user_email_sent BOOLEAN NOT NULL DEFAULT FALSE,
-      admin_email_sent BOOLEAN NOT NULL DEFAULT FALSE,
-      email_last_attempted_at TIMESTAMPTZ,
-      email_last_error TEXT
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
 
-  await pool.query(`ALTER TABLE requests ADD COLUMN IF NOT EXISTS user_email_sent BOOLEAN NOT NULL DEFAULT FALSE;`);
-  await pool.query(`ALTER TABLE requests ADD COLUMN IF NOT EXISTS admin_email_sent BOOLEAN NOT NULL DEFAULT FALSE;`);
-  await pool.query(`ALTER TABLE requests ADD COLUMN IF NOT EXISTS email_last_attempted_at TIMESTAMPTZ;`);
-  await pool.query(`ALTER TABLE requests ADD COLUMN IF NOT EXISTS email_last_error TEXT;`);
+  await pool.query(`ALTER TABLE requests DROP CONSTRAINT IF EXISTS requests_ip_address_tshirt_id_key;`);
+  await pool.query(`ALTER TABLE requests DROP CONSTRAINT IF EXISTS requests_email_key;`);
 
-  // Drop the unique constraint if it exists (for existing databases)
-  try {
-    await pool.query(`ALTER TABLE requests DROP CONSTRAINT IF EXISTS requests_ip_address_tshirt_id_key;`);
-  } catch (e) {
-    console.log('[DB] Unique constraint already removed or not found');
-  }
+  // Keep only the latest request per email before restoring uniqueness.
+  await pool.query(`
+    DELETE FROM requests
+    WHERE id NOT IN (
+      SELECT DISTINCT ON (email) id
+      FROM requests
+      ORDER BY email, created_at DESC, id DESC
+    );
+  `);
+
+  await pool.query(`ALTER TABLE requests ADD CONSTRAINT requests_email_key UNIQUE (email);`);
 
   // Users table
   await pool.query(`
@@ -122,93 +89,6 @@ async function ensureTables() {
     );
   `);
   console.log('[DB] Tables ensured');
-}
-
-async function sendMailSafe(options: nodemailer.SendMailOptions) {
-  let resendFailure: string | null = null;
-  if (resend) {
-    try {
-      console.log(`[EMAIL] Sending via Resend to ${options.to}...`);
-      const { data, error } = await resend.emails.send({
-        from: 'xrostao <onboarding@resend.dev>',
-        to: options.to as string,
-        subject: options.subject as string,
-        html: options.html as string,
-        text: options.text as string,
-      });
-
-      if (!error) {
-        console.log(`[RESEND SUCCESS] Message ID: ${data?.id}`);
-        return { ok: true as const, provider: 'resend' as const };
-      }
-
-      console.error('[RESEND ERROR]', error);
-      resendFailure = typeof error === 'string' ? error : JSON.stringify(error);
-    } catch (err) {
-      console.error('[RESEND FATAL ERROR]', err);
-      resendFailure = err instanceof Error ? err.message : 'Unknown error';
-    }
-  }
-
-  if (!transporter) {
-    console.error('[EMAIL] No email provider configured (RESEND_API_KEY or EMAIL_PASSWORD).');
-    return {
-      ok: false as const,
-      provider: 'none' as const,
-      error: resendFailure ? `Resend failed: ${resendFailure}. No SMTP configured.` : 'No email provider configured',
-    };
-  }
-  try {
-    // Force the "from" address to be our verified sender
-    const mailOptions = {
-      ...options,
-      from: `"xrostao clothing" <anergiareal6969@gmail.com>`,
-    };
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`[EMAIL] Sent via SMTP: ${info.messageId} to ${options.to}`);
-    return { ok: true as const, provider: 'smtp' as const };
-  } catch (err) {
-    console.error('[EMAIL ERROR] Full details:', err);
-    const smtpError = err instanceof Error ? err.message : 'Unknown error';
-    return {
-      ok: false as const,
-      provider: 'smtp' as const,
-      error: resendFailure ? `Resend failed: ${resendFailure}. SMTP failed: ${smtpError}` : smtpError,
-    };
-  }
-}
-
-async function sendMailWithRetry(options: nodemailer.SendMailOptions, attempts = 2) {
-  let last: Awaited<ReturnType<typeof sendMailSafe>> | null = null;
-  for (let i = 0; i < attempts; i++) {
-    last = await sendMailSafe(options);
-    if (last.ok) return last;
-    await new Promise<void>(res => setTimeout(res, 750 * (i + 1)));
-  }
-  return last ?? { ok: false as const, provider: 'none' as const, error: 'Unknown error' };
-}
-
-// Helper to verify SMTP on start with retries
-async function verifySMTP(retries = 3) {
-  if (resend) {
-    console.log('[INIT] Using Resend API (No SMTP verification needed)');
-    return;
-  }
-  if (!transporter) return;
-  while (retries > 0) {
-    try {
-      console.log(`[INIT] SMTP Verification attempt... (Retries left: ${retries - 1})`);
-      await transporter.verify();
-      console.log('[INIT] SMTP connection verified and ready');
-      return;
-    } catch (err) {
-      retries -= 1;
-      console.error(`[INIT] SMTP Verification failed:`, err);
-      if (retries === 0) break;
-      console.log('[INIT] Waiting 5s before next SMTP retry...');
-      await new Promise(res => setTimeout(res, 5000));
-    }
-  }
 }
 
 // 2. Middleware
@@ -237,10 +117,6 @@ app.post('/api/sync-user', async (req, res) => {
   if (!email) return res.status(400).json({ error: 'Email is required' });
 
   try {
-    // Check if user is new
-    const checkUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    const isNewUser = checkUser.rows.length === 0;
-
     await pool.query(
       `INSERT INTO users (email, username, last_ip, last_login) 
        VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
@@ -249,64 +125,28 @@ app.post('/api/sync-user', async (req, res) => {
       [email, username || email.split('@')[0], clientIp]
     );
 
-    if (isNewUser) {
-      console.log(`[API] New user signed up: ${email}. Sending welcome email.`);
-      await sendMailSafe({
-        from: 'anergiareal6969@gmail.com',
-        to: email,
-        subject: 'Καλώς ήρθες στην anergia! | xrostao',
-        text: 'Σε ευχαριστούμε για την εγγραφή σου! Θα ενημερωθείς για όλα τα νέα drops.'
-      });
-    }
-
-    res.json({ success: true, isNewUser });
+    res.json({ success: true });
   } catch (err) {
     console.error('[API] User sync error:', err);
     res.status(500).json({ error: 'Sync failed' });
   }
 });
 
-// API to auto-login by IP
-app.get('/api/me-by-ip', async (req, res) => {
-  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
-  const clientIp = Array.isArray(ip) ? ip[0] : ip.split(',')[0].trim();
-
-  try {
-    const result = await pool.query(
-      'SELECT email, username FROM users WHERE last_ip = $1 ORDER BY last_login DESC LIMIT 1',
-      [clientIp]
-    );
-    if (result.rows.length > 0) {
-      res.json({ user: result.rows[0] });
-    } else {
-      res.json({ user: null });
-    }
-  } catch (err) {
-    console.error('[API] IP lookup error:', err);
-    res.status(500).json({ error: 'Lookup failed' });
-  }
-});
-
 // Check Request
 app.get('/api/check-request', async (req, res) => {
   const { tshirtId, email } = req.query;
-  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
-  const clientIp = Array.isArray(ip) ? ip[0] : ip.split(',')[0].trim();
 
-  console.log(`[API] Checking request for T-Shirt ${tshirtId} from IP ${clientIp} (Email: ${email || 'none'})`);
+  console.log(`[API] Checking request for T-Shirt ${tshirtId} (Email: ${email || 'none'})`);
+
+  if (!email) {
+    return res.json({ requested: false, canPurchase: false });
+  }
 
   try {
-    let query = 'SELECT *, created_at FROM requests WHERE tshirt_id = $1 AND (ip_address = $2';
-    let params: any[] = [parseInt(tshirtId as string, 10), clientIp];
-
-    if (email) {
-      query += ' OR email = $3)';
-      params.push(email);
-    } else {
-      query += ')';
-    }
-
-    const result = await pool.query(query, params);
+    const result = await pool.query(
+      'SELECT tshirt_id, created_at FROM requests WHERE email = $1 LIMIT 1',
+      [email]
+    );
     
     if (result.rows.length === 0) {
       return res.json({ requested: false, canPurchase: false });
@@ -319,6 +159,7 @@ app.get('/api/check-request', async (req, res) => {
 
     res.json({ 
       requested: true, 
+      requestedTshirtId: result.rows[0].tshirt_id,
       canPurchase,
       hoursRemaining: Math.max(0, 24 - hoursPassed)
     });
@@ -341,74 +182,23 @@ app.post('/api/request', async (req, res) => {
   }
 
   try {
-    // 1. Save to Database (We allow multiple requests now)
     const insertResult = await pool.query(
-      'INSERT INTO requests (email, ip_address, tshirt_id) VALUES ($1, $2, $3) RETURNING id',
+      `INSERT INTO requests (email, ip_address, tshirt_id)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (email) DO UPDATE
+       SET ip_address = EXCLUDED.ip_address,
+           tshirt_id = EXCLUDED.tshirt_id,
+           created_at = NOW()
+       RETURNING id, tshirt_id, created_at`,
       [email, clientIp, parseInt(tshirtId, 10)]
     );
     const requestId: number = insertResult.rows[0]?.id;
     console.log(`[API] Request saved to DB for ${email} (id: ${requestId})`);
-
-    const userEmailTo = email.trim();
-    console.log(`[API] Sending admin email for request id ${requestId}: ${userEmailTo}`);
-
-    await pool.query(
-      'UPDATE requests SET email_last_attempted_at = NOW(), email_last_error = NULL WHERE id = $1',
-      [requestId]
-    );
-
-    const adminEmailResult = await sendMailWithRetry({
-      to: 'anergiareal6969@gmail.com',
-      subject: `ΝΕΟ ΑΙΤΗΜΑ: ${userEmailTo} | T-Shirt #${tshirtId}`,
-      text: `Ο χρήστης με email: ${userEmailTo} έκανε αίτημα για το T-Shirt #${tshirtId}`,
-      html: `
-        <div style="font-family: sans-serif; padding: 20px; background: #f4f4f4; color: #333;">
-          <h2>Νέο Αίτημα στο xrostao!</h2>
-          <p><b>Email Χρήστη:</b> ${userEmailTo}</p>
-          <p><b>Προϊόν:</b> T-Shirt #${tshirtId}</p>
-          <p><b>IP:</b> ${clientIp}</p>
-          <hr>
-          <p>Δες όλα τα αιτήματα στο admin dashboard σου.</p>
-        </div>
-      `
-    });
-
-    const adminSent = adminEmailResult.ok;
-
-    await pool.query(
-      `UPDATE requests
-       SET user_email_sent = $2,
-           admin_email_sent = $3,
-           email_last_error = $4
-       WHERE id = $1`,
-      [
-        requestId,
-        false,
-        adminSent,
-        adminSent
-          ? null
-          : JSON.stringify({
-              admin: adminEmailResult.ok ? null : { provider: adminEmailResult.provider, error: adminEmailResult.error },
-            }),
-      ]
-    );
-
-    if (!adminSent) {
-      return res.status(502).json({
-        status: 'saved_but_email_failed',
-        requestId,
-        emails: {
-          admin: adminSent ? { sent: true } : { sent: false, provider: adminEmailResult.provider, error: adminEmailResult.error },
-        },
-      });
-    }
-
     res.json({
       status: 'success',
       requestId,
-      emails: {
-        admin: { sent: true },
-      },
+      requestedTshirtId: insertResult.rows[0]?.tshirt_id,
+      createdAt: insertResult.rows[0]?.created_at,
     });
 
   } catch (err) {
@@ -423,43 +213,69 @@ app.post('/api/request', async (req, res) => {
 // Admin view (Simple verification page)
 app.get('/admin-dashboard-xrostao', async (req, res) => {
   try {
-    const result = await pool.query('SELECT email, ip_address, tshirt_id, created_at FROM requests ORDER BY created_at DESC');
+    const result = await pool.query(`
+      SELECT
+        requests.email,
+        requests.ip_address,
+        requests.tshirt_id,
+        requests.created_at,
+        COALESCE(users.username, split_part(requests.email, '@', 1)) AS username
+      FROM requests
+      LEFT JOIN users ON users.email = requests.email
+      ORDER BY requests.created_at DESC
+    `);
     let html = `
       <html>
         <head>
           <title>Xrostao Admin</title>
           <style>
-            body { font-family: sans-serif; background: #111; color: #eee; padding: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #444; padding: 12px; text-align: left; }
-            th { background: #222; }
-            tr:nth-child(even) { background: #1a1a1a; }
-            .status { color: #4ade80; font-weight: bold; }
+            * { box-sizing: border-box; }
+            body { margin: 0; font-family: Arial, sans-serif; background: #0f0f0f; color: #f5f5f5; padding: 24px; }
+            .wrap { max-width: 1100px; margin: 0 auto; }
+            .header { margin-bottom: 24px; }
+            .title { font-size: 32px; font-weight: 800; margin: 0 0 8px; }
+            .status { color: #4ade80; font-weight: 700; margin: 0; }
+            .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+            .card { background: #181818; border: 1px solid #2a2a2a; border-radius: 18px; padding: 18px; }
+            .name { font-size: 20px; font-weight: 800; margin: 0 0 10px; }
+            .row { margin: 8px 0; color: #d4d4d4; word-break: break-word; }
+            .label { display: block; color: #8f8f8f; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+            .empty { padding: 24px; border-radius: 18px; background: #181818; border: 1px solid #2a2a2a; color: #a3a3a3; }
           </style>
         </head>
         <body>
-          <h1>Aιτήματα Χρηστών (Database)</h1>
-          <p class="status">Σύνολο: ${result.rows.length}</p>
-          <table>
-            <thead>
-              <tr>
-                <th>Email</th>
-                <th>IP Address</th>
-                <th>T-Shirt ID</th>
-                <th>Ημερομηνία</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${result.rows.map(row => `
-                <tr>
-                  <td>${row.email}</td>
-                  <td>${row.ip_address}</td>
-                  <td>${row.tshirt_id}</td>
-                  <td>${new Date(row.created_at).toLocaleString('el-GR')}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
+          <div class="wrap">
+            <div class="header">
+              <h1 class="title">Αιτήματα Χρηστών</h1>
+              <p class="status">Σύνολο αιτημάτων: ${result.rows.length}</p>
+            </div>
+            ${result.rows.length === 0
+              ? '<div class="empty">Δεν υπάρχουν αιτήματα ακόμα.</div>'
+              : `<div class="grid">
+                  ${result.rows.map(row => `
+                    <div class="card">
+                      <h2 class="name">${row.username}</h2>
+                      <div class="row">
+                        <span class="label">Email</span>
+                        ${row.email}
+                      </div>
+                      <div class="row">
+                        <span class="label">T-Shirt</span>
+                        #${row.tshirt_id}
+                      </div>
+                      <div class="row">
+                        <span class="label">IP</span>
+                        ${row.ip_address}
+                      </div>
+                      <div class="row">
+                        <span class="label">Ημερομηνία</span>
+                        ${new Date(row.created_at).toLocaleString('el-GR')}
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>`
+            }
+          </div>
         </body>
       </html>
     `;
@@ -518,8 +334,6 @@ const PORT = process.env.PORT || 5000;
 async function start() {
   console.log(`[INIT] Starting server...`);
   console.log(`[INIT] DATABASE_URL present: ${!!process.env.DATABASE_URL}`);
-  console.log(`[INIT] EMAIL_PASSWORD present: ${!!process.env.EMAIL_PASSWORD}`);
-  console.log(`[INIT] RESEND_API_KEY present: ${!!process.env.RESEND_API_KEY}`);
   console.log(`[INIT] CLEAR_REQUESTS_ON_START enabled: ${process.env.CLEAR_REQUESTS_ON_START === 'true'}`);
 
   try {
@@ -532,10 +346,8 @@ async function start() {
         console.log('[INIT] Requests table cleared (profiles/users preserved)');
       }
     }
-    // Don't await verifySMTP - Let the server start even if SMTP is slow
-    verifySMTP();
   } catch (err) {
-    console.error('[DATABASE/SMTP INIT ERROR]', err);
+    console.error('[DATABASE INIT ERROR]', err);
   }
 
   app.listen(PORT, () => {

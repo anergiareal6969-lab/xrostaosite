@@ -17,10 +17,6 @@ export default function RequestModal({ isOpen, onClose, onSubmit, mode = 'reques
   const { user, loginWithGoogle, loading } = useAuth();
 
   const getSubmitErrorMessage = (error: unknown) => {
-    const msg = error instanceof Error ? error.message : '';
-    if (msg.includes('saved_but_email_failed')) {
-      return 'Το αίτημα καταχωρήθηκε, αλλά δεν στάλθηκε το email σε εσένα. Δοκίμασε ξανά.';
-    }
     return 'Υπήρξε πρόβλημα στην αποστολή του αιτήματος. Δοκίμασε ξανά.';
   };
 

@@ -102,9 +102,7 @@ export default function TShirt() {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setHasRequested(data.requested);
-      if (data.requested) {
-        setRequestConfirmed(true);
-      }
+      setRequestConfirmed(data.requested);
       setCanPurchase(data.canPurchase);
       if (data.requested && data.hoursRemaining) {
         setHoursRemaining(data.hoursRemaining);
@@ -130,9 +128,7 @@ export default function TShirt() {
 
     const data = await response.json().catch(() => null);
 
-    const adminEmailConfirmed = !!data?.emails?.admin?.sent;
-
-    if (!response.ok || !data || data.status !== 'success' || !adminEmailConfirmed) {
+    if (!response.ok || !data || data.status !== 'success') {
       const details = data?.status
         ? `${data.status}${data.requestId ? ` (id: ${data.requestId})` : ''}`
         : `HTTP ${response.status}`;
