@@ -33,8 +33,8 @@ function WelcomeVideoOverlay() {
   if (!shouldShowWelcomeVideo || hasVideoError) return null;
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-      <div className="relative w-full max-w-3xl rounded-3xl border border-white/10 bg-black/80 p-3 shadow-2xl">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 pointer-events-none">
+      <div className="relative w-full max-w-3xl pointer-events-auto">
         <button
           type="button"
           onClick={dismissWelcomeVideo}
@@ -44,7 +44,7 @@ function WelcomeVideoOverlay() {
         </button>
 
         <video
-          className="w-full max-h-[80vh] rounded-2xl bg-black"
+          className="w-full max-h-[80vh]"
           controls
           autoPlay
           muted
