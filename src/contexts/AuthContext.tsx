@@ -60,8 +60,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           photoURL: currentUser.photoURL || undefined
         };
         setUser(userData);
-        const isNewUser = await syncUserWithDB(userData.email, userData.username);
-        setShouldShowWelcomeVideo(prev => prev || isNewUser);
+        await syncUserWithDB(userData.email, userData.username);
+        setShouldShowWelcomeVideo(true);
       } else {
         console.log("[AUTH] No Firebase user.");
         setUser(null);
@@ -87,8 +87,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
       
       setUser(userData);
-      const isNewUser = await syncUserWithDB(userData.email, userData.username);
-      setShouldShowWelcomeVideo(prev => prev || isNewUser);
+      await syncUserWithDB(userData.email, userData.username);
+      setShouldShowWelcomeVideo(true);
       console.log("[AUTH] Login flow completed.");
       return userData;
     } catch (error: any) {

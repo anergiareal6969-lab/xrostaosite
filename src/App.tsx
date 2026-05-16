@@ -55,7 +55,7 @@ function WelcomeVideoOverlay() {
             dismissWelcomeVideo();
           }}
         >
-          <source src="/first-login.mp4" type="video/mp4" />
+          <source src="/images/first-login.mp4" type="video/mp4" />
         </video>
       </div>
     </div>
