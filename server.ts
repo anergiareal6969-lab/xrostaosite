@@ -116,36 +116,19 @@ app.post('/api/sync-user', async (req, res) => {
 
   if (!email) return res.status(400).json({ error: 'Email is required' });
 
-  const normalizedUsername = username || email.split('@')[0];
-  const client = await pool.connect();
-
   try {
-    await client.query('BEGIN');
-
-    const insertResult = await client.query(
-      `INSERT INTO users (email, username, last_ip, last_login)
+    await pool.query(
+      `INSERT INTO users (email, username, last_ip, last_login) 
        VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
-       ON CONFLICT (email) DO NOTHING
-       RETURNING id`,
-      [email, normalizedUsername, clientIp]
+       ON CONFLICT (email) DO UPDATE 
+       SET username = $2, last_ip = $3, last_login = CURRENT_TIMESTAMP`,
+      [email, username || email.split('@')[0], clientIp]
     );
 
-    await client.query(
-      `UPDATE users
-       SET username = $2, last_ip = $3, last_login = CURRENT_TIMESTAMP
-       WHERE email = $1`,
-      [email, normalizedUsername, clientIp]
-    );
-
-    await client.query('COMMIT');
-
-    res.json({ success: true, isNewUser: insertResult.rowCount > 0 });
+    res.json({ success: true });
   } catch (err) {
-    await client.query('ROLLBACK');
     console.error('[API] User sync error:', err);
     res.status(500).json({ error: 'Sync failed' });
-  } finally {
-    client.release();
   }
 });
 

@@ -5,7 +5,7 @@ import TShirt from './pages/TShirt';
 import Product from './pages/Product';
 import Menu from './components/Menu';
 import Preloader from './components/Preloader';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext';
 
 function AppRoutes() {
   const location = useLocation();
@@ -16,48 +16,6 @@ function AppRoutes() {
         <Route path="/products/:slug" element={<Product />} />
         <Route path="/tshirt/:id" element={<TShirt />} />
       </Routes>
-    </div>
-  );
-}
-
-function WelcomeVideoOverlay() {
-  const { shouldShowWelcomeVideo, dismissWelcomeVideo } = useAuth();
-  const [hasVideoError, setHasVideoError] = useState(false);
-
-  useEffect(() => {
-    if (!shouldShowWelcomeVideo) {
-      setHasVideoError(false);
-    }
-  }, [shouldShowWelcomeVideo]);
-
-  if (!shouldShowWelcomeVideo || hasVideoError) return null;
-
-  return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 pointer-events-none">
-      <div className="relative w-full max-w-3xl pointer-events-auto">
-        <button
-          type="button"
-          onClick={dismissWelcomeVideo}
-          className="absolute top-4 right-4 z-10 rounded-full bg-black/70 px-4 py-2 text-sm font-bold italic text-white border border-white/15 hover:bg-black/90 transition-all"
-        >
-          ΚΛΕΙΣΙΜΟ
-        </button>
-
-        <video
-          className="w-full max-h-[80vh]"
-          controls
-          autoPlay
-          muted
-          playsInline
-          onEnded={dismissWelcomeVideo}
-          onError={() => {
-            setHasVideoError(true);
-            dismissWelcomeVideo();
-          }}
-        >
-          <source src="/images/first-login.mp4" type="video/mp4" />
-        </video>
-      </div>
     </div>
   );
 }
@@ -127,7 +85,6 @@ function AppShell() {
       <Preloader isLoading={isLoading} />
       <Menu />
       <AppRoutes />
-      <WelcomeVideoOverlay />
     </div>
   );
 }
