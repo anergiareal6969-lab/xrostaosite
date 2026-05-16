@@ -18,6 +18,8 @@ interface AuthContextType {
   loading: boolean;
   loginWithGoogle: () => Promise<AuthUser>;
   logout: () => Promise<void>;
+  shouldShowWelcomeVideo: boolean;
+  dismissWelcomeVideo: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,6 +27,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [shouldShowWelcomeVideo, setShouldShowWelcomeVideo] = useState(false);
 
   // Function to sync user with our DB
   const syncUserWithDB = async (email: string, username: string) => {
@@ -37,8 +40,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       const data = await response.json();
       console.log("[AUTH] DB Sync response:", data);
+      return Boolean(data?.isNewUser);
     } catch (err) {
       console.error("[AUTH] DB Sync error:", err);
+      return false;
     }
   };
 
@@ -55,10 +60,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           photoURL: currentUser.photoURL || undefined
         };
         setUser(userData);
-        await syncUserWithDB(userData.email, userData.username);
+        const isNewUser = await syncUserWithDB(userData.email, userData.username);
+        setShouldShowWelcomeVideo(prev => prev || isNewUser);
       } else {
         console.log("[AUTH] No Firebase user.");
         setUser(null);
+        setShouldShowWelcomeVideo(false);
       }
       setLoading(false);
     });
@@ -80,7 +87,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
       
       setUser(userData);
-      await syncUserWithDB(userData.email, userData.username);
+      const isNewUser = await syncUserWithDB(userData.email, userData.username);
+      setShouldShowWelcomeVideo(prev => prev || isNewUser);
       console.log("[AUTH] Login flow completed.");
       return userData;
     } catch (error: any) {
@@ -100,14 +108,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       await signOut(auth);
+      setShouldShowWelcomeVideo(false);
     } catch (error) {
       console.error("Error logging out:", error);
       throw error;
     }
   };
 
+  const dismissWelcomeVideo = () => {
+    setShouldShowWelcomeVideo(false);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, loading, loginWithGoogle, logout, shouldShowWelcomeVideo, dismissWelcomeVideo }}>
       {children}
     </AuthContext.Provider>
   );
