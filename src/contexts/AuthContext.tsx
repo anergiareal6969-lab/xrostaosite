@@ -16,7 +16,7 @@ interface AuthUser {
 interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
-  loginWithGoogle: () => Promise<void>;
+  loginWithGoogle: () => Promise<AuthUser>;
   logout: () => Promise<void>;
 }
 
@@ -82,6 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(userData);
       await syncUserWithDB(userData.email, userData.username);
       console.log("[AUTH] Login flow completed.");
+      return userData;
     } catch (error: any) {
       setLoading(false);
       console.error("[AUTH] Login error:", error);

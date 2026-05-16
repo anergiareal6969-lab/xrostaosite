@@ -13,7 +13,6 @@ interface RequestModalProps {
 export default function RequestModal({ isOpen, onClose, onSubmit, mode = 'request', selectedSize }: RequestModalProps) {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [shouldSubmitAfterLogin, setShouldSubmitAfterLogin] = useState(false);
   const { user, loginWithGoogle, loading } = useAuth();
 
   const getSubmitErrorMessage = (error: unknown) => {
@@ -26,54 +25,33 @@ export default function RequestModal({ isOpen, onClose, onSubmit, mode = 'reques
     }
   }, [user]);
 
-  const startGoogleRequestFlow = async () => {
+  const submitRequest = async (emailToSubmit: string) => {
+    if (!emailToSubmit) return;
+    if (mode === 'purchase' && !selectedSize) {
+      alert('Παρακαλώ επίλεξε μέγεθος!');
+      return;
+    }
+
     try {
-      setShouldSubmitAfterLogin(true);
-      await loginWithGoogle();
+      setIsSubmitting(true);
+      await onSubmit(emailToSubmit);
+      onClose();
     } catch (error) {
-      setShouldSubmitAfterLogin(false);
-      throw error;
+      console.error('[REQUEST MODAL] Submit failed:', error);
+      alert(getSubmitErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  useEffect(() => {
-    if (!shouldSubmitAfterLogin || !user?.email || isSubmitting) return;
-
-    let isCancelled = false;
-
-    const submitAfterLogin = async () => {
-      if (mode === 'purchase' && !selectedSize) {
-        alert('Παρακαλώ επίλεξε μέγεθος!');
-        setShouldSubmitAfterLogin(false);
-        return;
-      }
-
-      try {
-        setIsSubmitting(true);
-        await onSubmit(user.email);
-        if (!isCancelled) {
-          setShouldSubmitAfterLogin(false);
-          onClose();
-        }
-      } catch (error) {
-        console.error('[REQUEST MODAL] Auto submit after login failed:', error);
-        if (!isCancelled) {
-          setShouldSubmitAfterLogin(false);
-          alert(getSubmitErrorMessage(error));
-        }
-      } finally {
-        if (!isCancelled) {
-          setIsSubmitting(false);
-        }
-      }
-    };
-
-    submitAfterLogin();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [shouldSubmitAfterLogin, user, onSubmit, onClose, mode, selectedSize, isSubmitting]);
+  const startGoogleRequestFlow = async () => {
+    try {
+      const loggedInUser = await loginWithGoogle();
+      await submitRequest(loggedInUser.email);
+    } catch (error) {
+      throw error;
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,21 +61,7 @@ export default function RequestModal({ isOpen, onClose, onSubmit, mode = 'reques
       return;
     }
 
-    if (!email) return;
-    if (mode === 'purchase' && !selectedSize) {
-      alert('Παρακαλώ επίλεξε μέγεθος!');
-      return;
-    }
-    try {
-      setIsSubmitting(true);
-      await onSubmit(email);
-      onClose();
-    } catch (error) {
-      console.error('[REQUEST MODAL] Submit failed:', error);
-      alert(getSubmitErrorMessage(error));
-    } finally {
-      setIsSubmitting(false);
-    }
+    await submitRequest(email);
   };
 
   return (
@@ -132,6 +96,7 @@ export default function RequestModal({ isOpen, onClose, onSubmit, mode = 'reques
                 
                 <button
                   onClick={startGoogleRequestFlow}
+                  disabled={loading || isSubmitting}
                   className="w-full bg-white text-black font-black italic py-4 px-6 rounded-xl hover:bg-white/90 transition-all active:scale-95 flex items-center justify-center gap-3"
                 >
                   <svg className="w-6 h-6" viewBox="0 0 24 24">
@@ -152,7 +117,7 @@ export default function RequestModal({ isOpen, onClose, onSubmit, mode = 'reques
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                     />
                   </svg>
-                  CONTINUE WITH GOOGLE
+                  {loading || isSubmitting ? 'ΦΟΡΤΩΣΗ...' : 'CONTINUE WITH GOOGLE'}
                 </button>
               </div>
             ) : (
