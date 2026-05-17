@@ -6,6 +6,9 @@ type SeoProps = {
   canonicalPath?: string;
   image?: string;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  robots?: string;
+  ogType?: string;
+  imageAlt?: string;
 };
 
 function upsertMetaByName(name: string, content: string) {
@@ -47,23 +50,27 @@ function getSiteOrigin() {
   return window.location.origin;
 }
 
-export default function Seo({ title, description, canonicalPath, image, jsonLd }: SeoProps) {
+export default function Seo({ title, description, canonicalPath, image, jsonLd, robots = 'index,follow', ogType = 'website', imageAlt }: SeoProps) {
   useEffect(() => {
     document.title = title;
 
     upsertMetaByName('description', description);
+    upsertMetaByName('robots', robots);
 
     const origin = getSiteOrigin();
     const canonicalUrl = canonicalPath ? `${origin}${canonicalPath}` : origin;
     upsertLinkRel('canonical', canonicalUrl);
 
-    upsertMetaByProperty('og:type', 'website');
+    upsertMetaByProperty('og:type', ogType);
     upsertMetaByProperty('og:title', title);
     upsertMetaByProperty('og:description', description);
     upsertMetaByProperty('og:url', canonicalUrl);
     if (image) {
       const ogImage = image.startsWith('http') ? image : `${origin}${image}`;
       upsertMetaByProperty('og:image', ogImage);
+      if (imageAlt) upsertMetaByProperty('og:image:alt', imageAlt);
+      upsertMetaByName('twitter:image', ogImage);
+      if (imageAlt) upsertMetaByName('twitter:image:alt', imageAlt);
     }
 
     upsertMetaByName('twitter:card', image ? 'summary_large_image' : 'summary');
@@ -80,7 +87,7 @@ export default function Seo({ title, description, canonicalPath, image, jsonLd }
       script.text = JSON.stringify(jsonLd);
       document.head.appendChild(script);
     }
-  }, [title, description, canonicalPath, image, jsonLd]);
+  }, [title, description, canonicalPath, image, jsonLd, robots, ogType, imageAlt]);
 
   return null;
 }

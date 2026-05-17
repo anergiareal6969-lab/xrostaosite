@@ -3,34 +3,29 @@ import { Link } from 'react-router-dom';
 import { Menu as MenuIcon, X, User as UserIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
-
-const INFO_PAGES = {
-  who: {
-    title: "ποιοι στον πούτσο είμαστε",
-    text: "Κάποιοι άνεργοι σχεδιαστές που έπρεπε να κάνουν κάτι γιατί η ανεργία έχει βαρέσει κόκκινο. Επίσης το xrostao δεν θα έχει μόνο ρούχα με θέμα την ανεργία, απλά αυτό είναι το πρώτο drop του xrostao και απλά λέγεται anergia season, ναι οκ καταλάβατε.",
-  },
-  idea: {
-    title: "ιδέα",
-    text: "Κοίτα, η ιδέα που σκεφτήκαμε ήταν να βγάλουμε ρούχα. Ρούχα είναι, εγώ θα σου πρότεινα να μην πάρεις καν.",
-  },
-  how: {
-    title: "πώς λειτουργεί το αίτημα",
-    text: "Οκ, αυτό είναι σοβαρό. Επειδή δεν θέλαμε να είμαστε ίδιοι με όλους τους lousers, δεν βάλαμε στο site κάποιος να μπορεί να αγοράσει κάτι. Τα ρούχα αυτά δεν πολούνται!! Αλλά άμα κάνεις αίτημα, δηλώνεις το ενδιαφέρον σου, έτσι θα μαζευτούν πολλά αιτήματα και μια λαμπρή μέρα τα ρούχα θα κυκλοφορήσουν.",
-  },
-  unemployed: {
-    title: "είσαι άνεργος;",
-    text: "Οκ, τώρα αυτό θα έλεγα είναι ίσως ένα από τα μεγαλύτερα ερωτήματα του Σωκράτη. Άμα εσύ, ναι συγκεκριμένα εσύ, ΕΙΣΑΙ ΑΝΕΡΓΟΣ/Η!!! Άμα είσαι άνεργος/η θα πρέπει σίγουρα να φοράς τις μπλούζες αυτές εδώ αλλιώς ξέρεις... ναι... δεν είσαι σίγουρα άνεργος (αυτό σίγουρα δεν το είπα για να πάρεις τα ρούχα) χαχαχαχαχα giiiiiirl πλακίζω, μην πάρεις τίποτα από εδώ, στα παπάρια μου! Καλά, όχι στα παπάρια μου, αααΑΑααα.",
-  }
-};
+import { INFO_PAGES, INFO_PAGE_KEYS, type InfoPageKey } from '../data/infoPages';
 
 export default function Menu() {
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [activeInfo, setActiveInfo] = useState<keyof typeof INFO_PAGES | null>(null);
+  const [activeInfo, setActiveInfo] = useState<InfoPageKey | null>(null);
   const { user, logout } = useAuth();
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: INFO_PAGE_KEYS.map((key) => ({
+      '@type': 'Question',
+      name: INFO_PAGES[key].title,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: INFO_PAGES[key].text,
+      },
+    })),
+  };
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       {/* Menu Button (Top Left) */}
       <div className="fixed top-4 left-4 md:top-6 md:left-6 z-50">
         <button 
@@ -54,13 +49,13 @@ export default function Menu() {
               <Link to="/" onClick={() => setIsOpen(false)} className="text-white font-black italic text-lg md:text-xl hover:opacity-70 transition-opacity uppercase tracking-widest">
                 ρούχα
               </Link>
-              {Object.entries(INFO_PAGES).map(([key, info]) => (
+              {INFO_PAGE_KEYS.map((key) => (
                 <button
                   key={key}
-                  onClick={() => setActiveInfo(key as keyof typeof INFO_PAGES)}
+                  onClick={() => setActiveInfo(key)}
                   className="text-left text-white/80 font-black italic text-sm md:text-base hover:text-white transition-colors uppercase tracking-widest"
                 >
-                  {info.title}
+                  {INFO_PAGES[key].title}
                 </button>
               ))}
             </nav>

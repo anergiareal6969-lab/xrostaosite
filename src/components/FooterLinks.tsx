@@ -1,28 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
-
-const INFO_PAGES = {
-  who: {
-    title: "ποιοι στον πούτσο είμαστε",
-    text: "Κάποιοι άνεργοι σχεδιαστές που έπρεπε να κάνουν κάτι γιατί η ανεργία έχει βαρέσει κόκκινο. Επίσης το xrostao δεν θα έχει μόνο ρούχα με θέμα την ανεργία, απλά αυτό είναι το πρώτο drop του xrostao και απλά λέγεται anεργία season, ναι οκ καταλάβατε.",
-  },
-  idea: {
-    title: "ιδέα",
-    text: "Κοίτα, η ιδέα που σκεφτήκαμε ήταν να βγάλουμε ρούχα. Ρούχα είναι, εγώ θα σου πρότεινα να μην πάρεις καν.",
-  },
-  how: {
-    title: "πώς λειτουργεί το αίτημα",
-    text: "Οκ, αυτό είναι σοβαρό. Επειδή δεν θέλαμε να είμαστε ίδιοι με όλους τους lousers, δεν βάλαμε στο site κάποιος να μπορεί να αγοράσει κάτι. Τα ρούχα αυτά δεν πολούνται!! Αλλά άμα κάνεις αίτημα, δηλώνεις το ενδιαφέρον σου, έτσι θα μαζευτούν πολλά αιτήματα και μια λαμπρή μέρα τα ρούχα θα κυκλοφορήσουν.",
-  },
-  unemployed: {
-    title: "είσαι άνεργος;",
-    text: "Οκ, τώρα αυτό θα έλεγα είναι ίσως ένα από τα μεγαλύτερα ερωτήματα του Σωκράτη. Άμα εσύ, ναι συγκεκριμένα εσύ, ΕΙΣΑΙ ΑΝΕΡΓΟΣ/Η!!! Άμα είσαι άνεργος/η θα πρέπει σίγουρα να φοράς τις μπλούζες αυτές εδώ αλλιώς ξέρεις... ναι... δεν είσαι σίγουρα άνεργος (αυτό σίγουρα δεν το είπα για να πάρεις τα ρούχα) χαχαχαχαχα giiiiiirl πλακίζω, μην πάρεις τίποτα από εδώ, στα παπάρια μου! Καλά, όχι στα παπάρια μου, αααΑΑααα.",
-  }
-};
+import { INFO_PAGES, type InfoPageKey } from '../data/infoPages';
 
 export default function FooterLinks() {
-  const [activeInfo, setActiveInfo] = useState<keyof typeof INFO_PAGES | null>(null);
+  const [activeInfo, setActiveInfo] = useState<InfoPageKey | null>(null);
 
   return (
     <div className="relative w-full bg-black py-20 px-4 flex flex-col items-center gap-6 mt-auto overflow-hidden">
@@ -47,6 +29,9 @@ export default function FooterLinks() {
         </button>
         <button onClick={() => setActiveInfo('unemployed')} className="text-white font-bold italic text-base md:text-2xl hover:opacity-80 transition-opacity">
           είσαι άνεργος;
+        </button>
+        <button onClick={() => setActiveInfo('images')} className="text-white font-bold italic text-base md:text-2xl hover:opacity-80 transition-opacity">
+          εικόνες
         </button>
       </div>
 

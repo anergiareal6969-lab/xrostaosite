@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /admin-dashboard-xrostao
 
-Sitemap: /sitemap.xml
+Sitemap: https://xrostao-site.onrender.com/sitemap.xml

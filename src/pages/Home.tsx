@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import Seo from '../components/Seo';
 import FooterLinks from '../components/FooterLinks';
-import { PRODUCTS } from '../data/products';
+import { getProductMainImageScale, PRODUCTS } from '../data/products';
 
 const desktopTshirtCardClassName = 'w-full max-w-[18rem] xl:max-w-[20rem] flex flex-col items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300';
 const desktopTshirtFrameClassName = 'w-full aspect-square flex items-center justify-center';
 
 function TshirtMainImageFallback({ tshirtId, name }: { tshirtId: number, name: string }) {
   const [cacheBuster] = useState(Date.now());
+  const imageScale = getProductMainImageScale(tshirtId);
   const paths = [
     `/images/tshirts/${tshirtId}/main.png`,
     `/images/tshirts/${tshirtId}/main.jpeg`,
@@ -39,7 +40,8 @@ function TshirtMainImageFallback({ tshirtId, name }: { tshirtId: number, name: s
           setHasFailed(true);
         }
       }}
-      className="w-full h-auto drop-shadow-2xl aspect-square object-contain pointer-events-none select-none" 
+      className="w-full h-auto drop-shadow-2xl aspect-square object-contain pointer-events-none select-none"
+      style={imageScale === 1 ? undefined : { transform: `scale(${imageScale})`, transformOrigin: 'center' }}
     />
   );
 }
@@ -50,19 +52,35 @@ export default function Home() {
   return (
     <div className="relative w-full min-h-screen bg-black flex flex-col overflow-x-hidden">
       <Seo
-        title="xrostao clothing | anergia season"
-        description="xrostao clothing — anergia season. Μπλούζες. Κάνε αίτημα και δήλωσε ενδιαφέρον για το drop."
+        title="xrostao clothing | χροσταω ρούχα και t-shirts"
+        description="xrostao clothing και χροσταω ρούχα. T-shirts από το drop anergia season, προϊόντα xrostao clothing και αίτημα ενδιαφέροντος για το brand xrostao."
         canonicalPath="/"
         image="/images/main-bg-1.png"
-        jsonLd={{
-          '@context': 'https://schema.org',
-          '@type': 'Organization',
-          name: 'xrostao clothing',
-          url: '/',
-        }}
+        imageAlt="xrostao clothing t-shirts από το drop anergia season"
+        jsonLd={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'xrostao clothing',
+            alternateName: ['xrostao', 'χροσταω', 'χροσταω clothing'],
+            url: '/',
+            logo: '/images/ai-top.png',
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: 'xrostao clothing',
+            alternateName: ['xrostao', 'χροσταω clothing'],
+            url: '/',
+          },
+        ]}
       />
 
-      <h1 className="sr-only">xrostao clothing — anergia season</h1>
+      <h1 className="sr-only">xrostao clothing, χροσταω clothing και t-shirts anergia season</h1>
+      <p className="sr-only">
+        Το xrostao clothing είναι brand με χροσταω ρούχα, t-shirts και προϊόντα από το drop anergia season.
+        Εδώ βρίσκεις xrostao t-shirts, χροσταω clothing προϊόντα και πληροφορίες για το αίτημα ενδιαφέροντος.
+      </p>
       
       {/* ================= DESKTOP VERSION ================= */}
       <div className="hidden md:flex flex-col w-full">
@@ -99,7 +117,7 @@ export default function Home() {
             alt="Background 2" 
             className="absolute inset-0 w-full h-full object-cover no-select pointer-events-none z-0"
           />
-          <div className="relative z-10 w-full max-w-7xl px-8 grid grid-cols-3 gap-12">
+          <div className="relative z-10 w-full max-w-7xl px-8 grid grid-cols-3 justify-items-center gap-12 translate-x-2 xl:translate-x-4">
             {PRODUCTS.slice(3, 9).map((product) => (
               <div 
                 key={product.id}
@@ -109,7 +127,7 @@ export default function Home() {
                 <div className={desktopTshirtFrameClassName}>
                   <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
                 </div>
-                <div className="mt-4 bg-white/10 backdrop-blur-md border border-white/20 px-4 py-1 rounded-full text-white font-black italic text-[10px] tracking-widest uppercase shadow-xl">
+                <div className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full text-white font-black italic text-xs tracking-widest uppercase shadow-xl">
                   δεσ το tshirt
                 </div>
               </div>
@@ -126,7 +144,7 @@ export default function Home() {
           />
           <div 
             onClick={() => navigate(`/products/${PRODUCTS[9].slug}`)}
-            className={`relative z-10 ${desktopTshirtCardClassName}`}
+            className={`relative z-10 translate-x-2 xl:translate-x-4 ${desktopTshirtCardClassName}`}
           >
             <div className={desktopTshirtFrameClassName}>
               <TshirtMainImageFallback tshirtId={PRODUCTS[9].id} name={PRODUCTS[9].name} />

@@ -213,6 +213,7 @@ app.post('/api/request', async (req, res) => {
 // Admin view (Simple verification page)
 app.get('/admin-dashboard-xrostao', async (req, res) => {
   try {
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
     const result = await pool.query(`
       SELECT
         requests.email,

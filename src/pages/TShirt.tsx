@@ -5,11 +5,12 @@ import Preloader from '../components/Preloader';
 import RequestModal from '../components/RequestModal';
 import Seo from '../components/Seo';
 import FooterLinks from '../components/FooterLinks';
-import { getProductById } from '../data/products';
+import { getProductById, getProductDetailImageScale } from '../data/products';
 import { useAuth } from '../contexts/AuthContext';
 
 function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImageLoad, altBase, canZoom }: { tshirtId: number, imgNum: number, onZoom: (src: string) => void, mobileTopClass: string, onImageLoad: () => void, altBase?: string, canZoom: boolean }) {
   const [cacheBuster] = useState(Date.now());
+  const imageScale = getProductDetailImageScale(tshirtId, imgNum);
   const paths = [
     `/images/tshirts/${tshirtId}/page-${imgNum}.png`,
     `/images/tshirts/${tshirtId}/page-${imgNum}.jpeg`,
@@ -42,6 +43,7 @@ function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImage
         }}
         alt={`${altBase || `T-Shirt ${tshirtId}`} — View ${imgNum}`}
         className="w-full h-auto object-contain drop-shadow-2xl pointer-events-none select-none"
+        style={imageScale === 1 ? undefined : { transform: `scale(${imageScale})`, transformOrigin: 'center' }}
       />
     </div>
   );
@@ -159,7 +161,14 @@ export default function TShirt() {
 
   return (
     <div key={tshirtId} className="relative w-full min-h-screen bg-black overflow-x-hidden flex flex-col items-center">
-      <Seo title={seoTitle} description={product?.description || ''} canonicalPath={`/tshirt/${tshirtId}`} image={product?.primaryImage} />
+      <Seo
+        title={seoTitle}
+        description={product?.description || ''}
+        canonicalPath={product ? `/products/${product.slug}` : `/tshirt/${tshirtId}`}
+        image={product?.primaryImage}
+        imageAlt={product?.name}
+        robots="noindex,follow"
+      />
       <Preloader isLoading={isLoading} />
       <RequestModal 
         isOpen={isModalOpen} 

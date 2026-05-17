@@ -1,6 +1,6 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
 import Seo from '../components/Seo';
-import { getProductBySlug } from '../data/products';
+import { getProductBySlug, getProductMainImageScale } from '../data/products';
 
 export default function Product() {
   const { slug } = useParams();
@@ -8,6 +8,7 @@ export default function Product() {
 
   if (!product) return <Navigate to="/" />;
 
+  const imageScale = getProductMainImageScale(product.id);
   const title = `${product.name} | xrostao clothing`;
   const description = product.description.replace(/\s+/g, ' ').trim();
 
@@ -33,6 +34,8 @@ export default function Product() {
         description={description}
         canonicalPath={`/products/${product.slug}`}
         image={product.primaryImage}
+        imageAlt={product.name}
+        ogType="product"
         jsonLd={jsonLd}
       />
 
@@ -50,6 +53,7 @@ export default function Product() {
             alt={product.name}
             className="w-full md:w-[420px] rounded-xl border border-white/10 bg-white/5"
             loading="eager"
+            style={imageScale === 1 ? undefined : { transform: `scale(${imageScale})`, transformOrigin: 'center' }}
           />
 
           <div className="flex flex-col gap-4">

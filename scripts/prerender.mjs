@@ -40,13 +40,12 @@ async function run() {
 
   const productsModulePath = path.join(projectRoot, 'src', 'data', 'products.ts');
   const { PRODUCTS } = await import(pathToFileURL(productsModulePath).href);
+  const infoPagesModulePath = path.join(projectRoot, 'src', 'data', 'infoPages.ts');
+  const { INFO_PAGE_KEYS, INFO_PAGES } = await import(pathToFileURL(infoPagesModulePath).href);
 
   const routes = [
     '/',
-    '/who-we-are',
-    '/idea',
-    '/how-it-works',
-    '/are-you-unemployed',
+    ...INFO_PAGE_KEYS.map((key) => INFO_PAGES[key].path),
     ...PRODUCTS.map((p) => `/products/${p.slug}`),
   ];
 

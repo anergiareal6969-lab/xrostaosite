@@ -92,3 +92,67 @@ export function getProductById(id: number) {
 export function getProductBySlug(slug: string) {
   return PRODUCTS.find((p) => p.slug === slug);
 }
+
+const MAIN_IMAGE_SCALE_BY_ID: Record<number, number> = {
+  1: 1.5,
+  2: 1.2,
+  3: 1,
+  4: 1.03,
+  5: 0.97,
+  6: 1.05,
+  7: 1.01,
+  8: 0.98,
+  9: 1.01,
+  10: 0.92,
+};
+
+const DETAIL_IMAGE_SCALE_BY_KEY: Record<string, number> = {
+  '1-1': 1.5,
+  '1-2': 1.3,
+  '1-3': 1.11,
+  '1-4': 1.09,
+  '2-1': 1.2,
+  '2-2': 1.23,
+  '2-3': 1.09,
+  '2-4': 1.13,
+  '3-1': 1,
+  '3-2': 1.39,
+  '3-3': 1.18,
+  '3-4': 0.97,
+  '4-1': 1.03,
+  '4-2': 0.99,
+  '4-3': 1,
+  '4-4': 1,
+  '5-1': 0.97,
+  '5-2': 1.15,
+  '5-3': 1,
+  '5-4': 1,
+  '6-1': 1.05,
+  '6-2': 1.06,
+  '6-3': 1,
+  '6-4': 1,
+  '7-1': 1.01,
+  '7-2': 0.78,
+  '7-3': 1.11,
+  '7-4': 1,
+  '8-1': 0.98,
+  '8-2': 1.13,
+  '8-3': 1,
+  '8-4': 1,
+  '9-1': 1.01,
+  '9-2': 1.01,
+  '9-3': 1,
+  '9-4': 1,
+  '10-1': 0.92,
+  '10-2': 0.78,
+  '10-3': 1.33,
+  '10-4': 1.21,
+};
+
+export function getProductMainImageScale(id: number) {
+  return MAIN_IMAGE_SCALE_BY_ID[id] ?? 1;
+}
+
+export function getProductDetailImageScale(id: number, imgNum: number) {
+  return DETAIL_IMAGE_SCALE_BY_KEY[`${id}-${imgNum}`] ?? getProductMainImageScale(id);
+}

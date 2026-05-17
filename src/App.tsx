@@ -3,9 +3,11 @@ import { useState, useEffect } from 'react';
 import Home from './pages/Home';
 import TShirt from './pages/TShirt';
 import Product from './pages/Product';
+import InfoPage from './pages/InfoPage';
 import Menu from './components/Menu';
 import Preloader from './components/Preloader';
 import { AuthProvider } from './contexts/AuthContext';
+import { INFO_PAGE_KEYS, INFO_PAGES } from './data/infoPages';
 
 function AppRoutes() {
   const location = useLocation();
@@ -15,6 +17,23 @@ function AppRoutes() {
         <Route path="/" element={<Home />} />
         <Route path="/products/:slug" element={<Product />} />
         <Route path="/tshirt/:id" element={<TShirt />} />
+        {INFO_PAGE_KEYS.map((key) => {
+          const infoPage = INFO_PAGES[key];
+
+          return (
+            <Route
+              path={infoPage.path}
+              element={
+                <InfoPage
+                  title={infoPage.title}
+                  description={infoPage.description}
+                  canonicalPath={infoPage.path}
+                  text={infoPage.text}
+                />
+              }
+            />
+          );
+        })}
       </Routes>
     </div>
   );

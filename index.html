@@ -5,17 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     
     <script>
-      // 1. FORCE RELOAD IF NOT ON LATEST VERSION
-      (function() {
-        const V = '1.1.1';
-        const url = new URL(window.location.href);
-        if (url.searchParams.get('v') !== V) {
-          url.searchParams.set('v', V);
-          window.location.replace(url.href);
-        }
-      })();
-
-      // 2. CLEAR ALL CACHES AND SERVICE WORKERS
+      // Clear stale service workers and caches without mutating the public URL.
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(regs => {
           for(let reg of regs) reg.unregister();
