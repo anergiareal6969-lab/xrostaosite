@@ -3,29 +3,15 @@ import { Link } from 'react-router-dom';
 import { Menu as MenuIcon, X, User as UserIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
-import { INFO_PAGES, INFO_PAGE_KEYS, type InfoPageKey } from '../data/infoPages';
+import { INFO_PAGES, INFO_PAGE_KEYS } from '../data/infoPages';
 
 export default function Menu() {
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [activeInfo, setActiveInfo] = useState<InfoPageKey | null>(null);
   const { user, logout } = useAuth();
-  const faqSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: INFO_PAGE_KEYS.map((key) => ({
-      '@type': 'Question',
-      name: INFO_PAGES[key].title,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: INFO_PAGES[key].text,
-      },
-    })),
-  };
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       {/* Menu Button (Top Left) */}
       <div className="fixed top-4 left-4 md:top-6 md:left-6 z-50">
         <button 
@@ -50,44 +36,17 @@ export default function Menu() {
                 ρούχα
               </Link>
               {INFO_PAGE_KEYS.map((key) => (
-                <button
+                <Link
                   key={key}
-                  onClick={() => setActiveInfo(key)}
+                  to={INFO_PAGES[key].path}
+                  onClick={() => setIsOpen(false)}
                   className="text-left text-white/80 font-black italic text-sm md:text-base hover:text-white transition-colors uppercase tracking-widest"
                 >
                   {INFO_PAGES[key].title}
-                </button>
+                </Link>
               ))}
             </nav>
           </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Info Modal (Center) */}
-      <AnimatePresence>
-        {activeInfo && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="relative max-w-2xl w-full bg-white/10 backdrop-blur-2xl border border-white/20 p-8 md:p-12 rounded-[2.5rem] shadow-2xl ring-1 ring-white/40"
-            >
-              <button 
-                onClick={() => setActiveInfo(null)}
-                className="absolute top-6 right-6 text-white/60 hover:text-white transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-              
-              <h2 className="text-white font-black italic text-2xl md:text-4xl mb-6 uppercase tracking-tighter leading-none">
-                {INFO_PAGES[activeInfo].title}
-              </h2>
-              <p className="text-white/90 font-bold italic text-lg md:text-2xl leading-relaxed whitespace-pre-wrap">
-                {INFO_PAGES[activeInfo].text}
-              </p>
-            </motion.div>
-          </div>
         )}
       </AnimatePresence>
 

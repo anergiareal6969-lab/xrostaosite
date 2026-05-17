@@ -89,7 +89,9 @@ function AppShell() {
         '/images/mobile/main-bg-5.png',
         '/images/mobile/main-bg-6.png',
         '/images/mobile/main-bg-7.png',
+        '/images/mobile/info-page-bg.png',
         '/images/main-bg-3.png',
+        '/images/info-page-bg.png',
         '/images/tshirt-bg.png',
         '/images/mobile/footer-bg.png',
       ];

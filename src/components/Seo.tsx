@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { getSiteOrigin, normalizeJsonLd, SITE_NAME, toAbsoluteUrl, toKeywords } from '../lib/seo';
 
 type SeoProps = {
   title: string;
@@ -9,6 +10,7 @@ type SeoProps = {
   robots?: string;
   ogType?: string;
   imageAlt?: string;
+  keywords?: string[] | string;
 };
 
 function upsertMetaByName(name: string, content: string) {
@@ -41,41 +43,67 @@ function upsertLinkRel(rel: string, href: string) {
   tag.setAttribute('href', href);
 }
 
-function getSiteOrigin() {
-  const winOrigin = (window as unknown as { __XR_SITE_ORIGIN?: unknown }).__XR_SITE_ORIGIN;
-  if (typeof winOrigin === 'string' && /^https?:\/\//i.test(winOrigin)) return winOrigin.replace(/\/$/, '');
-
-  const envOrigin = ((import.meta as unknown as { env?: Record<string, unknown> }).env?.VITE_SITE_ORIGIN as string | undefined);
-  if (envOrigin && /^https?:\/\//i.test(envOrigin)) return envOrigin.replace(/\/$/, '');
-  return window.location.origin;
+function removeMetaByName(name: string) {
+  document.querySelector(`meta[name="${name}"]`)?.remove();
 }
 
-export default function Seo({ title, description, canonicalPath, image, jsonLd, robots = 'index,follow', ogType = 'website', imageAlt }: SeoProps) {
+function removeMetaByProperty(property: string) {
+  document.querySelector(`meta[property="${property}"]`)?.remove();
+}
+
+export default function Seo({
+  title,
+  description,
+  canonicalPath,
+  image,
+  jsonLd,
+  robots = 'index,follow',
+  ogType = 'website',
+  imageAlt,
+  keywords,
+}: SeoProps) {
   useEffect(() => {
     document.title = title;
+    document.documentElement.lang = 'el';
 
     upsertMetaByName('description', description);
+    upsertMetaByName('keywords', toKeywords(keywords));
     upsertMetaByName('robots', robots);
+    upsertMetaByName('googlebot', robots);
+    upsertMetaByName('author', SITE_NAME);
+    upsertMetaByName('publisher', SITE_NAME);
+    upsertMetaByName('application-name', SITE_NAME);
+    upsertMetaByName('apple-mobile-web-app-title', SITE_NAME);
+    upsertMetaByName('theme-color', '#000000');
+    upsertMetaByName('format-detection', 'telephone=no');
 
     const origin = getSiteOrigin();
     const canonicalUrl = canonicalPath ? `${origin}${canonicalPath}` : origin;
     upsertLinkRel('canonical', canonicalUrl);
 
     upsertMetaByProperty('og:type', ogType);
+    upsertMetaByProperty('og:site_name', SITE_NAME);
+    upsertMetaByProperty('og:locale', 'el_GR');
     upsertMetaByProperty('og:title', title);
     upsertMetaByProperty('og:description', description);
     upsertMetaByProperty('og:url', canonicalUrl);
     if (image) {
-      const ogImage = image.startsWith('http') ? image : `${origin}${image}`;
+      const ogImage = toAbsoluteUrl(image) ?? `${origin}${image}`;
       upsertMetaByProperty('og:image', ogImage);
       if (imageAlt) upsertMetaByProperty('og:image:alt', imageAlt);
       upsertMetaByName('twitter:image', ogImage);
       if (imageAlt) upsertMetaByName('twitter:image:alt', imageAlt);
+    } else {
+      removeMetaByProperty('og:image');
+      removeMetaByProperty('og:image:alt');
+      removeMetaByName('twitter:image');
+      removeMetaByName('twitter:image:alt');
     }
 
     upsertMetaByName('twitter:card', image ? 'summary_large_image' : 'summary');
     upsertMetaByName('twitter:title', title);
     upsertMetaByName('twitter:description', description);
+    upsertMetaByName('twitter:url', canonicalUrl);
 
     const existing = document.querySelectorAll('script[data-xrostao-jsonld="true"]');
     existing.forEach((el) => el.parentElement?.removeChild(el));
@@ -84,10 +112,10 @@ export default function Seo({ title, description, canonicalPath, image, jsonLd, 
       const script = document.createElement('script');
       script.type = 'application/ld+json';
       script.setAttribute('data-xrostao-jsonld', 'true');
-      script.text = JSON.stringify(jsonLd);
+      script.text = JSON.stringify(normalizeJsonLd(jsonLd));
       document.head.appendChild(script);
     }
-  }, [title, description, canonicalPath, image, jsonLd, robots, ogType, imageAlt]);
+  }, [title, description, canonicalPath, image, jsonLd, robots, ogType, imageAlt, keywords]);
 
   return null;
 }
