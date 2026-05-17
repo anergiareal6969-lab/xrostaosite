@@ -1,41 +1,56 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import Home from './pages/Home';
-import TShirt from './pages/TShirt';
-import Product from './pages/Product';
-import InfoPage from './pages/InfoPage';
+import { Fragment, lazy, Suspense, useState, useEffect } from 'react';
 import Menu from './components/Menu';
 import Preloader from './components/Preloader';
 import { AuthProvider } from './contexts/AuthContext';
 import { INFO_PAGE_KEYS, INFO_PAGES } from './data/infoPages';
 
+const Home = lazy(() => import('./pages/Home'));
+const TShirt = lazy(() => import('./pages/TShirt'));
+const Product = lazy(() => import('./pages/Product'));
+const InfoPage = lazy(() => import('./pages/InfoPage'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+type IdleWindow = Window & {
+  requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+  cancelIdleCallback?: (id: number) => void;
+};
+
+function RouteFallback() {
+  return <div className="min-h-screen w-full bg-black" aria-hidden="true" />;
+}
+
 function AppRoutes() {
   const location = useLocation();
   return (
-    <div key={location.pathname}>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/products/:slug" element={<Product />} />
-        <Route path="/tshirt/:id" element={<TShirt />} />
-        {INFO_PAGE_KEYS.map((key) => {
-          const infoPage = INFO_PAGES[key];
+    <Suspense fallback={<RouteFallback />}>
+      <div key={location.pathname}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/products/:slug" element={<Product />} />
+          <Route path="/tshirt/:id" element={<TShirt />} />
+          {INFO_PAGE_KEYS.map((key) => {
+            const infoPage = INFO_PAGES[key];
 
-          return (
-            <Route
-              path={infoPage.path}
-              element={
-                <InfoPage
-                  title={infoPage.title}
-                  description={infoPage.description}
-                  canonicalPath={infoPage.path}
-                  text={infoPage.text}
+            return (
+              <Fragment key={infoPage.path}>
+                <Route
+                  path={infoPage.path}
+                  element={
+                    <InfoPage
+                      title={infoPage.title}
+                      description={infoPage.description}
+                      canonicalPath={infoPage.path}
+                      text={infoPage.text}
+                    />
+                  }
                 />
-              }
-            />
-          );
-        })}
-      </Routes>
-    </div>
+              </Fragment>
+            );
+          })}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
+    </Suspense>
   );
 }
 
@@ -43,13 +58,16 @@ function AppShell() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let isActive = true;
+
     const loadAssets = async () => {
-      // 1. Minimum preloader time (3s) to ensure images load
-      const minTimePromise = new Promise(res => setTimeout(res, 3000));
+      // Keep the intro smooth without holding back the first render for too long.
+      const minDelay = 1200;
+      const minTimePromise = new Promise<void>((resolve) => setTimeout(resolve, minDelay));
 
       // 2. Maximum preloader time (10s) - ABSOLUTE SAFETY
       const maxTimeTimeout = setTimeout(() => {
-        setIsLoading(false);
+        if (isActive) setIsLoading(false);
       }, 10000);
 
       const criticalImages = [
@@ -70,16 +88,13 @@ function AppShell() {
 
       // Wait for at least the minimum time and ALL critical images
       try {
-        await Promise.all([
-          minTimePromise,
-          ...criticalImages.map(loadImage)
-        ]);
+        await Promise.all([minTimePromise, ...criticalImages.map(loadImage)]);
       } catch (e) {
-        console.error("Asset load error", e);
+        console.error('Asset load error', e);
       }
-      
+
       // Final release
-      setIsLoading(false);
+      if (isActive) setIsLoading(false);
       clearTimeout(maxTimeTimeout);
 
       // Background load the rest
@@ -98,7 +113,33 @@ function AppShell() {
       secondaryImages.forEach(loadImage);
     };
 
-    loadAssets();
+    void loadAssets();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const prefetchRouteChunks = () => {
+      void import('./pages/Product');
+      void import('./pages/InfoPage');
+      void import('./pages/TShirt');
+      void import('./pages/NotFound');
+    };
+
+    const idleWindow = window as IdleWindow;
+
+    if (typeof idleWindow.requestIdleCallback === 'function') {
+      const idleId = idleWindow.requestIdleCallback(prefetchRouteChunks, { timeout: 2000 });
+
+      return () => {
+        idleWindow.cancelIdleCallback?.(idleId);
+      };
+    }
+
+    const timer = setTimeout(prefetchRouteChunks, 1200);
+    return () => clearTimeout(timer);
   }, []);
 
   return (

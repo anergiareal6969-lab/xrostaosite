@@ -307,6 +307,9 @@ app.use(express.static(distPath, {
     if (filePath.match(/\.(jpg|jpeg|png|gif|webp|svg|ico)$/)) {
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     }
+    if (filePath.match(/\.(js|css|woff2?)$/)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
     // No cache for HTML
     if (filePath.endsWith('.html')) {
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -324,6 +327,9 @@ app.get('*', (req, res) => {
   const indexPath = path.join(distPath, 'index.html');
   if (fs.existsSync(indexPath)) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    if (req.path.startsWith('/tshirt/')) {
+      res.setHeader('X-Robots-Tag', 'noindex, follow');
+    }
     res.sendFile(indexPath);
   } else {
     res.status(500).send('Frontend build is missing. Run "npm run build".');

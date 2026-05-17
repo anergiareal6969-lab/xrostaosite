@@ -9,7 +9,6 @@ import { getProductById, getProductDetailImageScale } from '../data/products';
 import { useAuth } from '../contexts/AuthContext';
 
 function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImageLoad, altBase, canZoom }: { tshirtId: number, imgNum: number, onZoom: (src: string) => void, mobileTopClass: string, onImageLoad: () => void, altBase?: string, canZoom: boolean }) {
-  const [cacheBuster] = useState(Date.now());
   const imageScale = getProductDetailImageScale(tshirtId, imgNum);
   const paths = [
     `/images/tshirts/${tshirtId}/page-${imgNum}.png`,
@@ -20,7 +19,7 @@ function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImage
   const [pathIndex, setPathIndex] = useState(0);
   const [hasFailed, setHasFailed] = useState(false);
 
-  const currentPath = `${paths[pathIndex]}?v=${cacheBuster}`;
+  const currentPath = paths[pathIndex];
 
   if (hasFailed) return null;
 
@@ -42,6 +41,7 @@ function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImage
           }
         }}
         alt={`${altBase || `T-Shirt ${tshirtId}`} — View ${imgNum}`}
+        decoding="async"
         className="w-full h-auto object-contain drop-shadow-2xl pointer-events-none select-none"
         style={imageScale === 1 ? undefined : { transform: `scale(${imageScale})`, transformOrigin: 'center' }}
       />
@@ -148,7 +148,7 @@ export default function TShirt() {
     // If most critical images are loaded, we can show the page
     // background + at least 3 images
     if (loadedImagesCount >= 4) {
-      const timer = setTimeout(() => setIsLoading(false), 1500);
+      const timer = setTimeout(() => setIsLoading(false), 700);
       return () => clearTimeout(timer);
     }
   }, [loadedImagesCount]);

@@ -8,9 +8,19 @@ import { SITE_NAME } from '../lib/seo';
 
 const desktopTshirtCardClassName = 'w-full max-w-[18rem] xl:max-w-[20rem] flex flex-col items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300';
 const desktopTshirtFrameClassName = 'w-full aspect-square flex items-center justify-center';
+const featuredInfoKeys = ['who', 'idea', 'how'] as const;
 
-function TshirtMainImageFallback({ tshirtId, name }: { tshirtId: number, name: string }) {
-  const [cacheBuster] = useState(Date.now());
+function TshirtMainImageFallback({
+  tshirtId,
+  name,
+  loading = 'lazy',
+  fetchPriority = 'auto',
+}: {
+  tshirtId: number;
+  name: string;
+  loading?: 'eager' | 'lazy';
+  fetchPriority?: 'high' | 'low' | 'auto';
+}) {
   const imageScale = getProductMainImageScale(tshirtId);
   const paths = [
     `/images/tshirts/${tshirtId}/main.png`,
@@ -25,7 +35,7 @@ function TshirtMainImageFallback({ tshirtId, name }: { tshirtId: number, name: s
   const [pathIndex, setPathIndex] = useState(0);
   const [hasFailed, setHasFailed] = useState(false);
 
-  const currentPath = `${paths[pathIndex]}?v=${cacheBuster}`;
+  const currentPath = paths[pathIndex];
 
   if (hasFailed) return <div className="w-full aspect-square bg-gray-900/20 rounded-lg animate-pulse" />;
 
@@ -41,9 +51,61 @@ function TshirtMainImageFallback({ tshirtId, name }: { tshirtId: number, name: s
           setHasFailed(true);
         }
       }}
+      loading={loading}
+      decoding="async"
+      fetchPriority={fetchPriority}
       className="w-full h-auto drop-shadow-2xl aspect-square object-contain pointer-events-none select-none"
       style={imageScale === 1 ? undefined : { transform: `scale(${imageScale})`, transformOrigin: 'center' }}
     />
+  );
+}
+
+function HomeSeoSection() {
+  return (
+    <section className="relative z-10 w-full bg-black px-4 py-16 md:py-24">
+      <div className="max-w-6xl mx-auto grid gap-8 lg:grid-cols-[1.2fr_0.8fr] items-start">
+        <article className="bg-white/8 border border-white/10 rounded-[2rem] backdrop-blur-xl p-6 md:p-10 shadow-2xl">
+          <h2 className="text-white font-black italic text-3xl md:text-5xl leading-none">
+            xrostao clothing
+            <br />
+            και anergia season
+          </h2>
+          <p className="mt-6 text-white/80 font-medium text-base md:text-lg leading-relaxed">
+            Το xrostao clothing είναι ένα streetwear project με επίκεντρο t-shirts, visual ταυτότητα και ένα ύφος που
+            πατάει πάνω στην ανεργία, την καθημερινή πίεση και το ειρωνικό humor του drop anergia season.
+          </p>
+          <p className="mt-4 text-white/70 font-medium text-base md:text-lg leading-relaxed">
+            Στο site θα βρεις τα βασικά προϊόντα του drop, ξεχωριστές product pages, info pages για το concept και το
+            πώς λειτουργεί το αίτημα ενδιαφέροντος, μαζί με αναλυτικές εικόνες για κάθε t-shirt.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link to="/how-it-works" className="inline-flex items-center justify-center bg-white text-black font-bold italic py-3 px-5 rounded-xl hover:bg-white/90 transition-all">
+              Πώς λειτουργεί
+            </Link>
+            <Link to="/who-we-are" className="inline-flex items-center justify-center bg-white/10 text-white font-bold italic py-3 px-5 rounded-xl hover:bg-white/15 transition-all">
+              Ποιοι είμαστε
+            </Link>
+          </div>
+        </article>
+
+        <aside className="grid gap-4">
+          {featuredInfoKeys.map((key) => (
+            <Link
+              key={key}
+              to={INFO_PAGES[key].path}
+              className="block bg-white/8 border border-white/10 rounded-[1.5rem] backdrop-blur-xl p-5 hover:bg-white/12 transition-colors"
+            >
+              <h3 className="text-white font-black italic text-xl md:text-2xl leading-tight">
+                {INFO_PAGES[key].title}
+              </h3>
+              <p className="mt-3 text-white/70 text-sm md:text-base leading-relaxed">
+                {INFO_PAGES[key].description}
+              </p>
+            </Link>
+          ))}
+        </aside>
+      </div>
+    </section>
   );
 }
 
@@ -141,7 +203,12 @@ export default function Home() {
                 className={desktopTshirtCardClassName}
               >
                 <div className={desktopTshirtFrameClassName}>
-                  <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
+                  <TshirtMainImageFallback
+                    tshirtId={product.id}
+                    name={product.name}
+                    loading="eager"
+                    fetchPriority={product.id === 1 ? 'high' : 'auto'}
+                  />
                 </div>
                 <div className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full text-white font-black italic text-xs tracking-widest uppercase shadow-xl">
                   δεσ το tshirt
@@ -157,6 +224,7 @@ export default function Home() {
             src="/images/main-bg-2.png" 
             alt=""
             aria-hidden="true"
+            loading="lazy"
             className="absolute inset-0 w-full h-full object-cover no-select pointer-events-none z-0"
           />
           <div className="relative z-10 w-full max-w-7xl px-8 grid grid-cols-3 justify-items-center gap-12 translate-x-2 xl:translate-x-4">
@@ -184,6 +252,7 @@ export default function Home() {
             src="/images/main-bg-3.png" 
             alt=""
             aria-hidden="true"
+            loading="lazy"
             className="absolute inset-0 w-full h-full object-cover no-select pointer-events-none z-0"
           />
           <Link
@@ -200,16 +269,15 @@ export default function Home() {
           </Link>
         </section>
 
-        <FooterLinks />
       </div>
 
       {/* ================= MOBILE VERSION ================= */}
       <div className="block md:hidden w-full flex flex-col" aria-label="Συλλογή προϊόντων για mobile">
         {/* Mobile Section 1: Background 1 */}
         <section className="relative w-full h-[100dvh]" aria-label={PRODUCTS[0].name}>
-          <img src="/images/mobile/main-bg-1.png" alt="" aria-hidden="true" loading="eager" className="w-full h-full object-cover no-select" />
+          <img src="/images/mobile/main-bg-1.png" alt="" aria-hidden="true" loading="eager" fetchPriority="high" className="w-full h-full object-cover no-select" />
           <Link to={`/products/${PRODUCTS[0].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[0].name}`} className="absolute top-[66%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
-            <TshirtMainImageFallback tshirtId={1} name={PRODUCTS[0].name} />
+            <TshirtMainImageFallback tshirtId={1} name={PRODUCTS[0].name} loading="eager" fetchPriority="high" />
           </Link>
         </section>
 
@@ -226,7 +294,7 @@ export default function Home() {
 
         {/* Mobile Section 3: Background 3 */}
         <section className="relative w-full h-[100dvh]" aria-label="Τρίτη mobile ενότητα προϊόντων">
-          <img src="/images/mobile/main-bg-3.png" alt="" aria-hidden="true" className="w-full h-full object-cover no-select" />
+          <img src="/images/mobile/main-bg-3.png" alt="" aria-hidden="true" loading="lazy" className="w-full h-full object-cover no-select" />
           <Link to={`/products/${PRODUCTS[3].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[3].name}`} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
             <TshirtMainImageFallback tshirtId={4} name={PRODUCTS[3].name} />
           </Link>
@@ -237,7 +305,7 @@ export default function Home() {
 
         {/* Mobile Section 4: Background 4 */}
         <section className="relative w-full h-[100dvh]" aria-label="Τέταρτη mobile ενότητα προϊόντων">
-          <img src="/images/mobile/main-bg-4.png" alt="" aria-hidden="true" className="w-full h-full object-cover no-select" />
+          <img src="/images/mobile/main-bg-4.png" alt="" aria-hidden="true" loading="lazy" className="w-full h-full object-cover no-select" />
           <Link to={`/products/${PRODUCTS[5].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[5].name}`} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
             <TshirtMainImageFallback tshirtId={6} name={PRODUCTS[5].name} />
           </Link>
@@ -248,7 +316,7 @@ export default function Home() {
 
         {/* Mobile Section 5: Background 5 */}
         <section className="relative w-full h-[100dvh]" aria-label={PRODUCTS[7].name}>
-          <img src="/images/mobile/main-bg-5.png" alt="" aria-hidden="true" className="w-full h-full object-cover no-select" />
+          <img src="/images/mobile/main-bg-5.png" alt="" aria-hidden="true" loading="lazy" className="w-full h-full object-cover no-select" />
           <Link to={`/products/${PRODUCTS[7].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[7].name}`} className="absolute top-[46%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
             <TshirtMainImageFallback tshirtId={8} name={PRODUCTS[7].name} />
           </Link>
@@ -256,7 +324,7 @@ export default function Home() {
 
         {/* Mobile Section 6: Background 6 */}
         <section className="relative w-full h-[100dvh]" aria-label="Έκτη mobile ενότητα προϊόντων">
-          <img src="/images/mobile/main-bg-6.png" alt="" aria-hidden="true" className="w-full h-full object-cover no-select" />
+          <img src="/images/mobile/main-bg-6.png" alt="" aria-hidden="true" loading="lazy" className="w-full h-full object-cover no-select" />
           <Link to={`/products/${PRODUCTS[8].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[8].name}`} className="absolute top-[21%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
             <TshirtMainImageFallback tshirtId={9} name={PRODUCTS[8].name} />
           </Link>
@@ -267,11 +335,12 @@ export default function Home() {
 
         {/* Mobile Section 7: Background 7 */}
         <section className="relative w-full h-[100dvh]" aria-label="Τελευταίο visual section">
-          <img src="/images/mobile/main-bg-7.png" alt="" aria-hidden="true" className="w-full h-full object-cover no-select" />
+          <img src="/images/mobile/main-bg-7.png" alt="" aria-hidden="true" loading="lazy" className="w-full h-full object-cover no-select" />
         </section>
-
-        <FooterLinks />
       </div>
+
+      <HomeSeoSection />
+      <FooterLinks />
 
       <nav className="sr-only" aria-label="Γρήγορη πλοήγηση xrostao clothing">
         {PRODUCTS.map((product) => (
