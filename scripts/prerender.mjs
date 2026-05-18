@@ -55,7 +55,7 @@ async function run() {
 
   try {
     const page = await browser.newPage();
-    const siteOrigin = process.env.PRERENDER_SITE_ORIGIN || 'https://xrostao-site.onrender.com';
+    const siteOrigin = process.env.PRERENDER_SITE_ORIGIN || 'https://xrostaofficial.onrender.com';
     await page.evaluateOnNewDocument((originValue) => {
       // @ts-ignore
       window.__XR_SITE_ORIGIN = originValue;

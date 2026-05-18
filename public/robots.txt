@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin-dashboard-xrostao
 
-Sitemap: https://xrostao-site.onrender.com/sitemap.xml
+Sitemap: https://xrostaofficial.onrender.com/sitemap.xml
