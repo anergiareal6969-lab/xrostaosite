@@ -7,6 +7,7 @@ import Seo from '../components/Seo';
 import FooterLinks from '../components/FooterLinks';
 import { getProductById, getProductDetailImageScale } from '../data/products';
 import { useAuth } from '../contexts/AuthContext';
+import { toApiUrl } from '../lib/api';
 
 function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImageLoad, altBase, canZoom }: { tshirtId: number, imgNum: number, onZoom: (src: string) => void, mobileTopClass: string, onImageLoad: () => void, altBase?: string, canZoom: boolean }) {
   const imageScale = getProductDetailImageScale(tshirtId, imgNum);
@@ -97,7 +98,7 @@ export default function TShirt() {
 
   const checkIfRequested = async () => {
     try {
-      const apiUrl = '/api/check-request';
+      const apiUrl = toApiUrl('/api/check-request');
       const emailParam = user?.email ? `&email=${encodeURIComponent(user.email)}` : '';
       const response = await fetch(`${apiUrl}?tshirtId=${tshirtId}${emailParam}`);
       
@@ -122,7 +123,7 @@ export default function TShirt() {
   };
 
   const handleRequestSubmit = async (email: string) => {
-    const response = await fetch('/api/request', {
+    const response = await fetch(toApiUrl('/api/request'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, tshirtId })

@@ -6,6 +6,7 @@ import {
   signOut 
 } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
+import { toApiUrl } from '../lib/api';
 
 interface AuthUser {
   email: string;
@@ -30,7 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const syncUserWithDB = async (email: string, username: string) => {
     console.log("[AUTH] Attempting to sync with DB:", email);
     try {
-      const response = await fetch('/api/sync-user', {
+      const response = await fetch(toApiUrl('/api/sync-user'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, username }),

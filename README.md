@@ -1,20 +1,42 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# xrostao deployment notes
 
-# Run and deploy your AI Studio app
-
-This contains everything you need to run your app locally.
-
-View your app in AI Studio: https://ai.studio/apps/9611b8c6-e579-4bce-8eb9-3274a7a5d53d
-
-## Run Locally
-
-**Prerequisites:**  Node.js
-
+## Local setup
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
+2. Start the frontend:
    `npm run dev`
+3. Start the backend API in another terminal:
+   `npm run server`
+
+The frontend uses `VITE_API_BASE_URL` when it is set. Without it, local development falls back to `http://localhost:5000`.
+
+## Render split deployment
+
+Use two separate Render services:
+
+1. Static Site for the frontend
+2. Web Service for the API
+
+### Frontend Static Site
+
+- Build command: `npm install && npm run build`
+- Publish directory: `dist`
+- Environment variables:
+  - `VITE_SITE_ORIGIN=https://YOUR-FRONTEND-DOMAIN`
+  - `PRERENDER_SITE_ORIGIN=https://YOUR-FRONTEND-DOMAIN`
+  - `VITE_API_BASE_URL=https://YOUR-BACKEND-DOMAIN`
+  - Firebase `VITE_...` variables
+
+### Backend Web Service
+
+- Build command: `npm install`
+- Start command: `npm run server`
+- Environment variables:
+  - `DATABASE_URL=...`
+  - `FRONTEND_ORIGIN=https://YOUR-FRONTEND-DOMAIN`
+  - `CORS_ALLOWED_ORIGINS=https://YOUR-FRONTEND-DOMAIN`
+  - `SERVE_FRONTEND=false`
+  - `ENABLE_PURCHASE=false` or `true`
+
+If you ever want the Node server to serve the built frontend too, set `SERVE_FRONTEND=true`.

@@ -13,6 +13,24 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 5000;
+const distPath = path.join(__dirname, 'dist');
+const shouldServeFrontend = process.env.SERVE_FRONTEND === 'true';
+
+function parseCsvEnv(value?: string) {
+  if (!value) return [];
+  return value
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+const allowedOrigins = new Set([
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  ...parseCsvEnv(process.env.FRONTEND_ORIGIN),
+  ...parseCsvEnv(process.env.CORS_ALLOWED_ORIGINS),
+]);
 
 // 1. Initializations
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -93,7 +111,17 @@ async function ensureTables() {
 
 // 2. Middleware
 app.use(compression()); // Compress all responses
-app.use(cors());
+app.use(cors({
+  origin(origin, callback) {
+    // Requests without Origin include curl, uptime probes, and search engine fetches.
+    if (!origin || allowedOrigins.size === 0 || allowedOrigins.has(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`Origin not allowed by CORS: ${origin}`));
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+}));
 app.use(express.json());
 
 // Logging
@@ -286,62 +314,76 @@ app.get('/admin-dashboard-xrostao', async (req, res) => {
   }
 });
 
-// 4. Static Files (ONLY AFTER API ROUTES)
-const distPath = path.join(__dirname, 'dist');
-
-// Serve index.html without caching
-app.get('/', (req, res) => {
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', '0');
-  res.setHeader('Surrogate-Control', 'no-store');
-  res.sendFile(path.join(distPath, 'index.html'));
-});
-
-app.use(express.static(distPath, {
-  maxAge: '1h', // Default for other assets
-  etag: true,
-  lastModified: true,
-  setHeaders: (res, filePath) => {
-    // Aggressive caching for images (1 year)
-    if (filePath.match(/\.(jpg|jpeg|png|gif|webp|svg|ico)$/)) {
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    }
-    if (filePath.match(/\.(js|css|woff2?)$/)) {
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    }
-    // No cache for HTML
-    if (filePath.endsWith('.html')) {
-      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    }
-  }
-}));
-
-// 5. SPA Catch-all (MUST BE LAST)
-app.get('*', (req, res) => {
-  // If it's an API request that wasn't caught, return 404 JSON, not HTML
-  if (req.url.startsWith('/api')) {
-    return res.status(404).json({ error: 'API route not found' });
-  }
-  
-  const indexPath = path.join(distPath, 'index.html');
-  if (fs.existsSync(indexPath)) {
+if (shouldServeFrontend) {
+  // 4. Static Files (ONLY AFTER API ROUTES)
+  app.get('/', (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    if (req.path.startsWith('/tshirt/')) {
-      res.setHeader('X-Robots-Tag', 'noindex, follow');
-    }
-    res.sendFile(indexPath);
-  } else {
-    res.status(500).send('Frontend build is missing. Run "npm run build".');
-  }
-});
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('Surrogate-Control', 'no-store');
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
 
-const PORT = process.env.PORT || 5000;
+  app.use(express.static(distPath, {
+    maxAge: '1h',
+    etag: true,
+    lastModified: true,
+    setHeaders: (res, filePath) => {
+      if (filePath.match(/\.(jpg|jpeg|png|gif|webp|svg|ico)$/)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+      if (filePath.match(/\.(js|css|woff2?)$/)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+      if (filePath.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      }
+    }
+  }));
+
+  // 5. SPA Catch-all (MUST BE LAST)
+  app.get('*', (req, res) => {
+    if (req.url.startsWith('/api')) {
+      return res.status(404).json({ error: 'API route not found' });
+    }
+
+    const indexPath = path.join(distPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      if (req.path.startsWith('/tshirt/')) {
+        res.setHeader('X-Robots-Tag', 'noindex, follow');
+      }
+      return res.sendFile(indexPath);
+    }
+
+    return res.status(500).send('Frontend build is missing. Run "npm run build".');
+  });
+} else {
+  app.get('/', (_req, res) => {
+    res.json({
+      service: 'xrostao api',
+      status: 'ok',
+      health: '/api/health',
+    });
+  });
+
+  app.use((req, res) => {
+    if (req.url.startsWith('/api')) {
+      return res.status(404).json({ error: 'API route not found' });
+    }
+
+    return res.status(404).json({
+      error: 'Frontend is hosted separately. Use the static site URL for pages.',
+    });
+  });
+}
 
 async function start() {
   console.log(`[INIT] Starting server...`);
   console.log(`[INIT] DATABASE_URL present: ${!!process.env.DATABASE_URL}`);
   console.log(`[INIT] CLEAR_REQUESTS_ON_START enabled: ${process.env.CLEAR_REQUESTS_ON_START === 'true'}`);
+  console.log(`[INIT] SERVE_FRONTEND enabled: ${shouldServeFrontend}`);
+  console.log(`[INIT] Allowed frontend origins: ${allowedOrigins.size ? Array.from(allowedOrigins).join(', ') : '(all origins allowed)'}`);
 
   try {
     if (process.env.DATABASE_URL) {
@@ -359,7 +401,11 @@ async function start() {
 
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-    console.log(`Serving static files from: ${distPath}`);
+    if (shouldServeFrontend) {
+      console.log(`Serving static files from: ${distPath}`);
+    } else {
+      console.log('Running in API-only mode');
+    }
   });
 }
 

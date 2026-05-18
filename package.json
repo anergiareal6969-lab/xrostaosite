@@ -13,7 +13,8 @@
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
     "server": "tsx server.ts",
-    "start": "npm run build && npm run server"
+    "start": "npm run server",
+    "start:full": "npm run build && npm run server"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
