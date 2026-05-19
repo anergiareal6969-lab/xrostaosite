@@ -22,7 +22,7 @@ export default function FooterLinks() {
       </nav>
 
       <div className="relative z-10 mt-12 text-white font-sans font-bold italic text-sm text-center">
-        © 2026 xrostao clothing
+        © 2026 xrostao
       </div>
     </footer>
   );

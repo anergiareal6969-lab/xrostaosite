@@ -66,12 +66,12 @@ function HomeSeoSection() {
       <div className="max-w-6xl mx-auto grid gap-8 lg:grid-cols-[1.2fr_0.8fr] items-start">
         <article className="bg-white/8 border border-white/10 rounded-[2rem] backdrop-blur-xl p-6 md:p-10 shadow-2xl">
           <h2 className="text-white font-black italic text-3xl md:text-5xl leading-none">
-            xrostao clothing
+            xrostao
             <br />
             και anergia season
           </h2>
           <p className="mt-6 text-white/80 font-medium text-base md:text-lg leading-relaxed">
-            Το xrostao clothing είναι ένα streetwear project με επίκεντρο t-shirts, visual ταυτότητα και ένα ύφος που
+            Το xrostao είναι ένα streetwear project με επίκεντρο t-shirts, visual ταυτότητα και ένα ύφος που
             πατάει πάνω στην ανεργία, την καθημερινή πίεση και το ειρωνικό humor του drop anergia season.
           </p>
           <p className="mt-4 text-white/70 font-medium text-base md:text-lg leading-relaxed">
@@ -130,8 +130,8 @@ export default function Home() {
     {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
-      name: 'xrostao clothing | χροσταω ρούχα και t-shirts',
-      description: 'Συλλογή με xrostao clothing t-shirts από το drop anergia season.',
+      name: 'xrostao | χροσταω ρούχα και t-shirts',
+      description: 'Συλλογή με xrostao t-shirts από το drop anergia season.',
       url: '/',
       mainEntity: {
         '@type': 'ItemList',
@@ -161,11 +161,11 @@ export default function Home() {
   return (
     <main className="relative w-full min-h-screen bg-black flex flex-col overflow-x-hidden">
       <Seo
-        title="xrostao clothing | χροσταω ρούχα και t-shirts"
-        description="xrostao clothing και χροσταω ρούχα. T-shirts από το drop anergia season, προϊόντα xrostao clothing και αίτημα ενδιαφέροντος για το brand xrostao."
+        title="xrostao | χροσταω ρούχα και t-shirts"
+        description="xrostao και χροσταω ρούχα. T-shirts από το drop anergia season, προϊόντα xrostao και αίτημα ενδιαφέροντος για το brand."
         canonicalPath="/"
-        image="/images/main-bg-1.png"
-        imageAlt="xrostao clothing t-shirts από το drop anergia season"
+        image="/images/ai-top.png"
+        imageAlt="xrostao logo"
         keywords={[
           'xrostao clothing',
           'χροσταω ρούχα',
@@ -177,10 +177,10 @@ export default function Home() {
         jsonLd={homeJsonLd}
       />
 
-      <h1 className="sr-only">xrostao clothing, χροσταω clothing και t-shirts anergia season</h1>
+      <h1 className="sr-only">xrostao, χροσταω και t-shirts anergia season</h1>
       <p className="sr-only">
-        Το xrostao clothing είναι brand με χροσταω ρούχα, t-shirts και προϊόντα από το drop anergia season.
-        Εδώ βρίσκεις xrostao t-shirts, χροσταω clothing προϊόντα και πληροφορίες για το αίτημα ενδιαφέροντος.
+        Το xrostao είναι brand με χροσταω ρούχα, t-shirts και προϊόντα από το drop anergia season.
+        Εδώ βρίσκεις xrostao t-shirts, προϊόντα και πληροφορίες για το αίτημα ενδιαφέροντος.
       </p>
       
       {/* ================= DESKTOP VERSION ================= */}
@@ -342,7 +342,7 @@ export default function Home() {
       <HomeSeoSection />
       <FooterLinks />
 
-      <nav className="sr-only" aria-label="Γρήγορη πλοήγηση xrostao clothing">
+      <nav className="sr-only" aria-label="Γρήγορη πλοήγηση xrostao">
         {PRODUCTS.map((product) => (
           <Link key={product.id} to={`/products/${product.slug}`}>
             {product.name}

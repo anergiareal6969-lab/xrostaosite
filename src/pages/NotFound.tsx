@@ -5,8 +5,8 @@ export default function NotFound() {
   return (
     <main className="min-h-screen w-full bg-black text-white flex items-center justify-center px-6">
       <Seo
-        title="404 | xrostao clothing"
-        description="Η σελίδα που ψάχνεις δεν βρέθηκε στο xrostao clothing."
+        title="404 | xrostao"
+        description="Η σελίδα που ψάχνεις δεν βρέθηκε στο xrostao."
         canonicalPath="/404"
         robots="noindex,follow"
         image="/images/main-bg-1.png"
@@ -20,7 +20,7 @@ export default function NotFound() {
           δεν υπάρχει
         </h1>
         <p className="mt-6 text-white/75 font-medium text-base md:text-lg leading-relaxed">
-          Πήγαινε ξανά στα ρούχα, στα προϊόντα ή στις info σελίδες του xrostao clothing.
+          Πήγαινε ξανά στα ρούχα, στα προϊόντα ή στις info σελίδες του xrostao.
         </p>
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link to="/" className="inline-flex items-center justify-center bg-white text-black font-bold italic py-3 px-6 rounded-xl hover:bg-white/90 transition-all active:scale-95">

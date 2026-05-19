@@ -10,13 +10,16 @@ export default function Product() {
   if (!product) return <Navigate to="/" />;
 
   const imageScale = getProductMainImageScale(product.id);
-  const title = `${product.name} | xrostao clothing`;
+  const productPageImageScale = product.id === 1 ? 1.14 : product.id === 2 ? 1.06 : imageScale;
+  const imageFrameSize = product.id === 1 ? 560 : product.id === 2 ? 500 : 440;
+  const imageMaxWidth = product.id === 1 ? 360 : product.id === 2 ? 370 : 420;
+  const title = `${product.name} | xrostao`;
   const description = product.description.replace(/\s+/g, ' ').trim();
   const relatedProducts = PRODUCTS.filter((item) => item.id !== product.id).slice(0, 3);
   const faqItems = [
     {
       question: `Τι είναι το ${product.name};`,
-      answer: `${product.name} είναι μέρος του drop anergia season του xrostao clothing και παρουσιάζεται με ξεχωριστές product φωτογραφίες και περιγραφή.`,
+      answer: `${product.name} είναι μέρος του drop anergia season του xrostao και παρουσιάζεται με ξεχωριστές product φωτογραφίες και περιγραφή.`,
     },
     {
       question: 'Μπορώ να το αγοράσω απευθείας;',
@@ -85,7 +88,7 @@ export default function Product() {
         image={product.primaryImage}
         imageAlt={product.name}
         ogType="product"
-        keywords={[product.name, 'xrostao clothing', 't-shirt', 'anergia season', 'streetwear']}
+        keywords={[product.name, 'xrostao', 't-shirt', 'anergia season', 'streetwear']}
         jsonLd={jsonLd}
       />
 
@@ -101,27 +104,35 @@ export default function Product() {
           {product.description}
         </p>
 
-        <div className="mt-10 flex flex-col md:flex-row gap-6 items-start md:items-center">
-          <img
-            src={product.primaryImage}
-            alt={product.name}
-            className="w-full md:w-[420px] rounded-xl border border-white/10 bg-white/5"
-            loading="eager"
-            fetchPriority="high"
-            decoding="async"
-            style={imageScale === 1 ? undefined : { transform: `scale(${imageScale})`, transformOrigin: 'center' }}
-          />
+        <div className="mt-10 flex flex-col xl:flex-row gap-8 xl:gap-12 items-start">
+          <div
+            className="w-full overflow-hidden rounded-xl border border-white/10 bg-white/5 flex items-center justify-center p-6 md:p-8"
+            style={{ maxWidth: `${imageFrameSize}px`, minHeight: `${imageFrameSize}px` }}
+          >
+            <img
+              src={product.primaryImage}
+              alt={product.name}
+              className="w-full"
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
+              style={{
+                maxWidth: `${imageMaxWidth}px`,
+                ...(productPageImageScale === 1 ? {} : { transform: `scale(${productPageImageScale})`, transformOrigin: 'center' }),
+              }}
+            />
+          </div>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex w-full xl:w-auto shrink-0 flex-col gap-4 xl:pt-2">
             <Link
               to={`/tshirt/${product.id}`}
-              className="inline-flex items-center justify-center bg-white text-black font-bold italic py-3 px-6 rounded-xl hover:bg-white/90 transition-all active:scale-95"
+              className="inline-flex items-center justify-center bg-white text-black font-bold italic py-3 px-6 rounded-xl hover:bg-white/90 transition-all active:scale-95 xl:min-w-[180px]"
             >
               Δες το t-shirt
             </Link>
             <Link
               to="/"
-              className="inline-flex items-center justify-center bg-white/10 text-white font-bold italic py-3 px-6 rounded-xl hover:bg-white/15 transition-all active:scale-95"
+              className="inline-flex items-center justify-center bg-white/10 text-white font-bold italic py-3 px-6 rounded-xl hover:bg-white/15 transition-all active:scale-95 xl:min-w-[180px]"
             >
               Πίσω στα ρούχα
             </Link>
@@ -134,7 +145,7 @@ export default function Product() {
               Γιατί ξεχωρίζει
             </h2>
             <p className="mt-5 text-white/80 leading-relaxed text-base md:text-lg">
-              Το συγκεκριμένο t-shirt ανήκει στο πρώτο drop του xrostao clothing και κρατά το ίδιο visual ύφος του
+              Το συγκεκριμένο t-shirt ανήκει στο πρώτο drop του xrostao και κρατά το ίδιο visual ύφος του
               anergia season: έντονο print, σαφές concept και φωτογραφίες που δείχνουν το ρούχο όπως πραγματικά
               εμφανίζεται μέσα στο site.
             </p>

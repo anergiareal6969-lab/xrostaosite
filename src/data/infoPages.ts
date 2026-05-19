@@ -2,13 +2,13 @@ export const INFO_PAGES = {
   who: {
     title: 'ποιοι στον πούτσο είμαστε',
     path: '/who-we-are',
-    description: 'Μάθε ποιοι είναι οι άνθρωποι πίσω από το xrostao clothing και το πρώτο drop anergia season.',
+    description: 'Μάθε ποιοι είναι οι άνθρωποι πίσω από το xrostao και το πρώτο drop anergia season.',
     text: 'Κάποιοι άνεργοι σχεδιαστές που έπρεπε να κάνουν κάτι γιατί η ανεργία έχει βαρέσει κόκκινο. Επίσης το xrostao δεν θα έχει μόνο ρούχα με θέμα την ανεργία, απλά αυτό είναι το πρώτο drop του xrostao και απλά λέγεται anergia season, ναι οκ καταλάβατε.',
   },
   idea: {
     title: 'ιδέα',
     path: '/idea',
-    description: 'Η ιδέα πίσω από το xrostao clothing, τα ρούχα και το ύφος του brand.',
+    description: 'Η ιδέα πίσω από το xrostao, τα ρούχα και το ύφος του brand.',
     text: 'Κοίτα, η ιδέα που σκεφτήκαμε ήταν να βγάλουμε ρούχα. Ρούχα είναι, εγώ θα σου πρότεινα να μην πάρεις καν.',
   },
   how: {

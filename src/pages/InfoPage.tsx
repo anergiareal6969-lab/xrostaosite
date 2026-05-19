@@ -5,7 +5,7 @@ const INFO_PAGE_DESKTOP_BG = '/images/info-page-bg.png';
 const INFO_PAGE_MOBILE_BG = '/images/mobile/info-page-bg.png';
 
 export default function InfoPage({ title, description, canonicalPath, text }: { title: string; description: string; canonicalPath: string; text: string }) {
-  const pageTitle = `${title} | xrostao clothing`;
+  const pageTitle = `${title} | xrostao`;
   const jsonLd = [
     {
       '@context': 'https://schema.org',
@@ -43,7 +43,7 @@ export default function InfoPage({ title, description, canonicalPath, text }: { 
         description={description}
         canonicalPath={canonicalPath}
         image={INFO_PAGE_DESKTOP_BG}
-        keywords={[title, 'xrostao clothing', 'χροσταω', 'ρούχα', 'anergia season']}
+        keywords={[title, 'xrostao', 'χροσταω', 'ρούχα', 'anergia season']}
         jsonLd={jsonLd}
       />
 

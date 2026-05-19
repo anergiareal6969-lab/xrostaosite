@@ -158,7 +158,7 @@ export default function TShirt() {
     return <Navigate to="/" />;
   }
 
-  const seoTitle = product ? `${product.name} | xrostao clothing` : 'xrostao clothing';
+  const seoTitle = product ? `${product.name} | xrostao` : 'xrostao';
 
   return (
     <div key={tshirtId} className="relative w-full min-h-screen bg-black overflow-x-hidden flex flex-col items-center">
