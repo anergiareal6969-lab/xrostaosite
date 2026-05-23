@@ -1,5 +1,5 @@
 export const SITE_NAME = 'xrostao';
-export const DEFAULT_SITE_ORIGIN = 'https://xrostaoclothing.onrender.com';
+export const DEFAULT_SITE_ORIGIN = 'https://www.xrostao.shop';
 export const DEFAULT_SEO_KEYWORDS = [
   'xrostao clothing',
   'xrostao',
@@ -36,9 +36,6 @@ export function getSiteOrigin() {
     if (typeof winOrigin === 'string' && /^https?:\/\//i.test(winOrigin)) return winOrigin.replace(/\/$/, '');
     if (window.location?.origin) return window.location.origin.replace(/\/$/, '');
   }
-
-  const envOrigin = ((import.meta as unknown as { env?: Record<string, unknown> }).env?.VITE_SITE_ORIGIN as string | undefined);
-  if (envOrigin && /^https?:\/\//i.test(envOrigin)) return envOrigin.replace(/\/$/, '');
 
   return DEFAULT_SITE_ORIGIN;
 }

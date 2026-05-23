@@ -8,7 +8,7 @@ const projectRoot = path.join(__dirname, '..');
 const distDir = path.join(projectRoot, 'dist');
 const publicSitemapPath = path.join(projectRoot, 'public', 'sitemap.xml');
 const distSitemapPath = path.join(distDir, 'sitemap.xml');
-const siteOrigin = (process.env.PRERENDER_SITE_ORIGIN || process.env.VITE_SITE_ORIGIN || 'https://xrostaofficial.onrender.com').replace(/\/$/, '');
+const siteOrigin = 'https://www.xrostao.shop';
 
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
