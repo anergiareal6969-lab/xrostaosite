@@ -1,5 +1,5 @@
 export const SITE_NAME = 'xrostao';
-export const DEFAULT_SITE_ORIGIN = 'https://xrostaofficial.onrender.com';
+export const DEFAULT_SITE_ORIGIN = 'https://xrostaoclothing.onrender.com';
 export const DEFAULT_SEO_KEYWORDS = [
   'xrostao clothing',
   'xrostao',

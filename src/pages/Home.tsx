@@ -60,31 +60,69 @@ function TshirtMainImageFallback({
   );
 }
 
+function HomeSeoArtwork() {
+  const [hasFailed, setHasFailed] = useState(false);
+
+  if (hasFailed) return null;
+
+  return (
+    <picture className="pointer-events-none absolute inset-0 z-0">
+      <source media="(max-width: 767px)" srcSet="/images/mobile/home-seo-art.png" />
+      <img
+        src="/images/home-seo-art.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+        className="w-full h-full object-cover"
+        onError={() => setHasFailed(true)}
+      />
+    </picture>
+  );
+}
+
 function HomeSeoSection() {
   return (
     <section className="relative z-10 w-full bg-black px-4 py-16 md:py-24">
-      <div className="max-w-6xl mx-auto grid gap-8 lg:grid-cols-[1.2fr_0.8fr] items-start">
-        <article className="bg-white/8 border border-white/10 rounded-[2rem] backdrop-blur-xl p-6 md:p-10 shadow-2xl">
-          <h2 className="text-white font-black italic text-3xl md:text-5xl leading-none">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+        <HomeSeoArtwork />
+        <div className="absolute inset-0 bg-black/70" />
+      </div>
+
+      <div className="relative max-w-6xl mx-auto">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[2.5rem]" aria-hidden="true">
+          <HomeSeoArtwork />
+          <div className="absolute inset-0 bg-black/58" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.14),transparent_42%)]" />
+        </div>
+
+        <div className="relative z-10 grid gap-8 lg:grid-cols-[1.2fr_0.8fr] items-start">
+        <article className="relative overflow-hidden bg-white/8 border border-white/10 rounded-[2rem] backdrop-blur-xl p-6 md:p-10 shadow-2xl">
+          <div className="relative z-10">
+            <h2 className="text-white font-black italic text-3xl md:text-5xl leading-none">
             xrostao
             <br />
             και anergia season
-          </h2>
-          <p className="mt-6 text-white/80 font-medium text-base md:text-lg leading-relaxed">
-            Το xrostao είναι ένα streetwear project με επίκεντρο t-shirts, visual ταυτότητα και ένα ύφος που
-            πατάει πάνω στην ανεργία, την καθημερινή πίεση και το ειρωνικό humor του drop anergia season.
-          </p>
-          <p className="mt-4 text-white/70 font-medium text-base md:text-lg leading-relaxed">
-            Στο site θα βρεις τα βασικά προϊόντα του drop, ξεχωριστές product pages, info pages για το concept και το
-            πώς λειτουργεί το αίτημα ενδιαφέροντος, μαζί με αναλυτικές εικόνες για κάθε t-shirt.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link to="/how-it-works" className="inline-flex items-center justify-center bg-white text-black font-bold italic py-3 px-5 rounded-xl hover:bg-white/90 transition-all">
-              Πώς λειτουργεί
-            </Link>
-            <Link to="/who-we-are" className="inline-flex items-center justify-center bg-white/10 text-white font-bold italic py-3 px-5 rounded-xl hover:bg-white/15 transition-all">
-              Ποιοι είμαστε
-            </Link>
+            </h2>
+            <p className="mt-6 text-white/55 font-black italic text-xs sm:text-sm uppercase tracking-[0.2em]">
+              Ακουλουθεί ai generated κειμενο.
+            </p>
+            <p className="mt-4 text-white/80 font-medium text-base md:text-lg leading-relaxed">
+              Το xrostao είναι ένα streetwear project με επίκεντρο t-shirts, visual ταυτότητα και ένα ύφος που
+              πατάει πάνω στην ανεργία, την καθημερινή πίεση και το ειρωνικό humor του drop anergia season.
+            </p>
+            <p className="mt-4 text-white/70 font-medium text-base md:text-lg leading-relaxed">
+              Στο site θα βρεις τα βασικά προϊόντα του drop, ξεχωριστές product pages, info pages για το concept και το
+              πώς λειτουργεί το αίτημα ενδιαφέροντος, μαζί με αναλυτικές εικόνες για κάθε t-shirt.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link to="/how-it-works" className="inline-flex items-center justify-center bg-white text-black font-bold italic py-3 px-5 rounded-xl hover:bg-white/90 transition-all">
+                Πώς λειτουργεί
+              </Link>
+              <Link to="/who-we-are" className="inline-flex items-center justify-center bg-white/10 text-white font-bold italic py-3 px-5 rounded-xl hover:bg-white/15 transition-all">
+                Ποιοι είμαστε
+              </Link>
+            </div>
           </div>
         </article>
 
@@ -104,6 +142,7 @@ function HomeSeoSection() {
             </Link>
           ))}
         </aside>
+        </div>
       </div>
     </section>
   );
