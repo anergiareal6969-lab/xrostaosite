@@ -182,7 +182,7 @@ export default function TShirt() {
       {/* Main Content Area - 4 Sections with different Backgrounds */}
       <div className="w-full flex flex-col">
         {tshirtSectionNumbers.map((num) => (
-          <div key={num} className="relative w-full h-[100dvh] flex items-center justify-center">
+          <div key={num} className="relative w-full h-[100svh] md:h-[100dvh] flex items-center justify-center">
             {/* Background for each section */}
             <picture className="absolute inset-0 w-full h-full pointer-events-none z-0">
               <source media="(max-width: 767px)" srcSet={getMobileBackgroundPath(num)} />
@@ -210,7 +210,7 @@ export default function TShirt() {
           </div>
         ))}
 
-        <div className="relative w-full h-[100dvh] flex items-center justify-center">
+        <div className="relative w-full h-[100svh] md:h-[100dvh] flex items-center justify-center">
           <picture className="absolute inset-0 w-full h-full pointer-events-none z-0">
             <source media="(max-width: 767px)" srcSet="/images/mobile/tshirt-bg-last.png" />
             <source media="(min-width: 768px)" srcSet="/images/tshirt-bg-last.png" />

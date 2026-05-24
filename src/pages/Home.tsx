@@ -225,7 +225,7 @@ export default function Home() {
       {/* ================= DESKTOP VERSION ================= */}
       <div className="hidden md:flex flex-col w-full" aria-label="Συλλογή προϊόντων για desktop">
         {/* Section 1: PC Background 1 */}
-        <section className="relative w-full h-[100dvh] flex items-center justify-center" aria-label="Πρώτη σειρά προϊόντων">
+        <section className="relative w-full h-[100svh] md:h-[100dvh] flex items-center justify-center" aria-label="Πρώτη σειρά προϊόντων">
           <img 
             src="/images/main-bg-1.png" 
             alt=""
@@ -258,7 +258,7 @@ export default function Home() {
         </section>
 
         {/* Section 2: PC Background 2 */}
-        <section className="relative w-full h-[100dvh] flex items-center justify-center" aria-label="Δεύτερη σειρά προϊόντων">
+        <section className="relative w-full h-[100svh] md:h-[100dvh] flex items-center justify-center" aria-label="Δεύτερη σειρά προϊόντων">
           <img 
             src="/images/main-bg-2.png" 
             alt=""
@@ -286,7 +286,7 @@ export default function Home() {
         </section>
 
         {/* Section 3: PC Background 3 (Skate) */}
-        <section className="relative w-full h-[100dvh] flex items-center justify-center" aria-label="Τελικό featured προϊόν">
+        <section className="relative w-full h-[100svh] md:h-[100dvh] flex items-center justify-center" aria-label="Τελικό featured προϊόν">
           <img 
             src="/images/main-bg-3.png" 
             alt=""
@@ -313,7 +313,7 @@ export default function Home() {
       {/* ================= MOBILE VERSION ================= */}
       <div className="block md:hidden w-full flex flex-col" aria-label="Συλλογή προϊόντων για mobile">
         {/* Mobile Section 1: Background 1 */}
-        <section className="relative w-full h-[100dvh]" aria-label={PRODUCTS[0].name}>
+        <section className="relative w-full h-[100svh] md:h-[100dvh]" aria-label={PRODUCTS[0].name}>
           <img src="/images/mobile/main-bg-1.png" alt="" aria-hidden="true" loading="eager" fetchPriority="high" className="w-full h-full object-cover no-select" />
           <Link to={`/products/${PRODUCTS[0].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[0].name}`} className="absolute top-[66%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
             <TshirtMainImageFallback tshirtId={1} name={PRODUCTS[0].name} loading="eager" fetchPriority="high" />
@@ -321,7 +321,7 @@ export default function Home() {
         </section>
 
         {/* Mobile Section 2: Background 2 */}
-        <section className="relative w-full h-[100dvh]" aria-label="Δεύτερη mobile ενότητα προϊόντων">
+        <section className="relative w-full h-[100svh] md:h-[100dvh]" aria-label="Δεύτερη mobile ενότητα προϊόντων">
           <img src="/images/mobile/main-bg-2.png" alt="" aria-hidden="true" loading="eager" className="w-full h-full object-cover no-select" />
           <Link to={`/products/${PRODUCTS[1].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[1].name}`} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
             <TshirtMainImageFallback tshirtId={2} name={PRODUCTS[1].name} />
@@ -332,7 +332,7 @@ export default function Home() {
         </section>
 
         {/* Mobile Section 3: Background 3 */}
-        <section className="relative w-full h-[100dvh]" aria-label="Τρίτη mobile ενότητα προϊόντων">
+        <section className="relative w-full h-[100svh] md:h-[100dvh]" aria-label="Τρίτη mobile ενότητα προϊόντων">
           <img src="/images/mobile/main-bg-3.png" alt="" aria-hidden="true" loading="lazy" className="w-full h-full object-cover no-select" />
           <Link to={`/products/${PRODUCTS[3].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[3].name}`} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
             <TshirtMainImageFallback tshirtId={4} name={PRODUCTS[3].name} />
@@ -343,7 +343,7 @@ export default function Home() {
         </section>
 
         {/* Mobile Section 4: Background 4 */}
-        <section className="relative w-full h-[100dvh]" aria-label="Τέταρτη mobile ενότητα προϊόντων">
+        <section className="relative w-full h-[100svh] md:h-[100dvh]" aria-label="Τέταρτη mobile ενότητα προϊόντων">
           <img src="/images/mobile/main-bg-4.png" alt="" aria-hidden="true" loading="lazy" className="w-full h-full object-cover no-select" />
           <Link to={`/products/${PRODUCTS[5].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[5].name}`} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
             <TshirtMainImageFallback tshirtId={6} name={PRODUCTS[5].name} />
@@ -354,7 +354,7 @@ export default function Home() {
         </section>
 
         {/* Mobile Section 5: Background 5 */}
-        <section className="relative w-full h-[100dvh]" aria-label={PRODUCTS[7].name}>
+        <section className="relative w-full h-[100svh] md:h-[100dvh]" aria-label={PRODUCTS[7].name}>
           <img src="/images/mobile/main-bg-5.png" alt="" aria-hidden="true" loading="lazy" className="w-full h-full object-cover no-select" />
           <Link to={`/products/${PRODUCTS[7].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[7].name}`} className="absolute top-[46%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
             <TshirtMainImageFallback tshirtId={8} name={PRODUCTS[7].name} />
@@ -362,7 +362,7 @@ export default function Home() {
         </section>
 
         {/* Mobile Section 6: Background 6 */}
-        <section className="relative w-full h-[100dvh]" aria-label="Έκτη mobile ενότητα προϊόντων">
+        <section className="relative w-full h-[100svh] md:h-[100dvh]" aria-label="Έκτη mobile ενότητα προϊόντων">
           <img src="/images/mobile/main-bg-6.png" alt="" aria-hidden="true" loading="lazy" className="w-full h-full object-cover no-select" />
           <Link to={`/products/${PRODUCTS[8].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[8].name}`} className="absolute top-[21%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
             <TshirtMainImageFallback tshirtId={9} name={PRODUCTS[8].name} />
@@ -373,7 +373,7 @@ export default function Home() {
         </section>
 
         {/* Mobile Section 7: Background 7 */}
-        <section className="relative w-full h-[100dvh]" aria-label="Τελευταίο visual section">
+        <section className="relative w-full h-[100svh] md:h-[100dvh]" aria-label="Τελευταίο visual section">
           <img src="/images/mobile/main-bg-7.png" alt="" aria-hidden="true" loading="lazy" className="w-full h-full object-cover no-select" />
         </section>
       </div>
