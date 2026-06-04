@@ -83,6 +83,13 @@ export const PRODUCTS: Product[] = [
     description: 'Άμα έχεις τέτοια baddies σίγουρα θα χρωστάς for real.',
     primaryImage: '/images/tshirts/10/main.png',
   },
+  {
+    id: 11,
+    slug: 'tshirt-11-anergia-season',
+    name: 'xrostao tshirt 11 — anergia season',
+    description: 'Ακόμα ένα xrostao t-shirt.',
+    primaryImage: '/images/tshirts/11/main.png',
+  },
 ];
 
 export function getProductById(id: number) {
@@ -150,9 +157,9 @@ const DETAIL_IMAGE_SCALE_BY_KEY: Record<string, number> = {
 };
 
 export function getProductMainImageScale(id: number) {
-  return MAIN_IMAGE_SCALE_BY_ID[id] ?? 1;
+  return 1;
 }
 
 export function getProductDetailImageScale(id: number, imgNum: number) {
-  return DETAIL_IMAGE_SCALE_BY_KEY[`${id}-${imgNum}`] ?? getProductMainImageScale(id);
+  return 1;
 }

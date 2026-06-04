@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { Fragment, lazy, Suspense, useState, useEffect } from 'react';
+import Lenis from 'lenis';
 import Menu from './components/Menu';
 import Preloader from './components/Preloader';
 import { AuthProvider } from './contexts/AuthContext';
@@ -71,10 +72,8 @@ function AppShell() {
       }, 10000);
 
       const criticalImages = [
-        '/images/mobile/main-bg-1.png',
-        '/images/mobile/main-bg-2.png',
-        '/images/main-bg-1.png',
-        '/images/main-bg-2.png',
+        '/images/mobile/home-bg.png',
+        '/images/home-bg.png',
       ];
 
       const loadImage = (src: string) => {
@@ -96,21 +95,6 @@ function AppShell() {
       // Final release
       if (isActive) setIsLoading(false);
       clearTimeout(maxTimeTimeout);
-
-      // Background load the rest
-      const secondaryImages = [
-        '/images/mobile/main-bg-3.png',
-        '/images/mobile/main-bg-4.png',
-        '/images/mobile/main-bg-5.png',
-        '/images/mobile/main-bg-6.png',
-        '/images/mobile/main-bg-7.png',
-        '/images/mobile/info-page-bg.png',
-        '/images/main-bg-3.png',
-        '/images/info-page-bg.png',
-        '/images/tshirt-bg.png',
-        '/images/mobile/footer-bg.png',
-      ];
-      secondaryImages.forEach(loadImage);
     };
 
     void loadAssets();
@@ -140,6 +124,29 @@ function AppShell() {
 
     const timer = setTimeout(prefetchRouteChunks, 1200);
     return () => clearTimeout(timer);
+  }, []);
+
+  // Initialize Lenis smooth scroll
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // smooth exponential easing
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      touchMultiplier: 2,
+    });
+
+    function raf(time: number) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+
+    requestAnimationFrame(raf);
+
+    return () => {
+      lenis.destroy();
+    };
   }, []);
 
   return (

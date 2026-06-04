@@ -9,7 +9,7 @@ import { getProductById, getProductDetailImageScale } from '../data/products';
 import { useAuth } from '../contexts/AuthContext';
 import { toApiUrl } from '../lib/api';
 
-function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImageLoad, altBase, canZoom }: { tshirtId: number, imgNum: number, onZoom: (src: string) => void, mobileTopClass: string, onImageLoad: () => void, altBase?: string, canZoom: boolean }) {
+function TShirtImageFallback({ tshirtId, imgNum, onZoom, onImageLoad, altBase, canZoom }: { tshirtId: number, imgNum: number, onZoom: (src: string) => void, onImageLoad: () => void, altBase?: string, canZoom: boolean }) {
   const imageScale = getProductDetailImageScale(tshirtId, imgNum);
   const paths = [
     `/images/tshirts/${tshirtId}/page-${imgNum}.png`,
@@ -26,7 +26,7 @@ function TShirtImageFallback({ tshirtId, imgNum, onZoom, mobileTopClass, onImage
 
   return (
     <div 
-      className={`absolute left-[50%] md:top-1/2 md:left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-[90%] md:w-[80%] transition-transform duration-300 ${canZoom ? 'cursor-pointer hover:scale-105' : 'cursor-default'} ${mobileTopClass}`} 
+      className={`w-[95%] md:w-[85%] max-w-4xl transition-transform duration-300 ${canZoom ? 'cursor-pointer hover:scale-105' : 'cursor-default'}`} 
       onClick={canZoom ? () => onZoom(currentPath) : undefined}
     >
       <img 
@@ -73,10 +73,6 @@ export default function TShirt() {
   const step = 450 + 48;
   const mobileStep = 280;
   const tshirtSectionNumbers = [1, 2, 3, 4];
-  const getMobileBackgroundPath = (sectionNumber: number) =>
-    sectionNumber === 1
-      ? '/images/mobile/tshirt-bg-1.png'
-      : `/images/mobile/tshirt-bg-mid-${sectionNumber}.png`;
 
   useEffect(() => {
     setIsLoading(true);
@@ -154,7 +150,7 @@ export default function TShirt() {
     }
   }, [loadedImagesCount]);
 
-  if (isNaN(tshirtId) || tshirtId < 1 || tshirtId > 10) {
+  if (isNaN(tshirtId) || tshirtId < 1 || tshirtId > 11) {
     return <Navigate to="/" />;
   }
 
@@ -179,48 +175,36 @@ export default function TShirt() {
         selectedSize={selectedSize}
       />
 
-      {/* Main Content Area - 4 Sections with different Backgrounds */}
-      <div className="w-full flex flex-col">
-        {tshirtSectionNumbers.map((num) => (
-          <div key={num} className="relative w-full h-[100svh] md:h-[100dvh] flex items-center justify-center">
-            {/* Background for each section */}
-            <picture className="absolute inset-0 w-full h-full pointer-events-none z-0">
-              <source media="(max-width: 767px)" srcSet={getMobileBackgroundPath(num)} />
-              <source media="(min-width: 768px)" srcSet={`/images/tshirt-bg-${num}.png`} />
-              <img 
-                src={`/images/tshirt-bg-${num}.png`} 
-                alt="" 
-                loading="eager"
-                className="w-full h-full object-cover no-select"
-                onLoad={() => setLoadedImagesCount(prev => prev + 1)}
-              />
-            </picture>
+      {/* ===== FIXED BACKGROUND ===== */}
+      <picture className="fixed-bg" aria-hidden="true">
+        <source media="(max-width: 767px)" srcSet="/images/mobile/tshirt-bg.png" />
+        <img
+          src="/images/tshirt-bg.png"
+          alt=""
+          aria-hidden="true"
+          loading="eager"
+          className="fixed-bg"
+          onLoad={() => setLoadedImagesCount(prev => prev + 1)}
+        />
+      </picture>
 
-            {/* T-Shirt Overlay for each section */}
-            <div className="relative z-10 w-[80%] md:w-[40%] aspect-square flex items-center justify-center">
-              <TShirtImageFallback 
-                tshirtId={tshirtId} 
-                imgNum={num} 
-                onZoom={setZoomedImage} 
-                mobileTopClass="top-1/2" 
-                onImageLoad={() => setLoadedImagesCount(prev => prev + 1)} 
-                canZoom={true}
-              />
-            </div>
-          </div>
+      {/* ===== SCROLLABLE CONTENT ===== */}
+      <div className="relative z-10 w-full flex flex-col">
+        {/* T-Shirt image sections — scroll over fixed background */}
+        {tshirtSectionNumbers.map((num) => (
+          <section key={num} className="w-full min-h-[100svh] md:min-h-[100dvh] flex items-center justify-center py-12">
+            <TShirtImageFallback 
+              tshirtId={tshirtId} 
+              imgNum={num} 
+              onZoom={setZoomedImage} 
+              onImageLoad={() => setLoadedImagesCount(prev => prev + 1)} 
+              canZoom={true}
+            />
+          </section>
         ))}
 
-        <div className="relative w-full h-[100svh] md:h-[100dvh] flex items-center justify-center">
-          <picture className="absolute inset-0 w-full h-full pointer-events-none z-0">
-            <source media="(max-width: 767px)" srcSet="/images/mobile/tshirt-bg-last.png" />
-            <source media="(min-width: 768px)" srcSet="/images/tshirt-bg-last.png" />
-            <img
-              src="/images/tshirt-bg-last.png"
-              alt=""
-              className="w-full h-full object-cover no-select"
-            />
-          </picture>
-
+        {/* Request / Purchase section */}
+        <section className="w-full min-h-[100svh] md:min-h-[100dvh] flex items-center justify-center py-12">
           <div className="relative z-20 flex flex-col items-center gap-6 w-full max-w-md px-6">
             {canPurchase && (
               <div className="flex gap-4 mb-2">
@@ -269,7 +253,7 @@ export default function TShirt() {
               </div>
             )}
           </div>
-        </div>
+        </section>
 
         {/* Footer at the end of T-Shirt page scroll */}
         <FooterLinks />

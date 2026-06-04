@@ -3,12 +3,9 @@ import { INFO_PAGES, INFO_PAGE_KEYS } from '../data/infoPages';
 
 export default function FooterLinks() {
   return (
-    <footer className="relative w-full bg-black py-20 px-4 flex flex-col items-center gap-6 mt-auto overflow-hidden">
-      <picture className="absolute inset-0 w-full h-full opacity-60 pointer-events-none">
-        <source media="(max-width: 767px)" srcSet="/images/mobile/footer-bg.png" />
-        <source media="(min-width: 768px)" srcSet="/images/pc-footer-bg.png" />
-        <img src="/images/pc-footer-bg.png" className="w-full h-full object-cover" alt="" />
-      </picture>
+    <footer className="relative w-full py-20 px-4 flex flex-col items-center gap-6 mt-auto overflow-hidden">
+      {/* Dark overlay for readability over the fixed background */}
+      <div className="absolute inset-0 bg-black/50 pointer-events-none" aria-hidden="true" />
       
       <nav className="relative z-10 flex flex-col md:flex-row flex-wrap items-center justify-center gap-6 md:gap-12" aria-label="Footer navigation">
         <Link to="/" className="text-white font-bold italic text-base md:text-2xl hover:opacity-80 transition-opacity">

@@ -9,10 +9,9 @@ export default function Product() {
 
   if (!product) return <Navigate to="/" />;
 
-  const imageScale = getProductMainImageScale(product.id);
-  const productPageImageScale = product.id === 1 ? 1.14 : product.id === 2 ? 1.06 : imageScale;
-  const imageFrameSize = product.id === 1 ? 560 : product.id === 2 ? 500 : 440;
-  const imageMaxWidth = product.id === 1 ? 360 : product.id === 2 ? 370 : 420;
+  const productPageImageScale = 1;
+  const imageFrameSize = 800;
+  const imageMaxWidth = 700;
   const title = `${product.name} | xrostao`;
   const description = product.description.replace(/\s+/g, ' ').trim();
   const relatedProducts = PRODUCTS.filter((item) => item.id !== product.id).slice(0, 3);

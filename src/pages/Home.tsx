@@ -6,7 +6,7 @@ import { INFO_PAGE_KEYS, INFO_PAGES } from '../data/infoPages';
 import { getProductMainImageScale, PRODUCTS } from '../data/products';
 import { SITE_NAME } from '../lib/seo';
 
-const desktopTshirtCardClassName = 'w-full max-w-[18rem] xl:max-w-[20rem] flex flex-col items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300';
+const desktopTshirtCardClassName = 'w-full max-w-[28rem] xl:max-w-[34rem] flex flex-col items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300';
 const desktopTshirtFrameClassName = 'w-full aspect-square flex items-center justify-center';
 const featuredInfoKeys = ['who', 'idea', 'how'] as const;
 
@@ -60,88 +60,65 @@ function TshirtMainImageFallback({
   );
 }
 
-function HomeSeoArtwork() {
-  const [hasFailed, setHasFailed] = useState(false);
-
-  if (hasFailed) return null;
-
-  return (
-    <picture className="pointer-events-none absolute inset-0 z-0">
-      <source media="(max-width: 767px)" srcSet="/images/mobile/home-seo-art.png" />
-      <img
-        src="/images/home-seo-art.png"
-        alt=""
-        aria-hidden="true"
-        loading="lazy"
-        decoding="async"
-        className="w-full h-full object-cover"
-        onError={() => setHasFailed(true)}
-      />
-    </picture>
-  );
-}
-
 function HomeSeoSection() {
   return (
-    <section className="relative z-10 w-full bg-black px-4 py-16 md:py-24">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        <HomeSeoArtwork />
-        <div className="absolute inset-0 bg-black/70" />
-      </div>
+    <section className="relative z-10 w-full px-4 py-16 md:py-24">
+      {/* Dark overlay so glass cards are readable over the fixed bg */}
+      <div className="pointer-events-none absolute inset-0 bg-black/60" aria-hidden="true" />
 
       <div className="relative max-w-6xl mx-auto">
-        <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[2.5rem]" aria-hidden="true">
-          <HomeSeoArtwork />
-          <div className="absolute inset-0 bg-black/58" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.14),transparent_42%)]" />
-        </div>
+        {/* Outer glass container */}
+        <div className="relative overflow-hidden rounded-[2.5rem]">
+          <div className="pointer-events-none absolute inset-0 bg-black/50 backdrop-blur-sm" aria-hidden="true" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.14),transparent_42%)]" aria-hidden="true" />
 
-        <div className="relative z-10 grid gap-8 lg:grid-cols-[1.2fr_0.8fr] items-start">
-        <article className="relative overflow-hidden bg-white/8 border border-white/10 rounded-[2rem] backdrop-blur-xl p-6 md:p-10 shadow-2xl">
-          <div className="relative z-10">
-            <h2 className="text-white font-black italic text-3xl md:text-5xl leading-none">
-            xrostao
-            <br />
-            και anergia season
-            </h2>
-            <p className="mt-6 text-white/55 font-black italic text-xs sm:text-sm uppercase tracking-[0.2em]">
-              Ακουλουθεί ai generated κειμενο.
-            </p>
-            <p className="mt-4 text-white/80 font-medium text-base md:text-lg leading-relaxed">
-              Το xrostao είναι ένα streetwear project με επίκεντρο t-shirts, visual ταυτότητα και ένα ύφος που
-              πατάει πάνω στην ανεργία, την καθημερινή πίεση και το ειρωνικό humor του drop anergia season.
-            </p>
-            <p className="mt-4 text-white/70 font-medium text-base md:text-lg leading-relaxed">
-              Στο site θα βρεις τα βασικά προϊόντα του drop, ξεχωριστές product pages, info pages για το concept και το
-              πώς λειτουργεί το αίτημα ενδιαφέροντος, μαζί με αναλυτικές εικόνες για κάθε t-shirt.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/how-it-works" className="inline-flex items-center justify-center bg-white text-black font-bold italic py-3 px-5 rounded-xl hover:bg-white/90 transition-all">
-                Πώς λειτουργεί
-              </Link>
-              <Link to="/who-we-are" className="inline-flex items-center justify-center bg-white/10 text-white font-bold italic py-3 px-5 rounded-xl hover:bg-white/15 transition-all">
-                Ποιοι είμαστε
-              </Link>
-            </div>
+          <div className="relative z-10 grid gap-8 lg:grid-cols-[1.2fr_0.8fr] items-start p-4 md:p-6">
+            <article className="relative overflow-hidden bg-white/8 border border-white/10 rounded-[2rem] backdrop-blur-xl p-6 md:p-10 shadow-2xl">
+              <div className="relative z-10">
+                <h2 className="text-white font-black italic text-3xl md:text-5xl leading-none">
+                  xrostao
+                  <br />
+                  και anergia season
+                </h2>
+                <p className="mt-6 text-white/55 font-black italic text-xs sm:text-sm uppercase tracking-[0.2em]">
+                  Ακουλουθεί ai generated κειμενο.
+                </p>
+                <p className="mt-4 text-white/80 font-medium text-base md:text-lg leading-relaxed">
+                  Το xrostao είναι ένα streetwear project με επίκεντρο t-shirts, visual ταυτότητα και ένα ύφος που
+                  πατάει πάνω στην ανεργία, την καθημερινή πίεση και το ειρωνικό humor του drop anergia season.
+                </p>
+                <p className="mt-4 text-white/70 font-medium text-base md:text-lg leading-relaxed">
+                  Στο site θα βρεις τα βασικά προϊόντα του drop, ξεχωριστές product pages, info pages για το concept και το
+                  πώς λειτουργεί το αίτημα ενδιαφέροντος, μαζί με αναλυτικές εικόνες για κάθε t-shirt.
+                </p>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Link to="/how-it-works" className="inline-flex items-center justify-center bg-white text-black font-bold italic py-3 px-5 rounded-xl hover:bg-white/90 transition-all">
+                    Πώς λειτουργεί
+                  </Link>
+                  <Link to="/who-we-are" className="inline-flex items-center justify-center bg-white/10 text-white font-bold italic py-3 px-5 rounded-xl hover:bg-white/15 transition-all">
+                    Ποιοι είμαστε
+                  </Link>
+                </div>
+              </div>
+            </article>
+
+            <aside className="grid gap-4">
+              {featuredInfoKeys.map((key) => (
+                <Link
+                  key={key}
+                  to={INFO_PAGES[key].path}
+                  className="block bg-white/8 border border-white/10 rounded-[1.5rem] backdrop-blur-xl p-5 hover:bg-white/12 transition-colors"
+                >
+                  <h3 className="text-white font-black italic text-xl md:text-2xl leading-tight">
+                    {INFO_PAGES[key].title}
+                  </h3>
+                  <p className="mt-3 text-white/70 text-sm md:text-base leading-relaxed">
+                    {INFO_PAGES[key].description}
+                  </p>
+                </Link>
+              ))}
+            </aside>
           </div>
-        </article>
-
-        <aside className="grid gap-4">
-          {featuredInfoKeys.map((key) => (
-            <Link
-              key={key}
-              to={INFO_PAGES[key].path}
-              className="block bg-white/8 border border-white/10 rounded-[1.5rem] backdrop-blur-xl p-5 hover:bg-white/12 transition-colors"
-            >
-              <h3 className="text-white font-black italic text-xl md:text-2xl leading-tight">
-                {INFO_PAGES[key].title}
-              </h3>
-              <p className="mt-3 text-white/70 text-sm md:text-base leading-relaxed">
-                {INFO_PAGES[key].description}
-              </p>
-            </Link>
-          ))}
-        </aside>
         </div>
       </div>
     </section>
@@ -221,165 +198,89 @@ export default function Home() {
         Το xrostao είναι brand με χροσταω ρούχα, t-shirts και προϊόντα από το drop anergia season.
         Εδώ βρίσκεις xrostao t-shirts, προϊόντα και πληροφορίες για το αίτημα ενδιαφέροντος.
       </p>
-      
-      {/* ================= DESKTOP VERSION ================= */}
-      <div className="hidden md:flex flex-col w-full" aria-label="Συλλογή προϊόντων για desktop">
-        {/* Section 1: PC Background 1 */}
-        <section className="relative w-full h-[100svh] md:h-[100dvh] flex items-center justify-center" aria-label="Πρώτη σειρά προϊόντων">
-          <img 
-            src="/images/main-bg-1.png" 
-            alt=""
-            aria-hidden="true"
-            loading="eager"
-            className="absolute inset-0 w-full h-full object-cover no-select pointer-events-none z-0"
-          />
-          <div className="relative z-10 w-full max-w-7xl px-8 flex flex-row items-center justify-center gap-12">
-            {PRODUCTS.slice(0, 3).map((product) => (
+
+      {/* ===== FIXED BACKGROUND ===== */}
+      <picture className="fixed-bg" aria-hidden="true">
+        <source media="(max-width: 767px)" srcSet="/images/mobile/home-bg.png" />
+        <img
+          src="/images/home-bg.png"
+          alt=""
+          aria-hidden="true"
+          loading="eager"
+          fetchPriority="high"
+          className="fixed-bg"
+        />
+      </picture>
+
+      {/* ===== SCROLLABLE CONTENT ===== */}
+      <div className="relative z-10 w-full flex flex-col">
+
+        {/* ================= DESKTOP VERSION ================= */}
+        <div className="hidden md:flex w-full flex-col items-center gap-16 py-16" aria-label="Συλλογή προϊόντων για desktop">
+          {Array.from({ length: Math.ceil(PRODUCTS.length / 3) }).map((_, rowIndex) => {
+            const rowProducts = PRODUCTS.slice(rowIndex * 3, rowIndex * 3 + 3);
+            return (
+              <section key={rowIndex} className="w-full min-h-[100dvh] flex items-center justify-center" aria-label={`Σειρά προϊόντων ${rowIndex + 1}`}>
+                <div className="w-full max-w-[120rem] px-8 flex flex-row flex-wrap items-center justify-center gap-12 xl:gap-16">
+                  {rowProducts.map((product) => (
+                    <Link
+                      key={product.id}
+                      to={`/products/${product.slug}`}
+                      aria-label={`Δες το προϊόν ${product.name}`}
+                      className={desktopTshirtCardClassName}
+                    >
+                      <div className={desktopTshirtFrameClassName}>
+                        <TshirtMainImageFallback
+                          tshirtId={product.id}
+                          name={product.name}
+                          loading={rowIndex === 0 ? "eager" : "lazy"}
+                          fetchPriority={rowIndex === 0 && product.id === 1 ? 'high' : 'auto'}
+                        />
+                      </div>
+                      <div className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full text-white font-black italic text-xs tracking-widest uppercase shadow-xl">
+                        δεσ το tshirt
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+
+        {/* ================= MOBILE VERSION ================= */}
+        <div className="block md:hidden w-full flex flex-col" aria-label="Συλλογή προϊόντων για mobile">
+          {PRODUCTS.map((product, index) => (
+            <section
+              key={product.id}
+              className="relative w-full min-h-[100svh] flex items-center justify-center py-12"
+              aria-label={product.name}
+            >
               <Link
-                key={product.id}
                 to={`/products/${product.slug}`}
                 aria-label={`Δες το προϊόν ${product.name}`}
-                className={desktopTshirtCardClassName}
+                className="w-[95%] max-w-md flex flex-col items-center hover:scale-105 transition-transform duration-300"
               >
-                <div className={desktopTshirtFrameClassName}>
-                  <TshirtMainImageFallback
-                    tshirtId={product.id}
-                    name={product.name}
-                    loading="eager"
-                    fetchPriority={product.id === 1 ? 'high' : 'auto'}
-                  />
-                </div>
-                <div className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full text-white font-black italic text-xs tracking-widest uppercase shadow-xl">
+                <TshirtMainImageFallback
+                  tshirtId={product.id}
+                  name={product.name}
+                  loading={index < 2 ? 'eager' : 'lazy'}
+                  fetchPriority={index === 0 ? 'high' : 'auto'}
+                />
+                <div className="mt-6 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full text-white font-black italic text-xs tracking-widest uppercase shadow-xl">
                   δεσ το tshirt
                 </div>
               </Link>
-            ))}
-          </div>
-        </section>
+            </section>
+          ))}
+        </div>
 
-        {/* Section 2: PC Background 2 */}
-        <section className="relative w-full h-[100svh] md:h-[100dvh] flex items-center justify-center" aria-label="Δεύτερη σειρά προϊόντων">
-          <img 
-            src="/images/main-bg-2.png" 
-            alt=""
-            aria-hidden="true"
-            loading="lazy"
-            className="absolute inset-0 w-full h-full object-cover no-select pointer-events-none z-0"
-          />
-          <div className="relative z-10 w-full max-w-7xl px-8 grid grid-cols-3 justify-items-center gap-12 translate-x-2 xl:translate-x-4">
-            {PRODUCTS.slice(3, 9).map((product) => (
-              <Link
-                key={product.id}
-                to={`/products/${product.slug}`}
-                aria-label={`Δες το προϊόν ${product.name}`}
-                className={desktopTshirtCardClassName}
-              >
-                <div className={desktopTshirtFrameClassName}>
-                  <TshirtMainImageFallback tshirtId={product.id} name={product.name} />
-                </div>
-                <div className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full text-white font-black italic text-xs tracking-widest uppercase shadow-xl">
-                  δεσ το tshirt
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
+        {/* ===== SEO SECTION ===== */}
+        <HomeSeoSection />
 
-        {/* Section 3: PC Background 3 (Skate) */}
-        <section className="relative w-full h-[100svh] md:h-[100dvh] flex items-center justify-center" aria-label="Τελικό featured προϊόν">
-          <img 
-            src="/images/main-bg-3.png" 
-            alt=""
-            aria-hidden="true"
-            loading="lazy"
-            className="absolute inset-0 w-full h-full object-cover no-select pointer-events-none z-0"
-          />
-          <Link
-            to={`/products/${PRODUCTS[9].slug}`}
-            aria-label={`Δες το προϊόν ${PRODUCTS[9].name}`}
-            className={`relative z-10 translate-x-2 xl:translate-x-4 ${desktopTshirtCardClassName}`}
-          >
-            <div className={desktopTshirtFrameClassName}>
-              <TshirtMainImageFallback tshirtId={PRODUCTS[9].id} name={PRODUCTS[9].name} />
-            </div>
-            <div className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full text-white font-black italic text-xs tracking-widest uppercase shadow-xl">
-              δεσ το tshirt
-            </div>
-          </Link>
-        </section>
-
+        {/* ===== FOOTER ===== */}
+        <FooterLinks />
       </div>
-
-      {/* ================= MOBILE VERSION ================= */}
-      <div className="block md:hidden w-full flex flex-col" aria-label="Συλλογή προϊόντων για mobile">
-        {/* Mobile Section 1: Background 1 */}
-        <section className="relative w-full h-[100svh] md:h-[100dvh]" aria-label={PRODUCTS[0].name}>
-          <img src="/images/mobile/main-bg-1.png" alt="" aria-hidden="true" loading="eager" fetchPriority="high" className="w-full h-full object-cover no-select" />
-          <Link to={`/products/${PRODUCTS[0].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[0].name}`} className="absolute top-[66%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
-            <TshirtMainImageFallback tshirtId={1} name={PRODUCTS[0].name} loading="eager" fetchPriority="high" />
-          </Link>
-        </section>
-
-        {/* Mobile Section 2: Background 2 */}
-        <section className="relative w-full h-[100svh] md:h-[100dvh]" aria-label="Δεύτερη mobile ενότητα προϊόντων">
-          <img src="/images/mobile/main-bg-2.png" alt="" aria-hidden="true" loading="eager" className="w-full h-full object-cover no-select" />
-          <Link to={`/products/${PRODUCTS[1].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[1].name}`} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
-            <TshirtMainImageFallback tshirtId={2} name={PRODUCTS[1].name} />
-          </Link>
-          <Link to={`/products/${PRODUCTS[2].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[2].name}`} className="absolute top-[75%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
-            <TshirtMainImageFallback tshirtId={3} name={PRODUCTS[2].name} />
-          </Link>
-        </section>
-
-        {/* Mobile Section 3: Background 3 */}
-        <section className="relative w-full h-[100svh] md:h-[100dvh]" aria-label="Τρίτη mobile ενότητα προϊόντων">
-          <img src="/images/mobile/main-bg-3.png" alt="" aria-hidden="true" loading="lazy" className="w-full h-full object-cover no-select" />
-          <Link to={`/products/${PRODUCTS[3].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[3].name}`} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
-            <TshirtMainImageFallback tshirtId={4} name={PRODUCTS[3].name} />
-          </Link>
-          <Link to={`/products/${PRODUCTS[4].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[4].name}`} className="absolute top-[75%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
-            <TshirtMainImageFallback tshirtId={5} name={PRODUCTS[4].name} />
-          </Link>
-        </section>
-
-        {/* Mobile Section 4: Background 4 */}
-        <section className="relative w-full h-[100svh] md:h-[100dvh]" aria-label="Τέταρτη mobile ενότητα προϊόντων">
-          <img src="/images/mobile/main-bg-4.png" alt="" aria-hidden="true" loading="lazy" className="w-full h-full object-cover no-select" />
-          <Link to={`/products/${PRODUCTS[5].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[5].name}`} className="absolute top-[25%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
-            <TshirtMainImageFallback tshirtId={6} name={PRODUCTS[5].name} />
-          </Link>
-          <Link to={`/products/${PRODUCTS[6].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[6].name}`} className="absolute top-[75%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
-            <TshirtMainImageFallback tshirtId={7} name={PRODUCTS[6].name} />
-          </Link>
-        </section>
-
-        {/* Mobile Section 5: Background 5 */}
-        <section className="relative w-full h-[100svh] md:h-[100dvh]" aria-label={PRODUCTS[7].name}>
-          <img src="/images/mobile/main-bg-5.png" alt="" aria-hidden="true" loading="lazy" className="w-full h-full object-cover no-select" />
-          <Link to={`/products/${PRODUCTS[7].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[7].name}`} className="absolute top-[46%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
-            <TshirtMainImageFallback tshirtId={8} name={PRODUCTS[7].name} />
-          </Link>
-        </section>
-
-        {/* Mobile Section 6: Background 6 */}
-        <section className="relative w-full h-[100svh] md:h-[100dvh]" aria-label="Έκτη mobile ενότητα προϊόντων">
-          <img src="/images/mobile/main-bg-6.png" alt="" aria-hidden="true" loading="lazy" className="w-full h-full object-cover no-select" />
-          <Link to={`/products/${PRODUCTS[8].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[8].name}`} className="absolute top-[21%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
-            <TshirtMainImageFallback tshirtId={9} name={PRODUCTS[8].name} />
-          </Link>
-          <Link to={`/products/${PRODUCTS[9].slug}`} aria-label={`Δες το προϊόν ${PRODUCTS[9].name}`} className="absolute top-[71%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] hover:scale-105 transition-transform">
-            <TshirtMainImageFallback tshirtId={10} name={PRODUCTS[9].name} />
-          </Link>
-        </section>
-
-        {/* Mobile Section 7: Background 7 */}
-        <section className="relative w-full h-[100svh] md:h-[100dvh]" aria-label="Τελευταίο visual section">
-          <img src="/images/mobile/main-bg-7.png" alt="" aria-hidden="true" loading="lazy" className="w-full h-full object-cover no-select" />
-        </section>
-      </div>
-
-      <HomeSeoSection />
-      <FooterLinks />
 
       <nav className="sr-only" aria-label="Γρήγορη πλοήγηση xrostao">
         {PRODUCTS.map((product) => (
