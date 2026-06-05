@@ -186,8 +186,14 @@ export default function Product() {
               <Link
                 key={item.id}
                 to={`/products/${item.slug}`}
-                className="block bg-white/8 border border-white/10 rounded-[1.5rem] p-5 backdrop-blur-xl hover:bg-white/12 transition-colors"
+                className="flex flex-col items-center text-center bg-white/8 border border-white/10 rounded-[1.5rem] p-5 backdrop-blur-xl hover:bg-white/12 transition-colors"
               >
+                <img 
+                  src={item.primaryImage} 
+                  alt={item.name} 
+                  className="w-full max-w-[10rem] object-contain drop-shadow-2xl mb-4 pointer-events-none" 
+                  loading="lazy" 
+                />
                 <h3 className="text-white font-bold italic text-lg leading-tight">{item.name}</h3>
                 <p className="mt-3 text-white/65 text-sm leading-relaxed">
                   {item.description.replace(/\s+/g, ' ').trim()}

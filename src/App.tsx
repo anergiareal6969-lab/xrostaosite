@@ -20,10 +20,23 @@ function RouteFallback() {
   return <div className="min-h-screen w-full bg-black" aria-hidden="true" />;
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    if ((window as any).lenis) {
+      (window as any).lenis.scrollTo(0, { immediate: true });
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [pathname]);
+  return null;
+}
+
 function AppRoutes() {
   const location = useLocation();
   return (
     <Suspense fallback={<RouteFallback />}>
+      <ScrollToTop />
       <div key={location.pathname}>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -136,6 +149,7 @@ function AppShell() {
       smoothWheel: true,
       touchMultiplier: 2,
     });
+    (window as any).lenis = lenis;
 
     function raf(time: number) {
       lenis.raf(time);
@@ -146,6 +160,7 @@ function AppShell() {
 
     return () => {
       lenis.destroy();
+      delete (window as any).lenis;
     };
   }, []);
 

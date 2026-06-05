@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useParams, Navigate, useNavigate } from 'react-router-dom';
+import { useParams, Navigate, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import Preloader from '../components/Preloader';
 import RequestModal from '../components/RequestModal';
 import Seo from '../components/Seo';
 import FooterLinks from '../components/FooterLinks';
-import { getProductById, getProductDetailImageScale } from '../data/products';
+import { getProductById, getProductDetailImageScale, PRODUCTS } from '../data/products';
 import { useAuth } from '../contexts/AuthContext';
 import { toApiUrl } from '../lib/api';
 
@@ -26,7 +26,7 @@ function TShirtImageFallback({ tshirtId, imgNum, onZoom, onImageLoad, altBase, c
 
   return (
     <div 
-      className={`w-[90%] md:w-[65%] max-w-2xl transition-transform duration-300 ${canZoom ? 'cursor-pointer hover:scale-105' : 'cursor-default'}`} 
+      className={`w-[90%] ${imgNum >= 3 ? 'md:w-[50%]' : 'md:w-[65%]'} max-w-2xl transition-transform duration-300 ${canZoom ? 'cursor-pointer hover:scale-105' : 'cursor-default'}`} 
       onClick={canZoom ? () => onZoom(currentPath) : undefined}
     >
       <img 
@@ -73,6 +73,9 @@ export default function TShirt() {
   const step = 450 + 48;
   const mobileStep = 280;
   const tshirtSectionNumbers = [1, 2, 3, 4];
+
+  // Pick 3 random related products
+  const relatedProducts = PRODUCTS.filter((p) => p.id !== tshirtId).sort(() => 0.5 - Math.random()).slice(0, 3);
 
   useEffect(() => {
     setIsLoading(true);
@@ -252,6 +255,35 @@ export default function TShirt() {
                 Διαθέσιμο για αγορά σε: <span className="font-bold">{formatTimeRemaining(hoursRemaining)}</span>
               </div>
             )}
+          </div>
+        </section>
+
+        {/* Related Products Section */}
+        <section className="w-full flex flex-col items-center py-16 px-6 bg-black/40 backdrop-blur-sm z-20">
+          <div className="w-full max-w-5xl">
+            <h2 className="text-white font-black italic text-2xl md:text-4xl leading-none mb-8 text-center md:text-left">
+              Σχετικά προϊόντα
+            </h2>
+            <div className="grid gap-4 md:grid-cols-3">
+              {relatedProducts.map((item) => (
+                <Link
+                  key={item.id}
+                  to={`/products/${item.slug}`}
+                  className="flex flex-col items-center text-center bg-white/8 border border-white/10 rounded-[1.5rem] p-5 backdrop-blur-xl hover:bg-white/12 transition-colors"
+                >
+                  <img 
+                    src={item.primaryImage} 
+                    alt={item.name} 
+                    className="w-full max-w-[10rem] object-contain drop-shadow-2xl mb-4 pointer-events-none" 
+                    loading="lazy" 
+                  />
+                  <h3 className="text-white font-bold italic text-lg leading-tight">{item.name}</h3>
+                  <p className="mt-3 text-white/65 text-sm leading-relaxed">
+                    {item.description.replace(/\s+/g, ' ').trim()}
+                  </p>
+                </Link>
+              ))}
+            </div>
           </div>
         </section>
 
