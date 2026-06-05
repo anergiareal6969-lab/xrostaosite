@@ -253,7 +253,7 @@ export default function Home() {
           {PRODUCTS.map((product, index) => (
             <section
               key={product.id}
-              className="relative w-full min-h-[100svh] flex items-center justify-center py-12"
+              className="relative w-full min-h-[60svh] flex items-center justify-center py-12"
               aria-label={product.name}
             >
               <Link
