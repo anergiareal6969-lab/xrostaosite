@@ -14,7 +14,6 @@ body {
   color: #fff;
   margin: 0;
   padding: 0;
-  overscroll-behavior: none;
 }
 
 .font-inter {
@@ -44,4 +43,8 @@ body {
   user-select: none;
   -webkit-user-select: none;
   -webkit-user-drag: none;
+  /* Hardware acceleration to prevent mobile scroll lag */
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
 }

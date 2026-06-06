@@ -79,7 +79,7 @@ export default function Product() {
   ];
 
   return (
-    <main className="relative w-full bg-black flex flex-col">
+    <main className="relative w-full min-h-screen bg-black flex flex-col">
       <Seo
         title={title}
         description={description}
@@ -91,7 +91,20 @@ export default function Product() {
         jsonLd={jsonLd}
       />
 
-      <div className="w-full max-w-5xl mx-auto px-4 pt-28 pb-10">
+      {/* ===== FIXED BACKGROUND ===== */}
+      <picture className="fixed-bg" aria-hidden="true">
+        <source media="(max-width: 767px)" srcSet="/images/mobile/product-bg.png" />
+        <img
+          src="/images/product-bg.png"
+          alt=""
+          aria-hidden="true"
+          loading="eager"
+          fetchPriority="high"
+          className="fixed-bg"
+        />
+      </picture>
+
+      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 pt-28 pb-10">
         <nav className="sr-only" aria-label="Breadcrumb">
           <Link to="/">ρούχα</Link>
           <span>{product.name}</span>
