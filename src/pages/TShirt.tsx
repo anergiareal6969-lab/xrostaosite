@@ -26,7 +26,7 @@ function TShirtImageFallback({ tshirtId, imgNum, onZoom, onImageLoad, altBase, c
 
   return (
     <div 
-      className={`w-[90%] ${imgNum >= 3 ? 'md:w-[50%]' : 'md:w-[65%]'} max-w-2xl transition-transform duration-300 ${canZoom ? 'cursor-pointer hover:scale-105' : 'cursor-default'}`} 
+      className={`${imgNum <= 2 ? 'w-[115%] shrink-0' : 'w-[90%]'} ${imgNum >= 3 ? 'md:w-[50%] md:shrink' : 'md:w-[65%] md:shrink'} max-w-2xl transition-transform duration-300 ${canZoom ? 'cursor-pointer hover:scale-[1.02] md:hover:scale-105' : 'cursor-default'}`} 
       onClick={canZoom ? () => onZoom(currentPath) : undefined}
     >
       <img 
