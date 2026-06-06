@@ -40,9 +40,9 @@ function TshirtMainImageFallback({
   if (hasFailed) return <div className="w-full aspect-square bg-gray-900/20 rounded-lg animate-pulse" />;
 
   return (
-    <img 
+    <img
       key={`${tshirtId}-${pathIndex}`}
-      src={currentPath} 
+      src={currentPath}
       alt={name}
       onError={() => {
         if (pathIndex < paths.length - 1) {
@@ -297,3 +297,4 @@ export default function Home() {
     </main>
   );
 }
+
