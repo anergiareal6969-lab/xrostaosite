@@ -13,17 +13,18 @@ export default function AnergiaDrop() {
       />
       
       {/* Background Image */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
+      <picture className="fixed inset-0 z-0 pointer-events-none">
+        <source media="(max-width: 767px)" srcSet="/images/mobile/anergia-drop-bg.png" />
         <img 
           src="/images/anergia-drop-bg.png" 
           alt="Anergia Drop Background" 
           className="w-full h-full object-cover opacity-70"
         />
-      </div>
+      </picture>
 
-      <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col items-center">
+      <div className="relative z-10 w-full max-w-3xl mx-auto flex flex-col items-center">
         {/* The grid of 11 items */}
-        <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1 md:gap-2 mt-8">
+        <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-8">
           {PRODUCTS.slice(0, 11).map((product) => (
             <Link 
               key={product.id} 
