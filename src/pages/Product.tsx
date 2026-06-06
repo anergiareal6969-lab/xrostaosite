@@ -118,8 +118,8 @@ export default function Product() {
 
         <div className="mt-10 flex flex-col xl:flex-row gap-8 xl:gap-12 items-start">
           <div
-            className="w-full overflow-hidden rounded-xl border border-white/10 bg-white/5 flex items-center justify-center p-6 md:p-8"
-            style={{ maxWidth: `${imageFrameSize}px`, minHeight: `${imageFrameSize}px` }}
+            className="w-full aspect-square overflow-hidden rounded-xl border border-white/10 bg-white/5 flex items-center justify-center p-6 md:p-8"
+            style={{ maxWidth: `${imageFrameSize}px` }}
           >
             <img
               src={product.primaryImage}
