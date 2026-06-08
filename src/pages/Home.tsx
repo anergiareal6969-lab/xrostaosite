@@ -216,11 +216,11 @@ export default function Home() {
       <div className="relative z-10 w-full flex flex-col">
 
         {/* ================= DESKTOP VERSION ================= */}
-        <div className="hidden md:flex w-full flex-col items-center gap-16 py-16" aria-label="Συλλογή προϊόντων για desktop">
+        <div className="hidden md:flex w-full flex-col items-center gap-8 pt-[20vh] pb-16" aria-label="Συλλογή προϊόντων για desktop">
           {Array.from({ length: Math.ceil(PRODUCTS.length / 3) }).map((_, rowIndex) => {
             const rowProducts = PRODUCTS.slice(rowIndex * 3, rowIndex * 3 + 3);
             return (
-              <section key={rowIndex} className="w-full min-h-[100dvh] flex items-center justify-center" aria-label={`Σειρά προϊόντων ${rowIndex + 1}`}>
+              <section key={rowIndex} className="w-full min-h-[60dvh] flex items-center justify-center py-8" aria-label={`Σειρά προϊόντων ${rowIndex + 1}`}>
                 <div className="w-full max-w-[120rem] px-8 flex flex-row flex-wrap items-center justify-center gap-12 xl:gap-16">
                   {rowProducts.map((product) => (
                     <Link
@@ -237,7 +237,7 @@ export default function Home() {
                           fetchPriority={rowIndex === 0 && product.id === 1 ? 'high' : 'auto'}
                         />
                       </div>
-                      <div className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full text-white font-black italic text-xs tracking-widest uppercase shadow-xl">
+                      <div className="mt-2 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full text-white font-black italic text-xs tracking-widest uppercase shadow-xl">
                         δεσ το tshirt
                       </div>
                     </Link>
@@ -249,7 +249,7 @@ export default function Home() {
         </div>
 
         {/* ================= MOBILE VERSION ================= */}
-        <div className="block md:hidden w-full flex flex-col" aria-label="Συλλογή προϊόντων για mobile">
+        <div className="block md:hidden w-full flex flex-col mt-[30vh]" aria-label="Συλλογή προϊόντων για mobile">
           {PRODUCTS.map((product, index) => (
             <section
               key={product.id}
