@@ -249,7 +249,7 @@ export default function Home() {
         </div>
 
         {/* ================= MOBILE VERSION ================= */}
-        <div className="block md:hidden w-full flex flex-col mt-[30vh]" aria-label="Συλλογή προϊόντων για mobile">
+        <div className="block md:hidden w-full flex flex-col mt-[15vh]" aria-label="Συλλογή προϊόντων για mobile">
           {PRODUCTS.map((product, index) => (
             <section
               key={product.id}
