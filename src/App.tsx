@@ -72,6 +72,7 @@ function AppRoutes() {
 
 function AppShell() {
   const [isLoading, setIsLoading] = useState(true);
+  const isComingSoon = import.meta.env.VITE_COMING_SOON === 'true';
 
   useEffect(() => {
     let isActive = true;
@@ -86,7 +87,10 @@ function AppShell() {
         if (isActive) setIsLoading(false);
       }, 10000);
 
-      const criticalImages = [
+      const criticalImages = isComingSoon ? [
+        '/images/coming-soon-mobile.jpg',
+        '/images/coming-soon-desktop.jpg',
+      ] : [
         '/images/mobile/home-bg.png',
         '/images/home-bg.png',
       ];
@@ -169,8 +173,25 @@ function AppShell() {
   return (
     <div className="relative min-h-screen w-full font-sans bg-black">
       <Preloader isLoading={isLoading} />
-      <Menu />
-      <AppRoutes />
+      {isComingSoon ? (
+        <div className="fixed inset-0 z-40 bg-black flex items-center justify-center">
+          <img
+            src="/images/coming-soon-mobile.jpg"
+            alt="Coming Soon"
+            className="w-full h-full object-cover block md:hidden"
+          />
+          <img
+            src="/images/coming-soon-desktop.jpg"
+            alt="Coming Soon"
+            className="w-full h-full object-cover hidden md:block"
+          />
+        </div>
+      ) : (
+        <>
+          <Menu />
+          <AppRoutes />
+        </>
+      )}
     </div>
   );
 }
