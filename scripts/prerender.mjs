@@ -65,9 +65,13 @@ async function run() {
       const url = `${origin}${route}`;
       await page.goto(url, { waitUntil: 'networkidle0' });
 
-      await page.waitForFunction(() => {
-        return (window && window.document && window.document.querySelector('link[rel="canonical"]'));
-      });
+      try {
+        await page.waitForFunction(() => {
+          return (window && window.document && window.document.querySelector('link[rel="canonical"]'));
+        }, { timeout: 5000 });
+      } catch (e) {
+        console.warn(`[prerender] Canonical link not found for ${route} (might be coming soon mode)`);
+      }
 
       const html = await page.content();
 
