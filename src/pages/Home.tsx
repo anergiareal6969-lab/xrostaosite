@@ -6,7 +6,7 @@ import { INFO_PAGE_KEYS, INFO_PAGES } from '../data/infoPages';
 import { getProductMainImageScale, PRODUCTS } from '../data/products';
 import { SITE_NAME } from '../lib/seo';
 
-const desktopTshirtCardClassName = 'w-full max-w-[28rem] xl:max-w-[34rem] flex flex-col items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300';
+const desktopTshirtCardClassName = 'w-full max-w-[24rem] xl:max-w-[28rem] flex flex-col items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300';
 const desktopTshirtFrameClassName = 'w-full aspect-square flex items-center justify-center';
 const featuredInfoKeys = ['who', 'idea', 'how'] as const;
 
@@ -15,13 +15,15 @@ function TshirtMainImageFallback({
   name,
   loading = 'lazy',
   fetchPriority = 'auto',
+  applyScale = false,
 }: {
   tshirtId: number;
   name: string;
   loading?: 'eager' | 'lazy';
   fetchPriority?: 'high' | 'low' | 'auto';
+  applyScale?: boolean;
 }) {
-  const imageScale = getProductMainImageScale(tshirtId);
+  const imageScale = applyScale ? getProductMainImageScale(tshirtId) : 1;
   const paths = [
     `/images/tshirts/${tshirtId}/main.png`,
     `/images/tshirts/${tshirtId}/main.jpeg`,
@@ -235,6 +237,7 @@ export default function Home() {
                           name={product.name}
                           loading={rowIndex === 0 ? "eager" : "lazy"}
                           fetchPriority={rowIndex === 0 && product.id === 1 ? 'high' : 'auto'}
+                          applyScale={true}
                         />
                       </div>
                       <div className="mt-2 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full text-white font-black italic text-xs tracking-widest uppercase shadow-xl">
