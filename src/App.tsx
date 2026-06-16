@@ -9,7 +9,7 @@ import { INFO_PAGE_KEYS, INFO_PAGES } from './data/infoPages';
 const Home = lazy(() => import('./pages/Home'));
 const TShirt = lazy(() => import('./pages/TShirt'));
 const Product = lazy(() => import('./pages/Product'));
-const AnergiaDrop = lazy(() => import('./pages/AnergiaDrop'));
+
 const InfoPage = lazy(() => import('./pages/InfoPage'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 type IdleWindow = Window & {
@@ -41,7 +41,7 @@ function AppRoutes() {
       <div key={location.pathname}>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/anergia-drop" element={<AnergiaDrop />} />
+
           <Route path="/products/:slug" element={<Product />} />
           <Route path="/tshirt/:id" element={<TShirt />} />
           {INFO_PAGE_KEYS.map((key) => {

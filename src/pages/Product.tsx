@@ -9,7 +9,7 @@ export default function Product() {
 
   if (!product) return <Navigate to="/" />;
 
-  const productPageImageScale = 1;
+  const productPageImageScale = getProductMainImageScale(product.id);
   const imageFrameSize = 800;
   const imageMaxWidth = 700;
   const title = `${product.name} | xrostao`;

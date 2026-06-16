@@ -35,9 +35,7 @@ export default function Menu() {
               <Link to="/" onClick={() => setIsOpen(false)} className="text-white font-black italic text-lg md:text-xl hover:opacity-70 transition-opacity uppercase tracking-widest">
                 ρούχα
               </Link>
-              <Link to="/anergia-drop" onClick={() => setIsOpen(false)} className="text-left text-white/80 font-black italic text-sm md:text-base hover:text-white transition-colors uppercase tracking-widest">
-                ανεργια drop
-              </Link>
+
               {INFO_PAGE_KEYS.map((key) => (
                 <Link
                   key={key}

@@ -218,7 +218,7 @@ export default function Home() {
       <div className="relative z-10 w-full flex flex-col">
 
         {/* ================= DESKTOP VERSION ================= */}
-        <div className="hidden md:flex w-full flex-col items-center gap-8 pt-[20vh] pb-16" aria-label="Συλλογή προϊόντων για desktop">
+        <div className="hidden md:flex w-full flex-col items-center gap-8 pt-[25vh] pb-16" aria-label="Συλλογή προϊόντων για desktop">
           {Array.from({ length: Math.ceil(PRODUCTS.slice(0, 24).length / 3) }).map((_, rowIndex) => {
             const rowProducts = PRODUCTS.slice(0, 24).slice(rowIndex * 3, rowIndex * 3 + 3);
             return (
