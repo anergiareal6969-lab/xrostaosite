@@ -262,7 +262,7 @@ export default function Home() {
               <Link
                 to={`/products/${product.slug}`}
                 aria-label={`Δες το προϊόν ${product.name}`}
-                className="w-[95%] max-w-md flex flex-col items-center hover:scale-105 transition-transform duration-300"
+                className="w-[85%] max-w-md flex flex-col items-center hover:scale-105 transition-transform duration-300"
               >
                 <TshirtMainImageFallback
                   tshirtId={product.id}
@@ -285,10 +285,10 @@ export default function Home() {
 
       <nav className="sr-only" aria-label="Γρήγορη πλοήγηση xrostao">
         {PRODUCTS.slice(0, 24).map((product) => (
-            <Link key={product.id} to={`/products/${product.slug}`}>
-              {product.name}
-            </Link>
-          ))}
+          <Link key={product.id} to={`/products/${product.slug}`}>
+            {product.name}
+          </Link>
+        ))}
         {INFO_PAGE_KEYS.map((key) => (
           <Link key={key} to={INFO_PAGES[key].path}>
             {INFO_PAGES[key].title}
