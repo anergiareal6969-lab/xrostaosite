@@ -84,6 +84,20 @@ export const PRODUCTS: Product[] = [
     description: 'Απλά ένα t-shirt που όταν το φορέσεις θα νιώσεις πιο ξέγνοιαστος για τα χρέη σου.',
     primaryImage: '/images/tshirts/11/main.png',
   },
+  {
+    id: 12,
+    slug: 'expired-idol-tshirt-anergia-season',
+    name: 'xrostao expired idol tshirt',
+    description: 'Κάποτε θεωρούνταν 10άρι, ενώ πλέον όχι, οπότε γαμάει η ειρωνεία, στα ρούχα',
+    primaryImage: '/images/tshirts/12/main.png',
+  },
+  {
+    id: 13,
+    slug: 'greek-traditions-tshirt-anergia-season',
+    name: 'xrostao greek traditions tshirt',
+    description: 'Πώς καταλαβαίνεις ότι γαμάει να είσαι στην Ελλάδα',
+    primaryImage: '/images/tshirts/13/main.png',
+  },
 ];
 
 export function getProductById(id: number) {

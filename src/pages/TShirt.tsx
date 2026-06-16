@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, Navigate, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import Preloader from '../components/Preloader';
-import RequestModal from '../components/RequestModal';
-import Seo from '../components/Seo';
-import FooterLinks from '../components/FooterLinks';
 import { getProductById, getProductDetailImageScale, PRODUCTS } from '../data/products';
 import { useAuth } from '../contexts/AuthContext';
-import { toApiUrl } from '../lib/api';
+import Preloader from '../components/Preloader';
+import Seo from '../components/Seo';
+import FooterLinks from '../components/FooterLinks';
 
 function TShirtImageFallback({ tshirtId, imgNum, onZoom, onImageLoad, altBase, canZoom }: { tshirtId: number, imgNum: number, onZoom: (src: string) => void, onImageLoad: () => void, altBase?: string, canZoom: boolean }) {
   const imageScale = getProductDetailImageScale(tshirtId, imgNum);
@@ -59,12 +57,6 @@ export default function TShirt() {
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadedImagesCount, setLoadedImagesCount] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [hasRequested, setHasRequested] = useState(false);
-  const [requestConfirmed, setRequestConfirmed] = useState(false);
-  const [canPurchase, setCanPurchase] = useState(false);
-  const [hoursRemaining, setHoursRemaining] = useState<number | null>(null);
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -80,12 +72,8 @@ export default function TShirt() {
   useEffect(() => {
     setIsLoading(true);
     setLoadedImagesCount(0);
-    setSelectedSize(null);
-    setHoursRemaining(null);
     setCurrentIndex(0);
-    setRequestConfirmed(false);
     window.scrollTo(0, 0);
-    checkIfRequested();
 
     // Safety timer: maximum 10 seconds on mobile for preloader
     const safetyTimer = setTimeout(() => {
@@ -94,55 +82,6 @@ export default function TShirt() {
     
     return () => clearTimeout(safetyTimer);
   }, [id, user]);
-
-  const checkIfRequested = async () => {
-    try {
-      const apiUrl = toApiUrl('/api/check-request');
-      const emailParam = user?.email ? `&email=${encodeURIComponent(user.email)}` : '';
-      const response = await fetch(`${apiUrl}?tshirtId=${tshirtId}${emailParam}`);
-      
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      setHasRequested(data.requested);
-      setRequestConfirmed(data.requested);
-      setCanPurchase(data.canPurchase);
-      if (data.requested && data.hoursRemaining) {
-        setHoursRemaining(data.hoursRemaining);
-      }
-    } catch (err) {
-      console.error('Failed to check request status:', err);
-    }
-  };
-
-  const formatTimeRemaining = (hours: number) => {
-    const totalMinutes = Math.floor(hours * 60);
-    const h = Math.floor(totalMinutes / 60);
-    const m = totalMinutes % 60;
-    return `${h}ώ ${m}λ`;
-  };
-
-  const handleRequestSubmit = async (email: string) => {
-    const response = await fetch(toApiUrl('/api/request'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, tshirtId })
-    });
-
-    const data = await response.json().catch(() => null);
-
-    if (!response.ok || !data || data.status !== 'success') {
-      const details = data?.status
-        ? `${data.status}${data.requestId ? ` (id: ${data.requestId})` : ''}`
-        : `HTTP ${response.status}`;
-      throw new Error(`Request failed: ${details}`);
-    }
-
-    setHasRequested(true);
-    setRequestConfirmed(true);
-    setCanPurchase(false);
-    setHoursRemaining(24);
-    checkIfRequested();
-  };
 
   useEffect(() => {
     // If most critical images are loaded, we can show the page
@@ -153,7 +92,7 @@ export default function TShirt() {
     }
   }, [loadedImagesCount]);
 
-  if (isNaN(tshirtId) || tshirtId < 1 || tshirtId > 11) {
+  if (isNaN(tshirtId) || tshirtId < 1 || tshirtId > 13) {
     return <Navigate to="/" />;
   }
 
@@ -170,13 +109,6 @@ export default function TShirt() {
         robots="noindex,follow"
       />
       <Preloader isLoading={isLoading} />
-      <RequestModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onSubmit={handleRequestSubmit}
-        mode={canPurchase ? 'purchase' : 'request'}
-        selectedSize={selectedSize}
-      />
 
       {/* ===== FIXED BACKGROUND ===== */}
       <picture className="fixed-bg" aria-hidden="true">
@@ -209,52 +141,18 @@ export default function TShirt() {
         {/* Request / Purchase section */}
         <section className="w-full min-h-[100svh] md:min-h-[100dvh] flex items-center justify-center py-12">
           <div className="relative z-20 flex flex-col items-center gap-6 w-full max-w-md px-6">
-            {canPurchase && (
-              <div className="flex gap-4 mb-2">
-                {sizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`w-12 h-12 md:w-16 md:h-16 flex items-center justify-center border-2 border-white font-bold italic text-lg md:text-2xl transition-all rounded-xl ${
-                      selectedSize === size ? 'bg-white text-black' : 'bg-white/10 backdrop-blur-md text-white hover:bg-white/20'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            <button
-              onClick={() => setIsModalOpen(true)}
-              disabled={(requestConfirmed || hasRequested) && !canPurchase}
-              className={`w-full max-w-sm ${
-                canPurchase
-                  ? 'bg-blue-400 hover:bg-blue-500'
-                  : (requestConfirmed || hasRequested)
-                    ? 'bg-green-500 hover:bg-green-500 cursor-default'
-                    : 'bg-blue-400 hover:bg-blue-500'
-              } text-white font-sans font-bold italic text-xl md:text-3xl py-5 px-12 rounded-2xl shadow-2xl backdrop-blur-md border border-white/20 transition-all active:scale-95`}
+            <a
+              href="https://www.instagram.com/xrostaoclothing"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full max-w-sm bg-blue-400 hover:bg-blue-500 text-white flex items-center justify-center py-5 px-12 rounded-2xl shadow-2xl backdrop-blur-md border border-white/20 transition-all active:scale-95"
             >
-              {canPurchase ? 'ἀγόρασον' : (requestConfirmed || hasRequested) ? 'αιτημα εληφθη' : 'αίτημα'}
-            </button>
-
-            {(requestConfirmed || hasRequested) && !canPurchase && (
-              <button
-                type="button"
-                disabled
-                className="w-full max-w-sm bg-white/10 text-white/85 font-sans font-bold italic text-sm md:text-base leading-relaxed py-4 px-6 rounded-2xl border border-white/15 backdrop-blur-md cursor-default"
-              >
-                Μπορείς να κάνεις μόνο ένα αίτημα, γιατί θα μας πρήξεις με πολλά αιτήματα και μετά,
-                σαν άνεργος, θα αγοράζεις μπλούζες, οπότε άστο καλύτερα.
-              </button>
-            )}
-
-            {(requestConfirmed || hasRequested) && !canPurchase && hoursRemaining !== null && (
-              <div className="text-white font-sans font-medium text-sm md:text-base opacity-80 mt-2 bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm">
-                Διαθέσιμο για αγορά σε: <span className="font-bold">{formatTimeRemaining(hoursRemaining)}</span>
-              </div>
-            )}
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-instagram">
+                <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+              </svg>
+            </a>
           </div>
         </section>
 
