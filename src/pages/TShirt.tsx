@@ -23,13 +23,13 @@ function TShirtImageFallback({ tshirtId, imgNum, onZoom, onImageLoad, altBase, c
   if (hasFailed) return null;
 
   return (
-    <div 
-      className={`${imgNum <= 2 ? 'w-[105%] shrink-0' : 'w-[90%]'} ${imgNum >= 3 ? 'md:w-[50%] md:shrink' : 'md:w-[65%] md:shrink'} max-w-2xl transition-transform duration-300 ${canZoom ? 'cursor-pointer hover:scale-[1.02] md:hover:scale-105' : 'cursor-default'}`} 
+    <div
+      className={`${imgNum <= 2 ? 'w-[105%] shrink-0' : 'w-[90%]'} ${imgNum >= 3 ? 'md:w-[50%] md:shrink' : 'md:w-[65%] md:shrink'} max-w-2xl transition-transform duration-300 ${canZoom ? 'cursor-pointer hover:scale-[1.02] md:hover:scale-105' : 'cursor-default'}`}
       onClick={canZoom ? () => onZoom(currentPath) : undefined}
     >
-      <img 
+      <img
         key={`${tshirtId}-${imgNum}-${pathIndex}`}
-        src={currentPath} 
+        src={currentPath}
         onLoad={onImageLoad}
         onError={() => {
           if (pathIndex < paths.length - 1) {
@@ -79,7 +79,7 @@ export default function TShirt() {
     const safetyTimer = setTimeout(() => {
       setIsLoading(false);
     }, 10000);
-    
+
     return () => clearTimeout(safetyTimer);
   }, [id, user]);
 
@@ -128,11 +128,11 @@ export default function TShirt() {
         {/* T-Shirt image sections — scroll over fixed background */}
         {tshirtSectionNumbers.map((num) => (
           <section key={num} className="w-full min-h-[100svh] md:min-h-[100dvh] flex items-center justify-center py-12">
-            <TShirtImageFallback 
-              tshirtId={tshirtId} 
-              imgNum={num} 
-              onZoom={setZoomedImage} 
-              onImageLoad={() => setLoadedImagesCount(prev => prev + 1)} 
+            <TShirtImageFallback
+              tshirtId={tshirtId}
+              imgNum={num}
+              onZoom={setZoomedImage}
+              onImageLoad={() => setLoadedImagesCount(prev => prev + 1)}
               canZoom={true}
             />
           </section>
@@ -140,7 +140,20 @@ export default function TShirt() {
 
         {/* Request / Purchase section */}
         <section className="w-full min-h-[100svh] md:min-h-[100dvh] flex items-center justify-center py-12">
-          <div className="relative z-20 flex flex-col items-center gap-6 w-full max-w-md px-6">
+          <div className="relative z-20 flex flex-col items-center gap-5 w-full max-w-md px-6">
+            {/* Size selector boxes */}
+            <div className="flex items-center justify-center gap-3">
+              {['XS', 'S', 'M', 'L'].map((size) => (
+                <span
+                  key={size}
+                  className="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white font-black italic text-sm md:text-base tracking-wider select-none shadow-lg"
+                >
+                  {size}
+                </span>
+              ))}
+            </div>
+
+            {/* Blue Instagram button */}
             <a
               href="https://www.instagram.com/xrostaoclothing"
               target="_blank"
@@ -148,11 +161,16 @@ export default function TShirt() {
               className="w-full max-w-sm bg-blue-400 hover:bg-blue-500 text-white flex items-center justify-center py-5 px-12 rounded-2xl shadow-2xl backdrop-blur-md border border-white/20 transition-all active:scale-95"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-instagram">
-                <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+                <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
               </svg>
             </a>
+
+            {/* DM text below blue button */}
+            <p className="text-white font-black italic text-sm md:text-base tracking-wider text-center select-none">
+              αμα ενδιαφέρεσαι στείλε dm
+            </p>
           </div>
         </section>
 
@@ -169,11 +187,11 @@ export default function TShirt() {
                   to={`/products/${item.slug}`}
                   className="flex flex-col items-center text-center bg-white/8 border border-white/10 rounded-[1.5rem] p-5 backdrop-blur-xl hover:bg-white/12 transition-colors"
                 >
-                  <img 
-                    src={item.primaryImage} 
-                    alt={item.name} 
-                    className="w-full max-w-[10rem] object-contain drop-shadow-2xl mb-4 pointer-events-none" 
-                    loading="lazy" 
+                  <img
+                    src={item.primaryImage}
+                    alt={item.name}
+                    className="w-full max-w-[10rem] object-contain drop-shadow-2xl mb-4 pointer-events-none"
+                    loading="lazy"
                   />
                   <h3 className="text-white font-bold italic text-lg leading-tight">{item.name}</h3>
                   <p className="mt-3 text-white/65 text-sm leading-relaxed">
@@ -191,7 +209,7 @@ export default function TShirt() {
 
       {/* Zoom Modal */}
       {zoomedImage && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 cursor-zoom-out"
           onClick={() => setZoomedImage(null)}
         >
