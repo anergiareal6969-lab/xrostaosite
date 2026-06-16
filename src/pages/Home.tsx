@@ -182,8 +182,8 @@ export default function Home() {
         title="xrostao | χροσταω ρούχα και t-shirts"
         description="xrostao και χροσταω ρούχα. T-shirts από το drop anergia season, προϊόντα xrostao και αίτημα ενδιαφέροντος για το brand."
         canonicalPath="/"
-        image="/favicon.png"
-        imageAlt="xrostao logo"
+        image="/og-image.png"
+        imageAlt="xrostao — anergia season"
         keywords={[
           'xrostao clothing',
           'χροσταω ρούχα',
