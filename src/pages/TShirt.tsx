@@ -60,11 +60,11 @@ export default function TShirt() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const imagesCount = 4; // page-1 to page-4
+  const imagesCount = 2; // page-1 to page-2
   const sizes = ['S', 'M', 'L', 'XL'];
   const step = 450 + 48;
   const mobileStep = 280;
-  const tshirtSectionNumbers = [1, 2, 3, 4];
+  const tshirtSectionNumbers = [1, 2];
 
   // Pick 3 random related products
   const relatedProducts = PRODUCTS.filter((p) => p.id !== tshirtId).sort(() => 0.5 - Math.random()).slice(0, 3);
@@ -92,7 +92,7 @@ export default function TShirt() {
     }
   }, [loadedImagesCount]);
 
-  if (isNaN(tshirtId) || tshirtId < 1 || tshirtId > 13) {
+  if (isNaN(tshirtId) || tshirtId < 1 || tshirtId > 24) {
     return <Navigate to="/" />;
   }
 

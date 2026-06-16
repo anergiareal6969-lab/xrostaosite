@@ -25,7 +25,7 @@ export default function AnergiaDrop() {
       <div className="relative z-10 w-full max-w-[140px] md:max-w-[210px] mx-auto flex flex-col items-center">
         {/* The grid of 11 items */}
         <div className="w-full grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 mt-8">
-          {PRODUCTS.slice(0, 11).map((product) => (
+          {PRODUCTS.slice(0, 24).map((product) => (
             <Link 
               key={product.id} 
               to={`/products/${product.slug}`}
