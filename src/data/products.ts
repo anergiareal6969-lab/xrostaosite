@@ -243,9 +243,9 @@ const DETAIL_IMAGE_SCALE_BY_KEY: Record<string, number> = {
 };
 
 export function getProductMainImageScale(id: number) {
-  return 1.5;
+  return 1.8;
 }
 
 export function getProductDetailImageScale(id: number, imgNum: number) {
-  return 1.5;
+  return 1.8;
 }

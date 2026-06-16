@@ -269,10 +269,8 @@ export default function Home() {
                   name={product.name}
                   loading={index < 2 ? 'eager' : 'lazy'}
                   fetchPriority={index === 0 ? 'high' : 'auto'}
+                  applyScale={true}
                 />
-                <div className="mt-6 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full text-white font-black italic text-xs tracking-widest uppercase shadow-xl">
-                  δεσ το tshirt
-                </div>
               </Link>
             </section>
           ))}
