@@ -1,71 +1,75 @@
 <!doctype html>
 <html lang="el">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    
-    <script>
-      // Clear stale service workers and caches without mutating the public URL.
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(regs => {
-          for(let reg of regs) reg.unregister();
-        });
-      }
-      if ('caches' in window) {
-        caches.keys().then(keys => {
-          keys.forEach(key => caches.delete(key));
-        });
-      }
-    </script>
-    
-    <!-- Preconnect to Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
-    <!-- Load Inter font as early as possible -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=block" rel="stylesheet">
-    
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    <!-- Favicons for Browser & Google Search -->
-    <!-- ΣΗΜΑΝΤΙΚΟ ΓΙΑ GOOGLE: Η εικόνα favicon.png ΠΡΕΠΕΙ να είναι ακριβώς τετράγωνη και πολλαπλάσιο του 48px (π.χ. 192x192, 512x512) -->
-    <link rel="icon" type="image/png" sizes="192x192" href="/favicon.png" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="shortcut icon" href="/favicon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
-    <!-- Version: 1.1.0 - Image Optimization -->
-    <title>xrostao</title>
-    <meta name="application-name" content="xrostao" />
-    <meta name="apple-mobile-web-app-title" content="xrostao" />
-    <meta name="author" content="xrostao" />
-    <meta name="publisher" content="xrostao" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="format-detection" content="telephone=no" />
-    <meta name="robots" content="index,follow" />
-    <meta name="googlebot" content="index,follow" />
-    <meta name="google-site-verification" content="egb9lOt7IAO6DMnJzDqFNYFr_uv-j-XKvabKMiZ-NYE" />
-    <meta name="keywords" content="xrostao clothing, xrostao, χροσταω, χροσταω clothing, t-shirts, ρούχα, streetwear, anergia season" />
-    
-    <!-- Preload Critical Backgrounds -->
-    <link rel="preload" as="image" href="/images/mobile/main-bg-1.png" media="(max-width: 767px)">
-    <link rel="preload" as="image" href="/images/mobile/main-bg-2.png" media="(max-width: 767px)">
-    <link rel="preload" as="image" href="/images/mobile/info-page-bg.png" media="(max-width: 767px)">
-    <link rel="preload" as="image" href="/images/main-bg-1.png" media="(min-width: 768px)">
-    <link rel="preload" as="image" href="/images/main-bg-2.png" media="(min-width: 768px)">
-    <link rel="preload" as="image" href="/images/info-page-bg.png" media="(min-width: 768px)">
-    <meta name="description" content="xrostao — anergia season. Μπλούζες. Αίτημα. Ανεργία." />
-    <meta property="og:site_name" content="xrostao" />
-    <meta property="og:locale" content="el_GR" />
-    <meta property="og:title" content="xrostao" />
-    <meta property="og:description" content="xrostao — anergia season. Μπλούζες. Αίτημα. Ανεργία." />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://www.xrostao.shop/favicon.png" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="xrostao" />
-    <meta name="twitter:description" content="xrostao — anergia season. Μπλούζες. Αίτημα. Ανεργία." />
-    <meta name="twitter:image" content="https://www.xrostao.shop/favicon.png" />
-    <script type="application/ld+json">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <script>
+    // Clear stale service workers and caches without mutating the public URL.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        for (let reg of regs) reg.unregister();
+      });
+    }
+    if ('caches' in window) {
+      caches.keys().then(keys => {
+        keys.forEach(key => caches.delete(key));
+      });
+    }
+  </script>
+
+  <!-- Preconnect to Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Load Inter font as early as possible -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=block"
+    rel="stylesheet">
+
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <!-- Favicons for Browser & Google Search -->
+  <!-- ΣΗΜΑΝΤΙΚΟ ΓΙΑ GOOGLE: Η εικόνα favicon.png ΠΡΕΠΕΙ να είναι ακριβώς τετράγωνη και πολλαπλάσιο του 48px (π.χ. 192x192, 512x512) -->
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="/favicon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <!-- Version: 1.1.0 - Image Optimization -->
+  <title>xrostao</title>
+  <meta name="application-name" content="xrostao" />
+  <meta name="apple-mobile-web-app-title" content="xrostao" />
+  <meta name="author" content="xrostao" />
+  <meta name="publisher" content="xrostao" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="robots" content="index,follow" />
+  <meta name="googlebot" content="index,follow" />
+  <meta name="google-site-verification" content="egb9lOt7IAO6DMnJzDqFNYFr_uv-j-XKvabKMiZ-NYE" />
+  <meta name="keywords"
+    content="xrostao clothing, xrostao, χροσταω, χροσταω clothing, t-shirts, ρούχα, streetwear, anergia season" />
+
+  <!-- Preload Critical Backgrounds -->
+  <link rel="preload" as="image" href="/images/mobile/main-bg-1.png" media="(max-width: 767px)">
+  <link rel="preload" as="image" href="/images/mobile/main-bg-2.png" media="(max-width: 767px)">
+  <link rel="preload" as="image" href="/images/mobile/info-page-bg.png" media="(max-width: 767px)">
+  <link rel="preload" as="image" href="/images/main-bg-1.png" media="(min-width: 768px)">
+  <link rel="preload" as="image" href="/images/main-bg-2.png" media="(min-width: 768px)">
+  <link rel="preload" as="image" href="/images/info-page-bg.png" media="(min-width: 768px)">
+  <meta name="description" content="xrostao — anergia season. Μπλούζες. Αίτημα. Ανεργία." />
+  <meta property="og:site_name" content="xrostao" />
+  <meta property="og:locale" content="el_GR" />
+  <meta property="og:title" content="xrostao" />
+  <meta property="og:description" content="xrostao — anergia season. Μπλούζες. Αίτημα. Ανεργία." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://www.xrostao.shop/favicon.png" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="xrostao" />
+  <meta name="twitter:description" content="xrostao — anergia season. Μπλούζες. Αίτημα. Ανεργία." />
+  <meta name="twitter:image" content="https://www.xrostao.shop/favicon.png" />
+  <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@graph": [
@@ -84,9 +88,11 @@
         ]
       }
     </script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>

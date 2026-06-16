@@ -135,7 +135,7 @@ export default function Home() {
       name: SITE_NAME,
       alternateName: ['xrostao', 'χροσταω', 'χροσταω clothing'],
       url: '/',
-      logo: '/images/ai-top.png',
+      logo: '/favicon.png',
     },
     {
       '@context': 'https://schema.org',
@@ -182,7 +182,7 @@ export default function Home() {
         title="xrostao | χροσταω ρούχα και t-shirts"
         description="xrostao και χροσταω ρούχα. T-shirts από το drop anergia season, προϊόντα xrostao και αίτημα ενδιαφέροντος για το brand."
         canonicalPath="/"
-        image="/images/ai-top.png"
+        image="/favicon.png"
         imageAlt="xrostao logo"
         keywords={[
           'xrostao clothing',
