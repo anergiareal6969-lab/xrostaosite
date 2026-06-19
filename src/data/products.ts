@@ -175,6 +175,13 @@ export const PRODUCTS: Product[] = [
     description: 'Απλά ένα ακόμα xrostao t-shirt.',
     primaryImage: '/images/tshirts/24/main.png',
   },
+  {
+    id: 25,
+    slug: 'tshirt-25',
+    name: 'xrostao tshirt 25',
+    description: 'Το νέο xrostao t-shirt.',
+    primaryImage: '/images/tshirts/25/main.png',
+  },
 ];
 
 export function getProductById(id: number) {

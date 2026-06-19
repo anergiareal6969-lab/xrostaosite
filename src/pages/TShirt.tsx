@@ -92,7 +92,7 @@ export default function TShirt() {
     }
   }, [loadedImagesCount]);
 
-  if (isNaN(tshirtId) || tshirtId < 1 || tshirtId > 24) {
+  if (isNaN(tshirtId) || tshirtId < 1 || tshirtId > PRODUCTS.length) {
     return <Navigate to="/" />;
   }
 

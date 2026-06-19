@@ -219,8 +219,8 @@ export default function Home() {
 
         {/* ================= DESKTOP VERSION ================= */}
         <div className="hidden md:flex w-full flex-col items-center gap-8 pt-[25vh] pb-16" aria-label="Συλλογή προϊόντων για desktop">
-          {Array.from({ length: Math.ceil(PRODUCTS.slice(0, 24).length / 3) }).map((_, rowIndex) => {
-            const rowProducts = PRODUCTS.slice(0, 24).slice(rowIndex * 3, rowIndex * 3 + 3);
+          {Array.from({ length: Math.ceil(PRODUCTS.length / 3) }).map((_, rowIndex) => {
+            const rowProducts = PRODUCTS.slice(rowIndex * 3, rowIndex * 3 + 3);
             return (
               <section key={rowIndex} className="w-full min-h-[60dvh] flex items-center justify-center py-8" aria-label={`Σειρά προϊόντων ${rowIndex + 1}`}>
                 <div className="w-full max-w-[120rem] px-8 flex flex-row flex-wrap items-center justify-center gap-12 xl:gap-16">
@@ -253,7 +253,7 @@ export default function Home() {
 
         {/* ================= MOBILE VERSION ================= */}
         <div className="block md:hidden w-full flex flex-col mt-[15vh]" aria-label="Συλλογή προϊόντων για mobile">
-          {PRODUCTS.slice(0, 24).map((product, index) => (
+          {PRODUCTS.map((product, index) => (
             <section
               key={product.id}
               className="relative w-full min-h-[60svh] flex items-center justify-center py-12"
@@ -284,7 +284,7 @@ export default function Home() {
       </div>
 
       <nav className="sr-only" aria-label="Γρήγορη πλοήγηση xrostao">
-        {PRODUCTS.slice(0, 24).map((product) => (
+        {PRODUCTS.map((product) => (
           <Link key={product.id} to={`/products/${product.slug}`}>
             {product.name}
           </Link>
@@ -298,4 +298,3 @@ export default function Home() {
     </main>
   );
 }
-
