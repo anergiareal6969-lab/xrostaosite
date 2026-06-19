@@ -178,8 +178,8 @@ export const PRODUCTS: Product[] = [
   {
     id: 25,
     slug: 'tshirt-25',
-    name: 'xrostao tshirt 25',
-    description: 'Το νέο xrostao t-shirt.',
+    name: 'xrostao leo oti thelo tshirt',
+    description: 'Φορώντας το t-shirt αυτό, απλά λες ό,τι νιώθεις.',
     primaryImage: '/images/tshirts/25/main.png',
   },
 ];
