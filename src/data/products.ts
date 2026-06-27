@@ -259,6 +259,13 @@ export const PRODUCTS: Product[] = [
     description: 'πιες ενα ποτακι φωρωντας το tshirt',
     primaryImage: '/images/tshirts/36/main.png',
   },
+  {
+    id: 37,
+    slug: 'adeia-karta-tshirt',
+    name: 'xrostao adeia karta tshirt',
+    description: 'Οταν η καρτα ειναι αδεια και δεν εχει αλλα λεφτα',
+    primaryImage: '/images/tshirts/37/main.png',
+  },
 ];
 
 export function getProductById(id: number) {
